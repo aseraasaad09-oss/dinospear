@@ -1,0 +1,2 @@
+// public anon key (safe to be public). never put service_role here.
+window.ASER_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcGdyYW56dGNxeHlmZWh5bnV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1MDg2MDIsImV4cCI6MjExMDA4NDYwMn0.dMAwse8eitcmV4NF9VHTMJ65MP0mcBntA_UB1IY_u_A";
