@@ -1,245 +1,395 @@
-<!doctype html>
-<html lang="en" dir="ltr">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ASER WORLD</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="ASER WORLD is a blocky online game: eat power fruits, learn fighting styles, drive cars, rob the bank, race and explore the sea with your friends. Get your own house in ASER CITY, vote for the game's name and join the Discord.">
-<meta name="theme-color" content="#060a1a">
-<link rel="canonical" href="https://aserworld.com/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ASER WORLD">
-<meta property="og:description" content="Power fruits, fighting styles, cars, bank heists, races and the sea. Vote for the game's name!">
-<meta property="og:image" content="https://aserworld.com/assets/img/world.jpg">
-<meta property="og:url" content="https://aserworld.com/">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DINOSPEAR</title>
+<meta name="description" content="DINOSPEAR — موقع ASER WORLD: المدينة 3D، الشات، الشطرنج، الأفكار، والديمو.">
+<meta name="theme-color" content="#2f6fe4">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9IiMyZjZmZTQiLz48cGF0aCBkPSJNMTQgNDRjMC0xMiA4LTIyIDIxLTIyaDVjNiAwIDEwIDQgMTAgOXYzYzAgMi0yIDQtNCA0aC05bC0zIDZIMTR6IiBmaWxsPSIjN2JkODhmIi8+PHBhdGggZD0iTTI3IDIybDMtNyAzIDdNMzUgMjJsMy03IDMgN00yMCAyNmwyLTYgNCA1IiBmaWxsPSIjNGNhZjYzIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOSIgcj0iMi42IiBmaWxsPSIjMTYyMTNmIi8+PHBhdGggZD0iTTQwIDM3aDYiIHN0cm9rZT0iIzE2MjEzZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOCA1NEw1NiAxMCIgc3Ryb2tlPSIjZmZkMDQwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NiAxMGwtOSAyIDcgN3oiIGZpbGw9IiNmZmQwNDAiLz48cGF0aCBkPSJNMTQgNDRoMTh2NEgxNHoiIGZpbGw9IiM0Y2FmNjMiLz48L3N2Zz4=" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Lalezar&display=swap">
-<link rel="stylesheet" href="assets/css/style.css">
+<style>
+:root{--bg:#eef4ff;--bg2:#f8fbff;--card:#ffffff;--ink:#172449;--muted:#55628a;--line:#d5def3;--blue:#2f6fe4;--blue2:#1d4fb8;--gold:#ffc83d;--green:#2fa865;--red:#dc2626;--r:20px;--disp:"Lalezar","Cairo",system-ui,sans-serif;--body:"Cairo",system-ui,sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--body);background:linear-gradient(180deg,#dce9ff 0,var(--bg) 380px,var(--bg2) 100%);color:var(--ink);line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:inherit}
+img{max-width:100%;display:block}
+button{font-family:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+/* header */
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:14px;min-height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--disp);font-size:26px;letter-spacing:1px;color:var(--blue2)}
+.brand img{width:40px;height:40px}
+nav.main{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+nav.main::-webkit-scrollbar{display:none}
+nav.main a{white-space:nowrap;text-decoration:none;font-weight:700;font-size:15px;padding:8px 12px;border-radius:12px;color:var(--muted)}
+nav.main a:hover{background:#e8efff;color:var(--blue2)}
+.acct{display:flex;align-items:center;gap:8px}
+.acct .who{font-weight:800;font-size:14px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:12px 20px;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;background:var(--blue);color:#fff;transition:transform .1s,filter .15s;min-height:48px}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.97)}
+.btn.ghost{background:#fff;color:var(--blue2);border:2px solid var(--line)}
+.btn.gold{background:var(--gold);color:#3a2a00}
+.btn.green{background:var(--green)}
+.btn.sm{padding:8px 14px;font-size:14px;min-height:40px;border-radius:12px}
+.btn svg{width:22px;height:22px;flex:none}
+.lang{display:flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}
+.lang button{border:0;background:#fff;padding:6px 10px;font-weight:800;cursor:pointer;color:var(--muted)}
+.lang button.on{background:var(--blue);color:#fff}
+/* gate */
+#gate{min-height:calc(100vh - 64px);display:grid;place-items:center;padding:30px 16px 60px}
+.gcard{background:var(--card);border:1px solid var(--line);border-radius:26px;box-shadow:0 24px 60px rgba(30,60,140,.16);max-width:440px;width:100%;padding:26px 22px}
+.gcard .logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:8px}
+.gcard .logo img{width:76px;height:76px}
+.gcard h1{font-family:var(--disp);font-size:38px;margin:0;color:var(--blue2);letter-spacing:1px;font-weight:400}
+.gcard .sub{color:var(--muted);text-align:center;margin:0 0 16px;font-size:15px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#eef3ff;border-radius:14px;padding:4px;margin-bottom:14px}
+.tabs button{border:0;background:none;padding:10px;border-radius:11px;font-weight:800;font-size:15px;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:#fff;color:var(--blue2);box-shadow:0 2px 8px rgba(30,60,140,.12)}
+label{display:block;font-weight:700;font-size:14px;margin:10px 0 4px}
+input[type=text],input[type=password]{width:100%;padding:13px 14px;border:2px solid var(--line);border-radius:14px;font:600 16px var(--body);background:#fbfcff;color:var(--ink)}
+input:focus{outline:none;border-color:var(--blue)}
+.rule{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.status{min-height:24px;font-weight:700;font-size:14px;margin:10px 0 0;text-align:center}
+.status.err{color:var(--red)}.status.ok{color:var(--green)}
+.gcard form .btn{width:100%;margin-top:14px}
+.note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px}
+/* sections */
+section{padding:56px 0}
+.kicker{color:var(--blue);font-weight:800;font-size:14px;letter-spacing:.5px}
+h2{font-family:var(--disp);font-weight:400;font-size:clamp(32px,5vw,46px);margin:0 0 10px;line-height:1.2;color:var(--ink)}
+.lead{color:var(--muted);font-size:17px;max-width:720px}
+.hero{padding:28px 0 40px}
+.hero .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:28px;align-items:center}
+.hero .pic{border-radius:28px;overflow:hidden;box-shadow:0 26px 60px rgba(30,60,140,.25);aspect-ratio:16/10;background:#cfe0ff}
+.hero .pic img{width:100%;height:100%;object-fit:cover}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(44px,7vw,76px);line-height:1.05;margin:6px 0 8px;color:var(--blue2)}
+.hero .by{font-weight:800;color:var(--muted)}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.pill{display:inline-block;background:#fff3cf;color:#7a5600;font-weight:800;border-radius:999px;padding:4px 12px;font-size:13px}
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:20px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.step b{font-family:var(--disp);font-weight:400;font-size:26px;color:var(--blue);min-width:34px}
+.step span{flex:1;font-weight:700}
+.step em{font-style:normal;font-size:12.5px;font-weight:800;border-radius:999px;padding:3px 10px;background:#e6f6ec;color:#1d7a46;white-space:nowrap}
+.step em.soon{background:#eef1f8;color:var(--muted)}.step em.vote{background:#fff3cf;color:#7a5600}
+.bar{height:14px;background:#dfe7f8;border-radius:999px;overflow:hidden;margin-top:14px;max-width:520px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#46b4ff);width:56%}
+/* features */
+.feats{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:22px}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 8px 24px rgba(30,60,140,.08)}
+.feat img{aspect-ratio:16/10;object-fit:cover;width:100%}
+.feat div{padding:12px 16px 16px}.feat h3{margin:0 0 2px;font-size:19px}.feat p{margin:0;color:var(--muted);font-size:14.5px}
+/* app frames */
+.frame{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 14px 40px rgba(30,60,140,.12);margin-top:18px}
+.frame iframe{display:block;width:100%;border:0;height:900px}
+.frame.mid iframe{height:760px}
+.frame.town iframe{height:min(82vh,820px);min-height:520px}
+/* cards row */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.card h3{margin:0;font-size:21px}.card p{margin:0;color:var(--muted)}
+.card .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center}
+.card .ic svg{width:30px;height:30px}
+.watch{position:relative;border-radius:26px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;margin-top:10px}
+.watch img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.6)}
+.watch div{position:relative;padding:28px;color:#fff}.watch h2{color:#fff}
+footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
+#installBtn[hidden]{display:none}
+@media (max-width:860px){
+ .hero .grid{grid-template-columns:1fr}
+ .frame iframe{height:1150px}.frame.mid iframe{height:900px}
+ header .wrap{flex-wrap:wrap;padding-top:6px;padding-bottom:6px}
+ nav.main{order:3;flex-basis:100%}
+ .brand{font-size:22px}.brand img{width:34px;height:34px}
+ .acct .who{display:none}
+ section{padding:40px 0}
+}
+</style>
 </head>
 <body>
-<header class="top" id="top-bar">
-  <div class="wrap bar">
-    <a class="brand" href="#top" aria-label="ASER WORLD"><span class="cube">A</span><span class="bname">ASER WORLD</span></a>
-    <nav class="links" aria-label="Sections">
-      <a href="#road" data-sec="road"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 9 4h6l5 16M12 6v2m0 4v2m0 4v2"/></svg><span data-i18n="nav_road">Release</span></a>
-      <a href="#trailer" data-sec="trailer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg><span data-i18n="nav_trailer">Trailer</span></a>
-      <a href="#city" data-sec="city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V10l5-4 5 4v11M13 21V4h8v17M6 13h4M6 17h4M16 8h2M16 12h2M16 16h2"/></svg><span data-i18n="nav_city">The city</span></a>
-      <a href="#features" data-sec="features"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span data-i18n="nav_features">The game</span></a>
-      <a href="#vote" data-sec="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg><span data-i18n="nav_vote">Vote</span></a>
-      <a href="#community" data-sec="community"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 2.5-5 5-5s5 2 5 5m0 0c0-3 2.5-5 5-5s5 2 5 5"/></svg><span data-i18n="nav_community">Community</span></a>
-    </nav>
-    <div class="actions">
-      <button class="lang" id="lang" type="button" aria-label="Change language">عربي</button>
-      <a class="btn gold small-btn" href="#city" data-i18n="my_house_btn">My house</a>
-      <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menu"><i></i><i></i><i></i></button>
-    </div>
+<header>
+ <div class="wrap">
+  <a class="brand" href="#top" aria-label="DINOSPEAR"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9IiMyZjZmZTQiLz48cGF0aCBkPSJNMTQgNDRjMC0xMiA4LTIyIDIxLTIyaDVjNiAwIDEwIDQgMTAgOXYzYzAgMi0yIDQtNCA0aC05bC0zIDZIMTR6IiBmaWxsPSIjN2JkODhmIi8+PHBhdGggZD0iTTI3IDIybDMtNyAzIDdNMzUgMjJsMy03IDMgN00yMCAyNmwyLTYgNCA1IiBmaWxsPSIjNGNhZjYzIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOSIgcj0iMi42IiBmaWxsPSIjMTYyMTNmIi8+PHBhdGggZD0iTTQwIDM3aDYiIHN0cm9rZT0iIzE2MjEzZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOCA1NEw1NiAxMCIgc3Ryb2tlPSIjZmZkMDQwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NiAxMGwtOSAyIDcgN3oiIGZpbGw9IiNmZmQwNDAiLz48cGF0aCBkPSJNMTQgNDRoMTh2NEgxNHoiIGZpbGw9IiM0Y2FmNjMiLz48L3N2Zz4=" alt="">DINOSPEAR</a>
+  <nav class="main" id="nav" hidden>
+   <a href="#home" data-i="n_home"></a><a href="#town3d" data-i="n_town"></a><a href="#app" data-i="n_app"></a><a href="demo/" data-i="n_demo"></a><a href="#ideas" data-i="n_ideas"></a><a href="#roadmap" data-i="n_road"></a><a href="#game" data-i="n_game"></a><a href="#helper" data-i="n_helper"></a><a href="#community" data-i="n_comm"></a>
+  </nav>
+  <div class="acct">
+   <div class="lang"><button type="button" data-l="ar">ع</button><button type="button" data-l="en">EN</button></div>
+   <span class="who" id="who"></span>
+   <button class="btn sm ghost" type="button" id="outBtn" hidden data-i="signout"></button>
   </div>
+ </div>
 </header>
-<div class="menu" id="menu" hidden>
-  <div class="menu-in">
-    <div class="menu-head"><span class="bname">ASER WORLD</span><button type="button" class="close" id="menuClose" aria-label="Close">✕</button></div>
-    <nav class="tiles" aria-label="Sections">
-      <a href="#road" class="tile t-road"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 9 4h6l5 16M12 6v2m0 4v2m0 4v2"/></svg><span data-i18n="nav_road">Release</span></a>
-      <a href="#trailer" class="tile t-trailer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg><span data-i18n="nav_trailer">Trailer</span></a>
-      <a href="#city" class="tile t-city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V10l5-4 5 4v11M13 21V4h8v17M6 13h4M6 17h4M16 8h2M16 12h2M16 16h2"/></svg><span data-i18n="nav_city">The city</span></a>
-      <a href="#features" class="tile t-features"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span data-i18n="nav_features">The game</span></a>
-      <a href="#vote" class="tile t-vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg><span data-i18n="nav_vote">Vote</span></a>
-      <a href="#community" class="tile t-community"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 2.5-5 5-5s5 2 5 5m0 0c0-3 2.5-5 5-5s5 2 5 5"/></svg><span data-i18n="nav_community">Community</span></a>
-    </nav>
-    <a class="btn gold menu-cta" href="#city" data-i18n="get_house">Get your house in the city</a>
-  </div>
-</div>
 
 <main id="top">
-  <section class="hero">
-    <div class="shot" role="img" aria-label="ASER WORLD town from above"></div>
-    <div class="shade"></div>
-    <div class="wrap">
-      <span class="badge"><i></i><span data-i18n="badge">In development · join the Discord to play first</span></span>
-      <h1>ASER WORLD</h1>
-      <p class="tag" data-i18n="tagline">A blocky online world. Eat power fruits, learn fighting styles, drive cars, rob the bank and race your friends.</p>
-      <div class="cta">
-        <a class="btn discord" href="https://discord.gg/zyqsh6mMw" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.9 19.9 0 0 0 6 3l1.3-2a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.7-3.6-13.7ZM8.3 15.3c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>
-          <span data-i18n="join_discord">Join the Discord</span>
-        </a>
-        <a class="btn gold" href="#city" data-i18n="get_house">Get your house in the city</a>
-      </div>
-      <span class="credit">MADE BY ASER AMRO AHMED</span>
-    </div>
-  </section>
+<!-- ===== sign-in gate: nothing else is shown until you sign in ===== -->
+<div id="gate">
+ <div class="gcard">
+  <div class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9IiMyZjZmZTQiLz48cGF0aCBkPSJNMTQgNDRjMC0xMiA4LTIyIDIxLTIyaDVjNiAwIDEwIDQgMTAgOXYzYzAgMi0yIDQtNCA0aC05bC0zIDZIMTR6IiBmaWxsPSIjN2JkODhmIi8+PHBhdGggZD0iTTI3IDIybDMtNyAzIDdNMzUgMjJsMy03IDMgN00yMCAyNmwyLTYgNCA1IiBmaWxsPSIjNGNhZjYzIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOSIgcj0iMi42IiBmaWxsPSIjMTYyMTNmIi8+PHBhdGggZD0iTTQwIDM3aDYiIHN0cm9rZT0iIzE2MjEzZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOCA1NEw1NiAxMCIgc3Ryb2tlPSIjZmZkMDQwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NiAxMGwtOSAyIDcgN3oiIGZpbGw9IiNmZmQwNDAiLz48cGF0aCBkPSJNMTQgNDRoMTh2NEgxNHoiIGZpbGw9IiM0Y2FmNjMiLz48L3N2Zz4=" alt=""><h1>DINOSPEAR</h1></div>
+  <p class="sub" data-i="g_sub"></p>
+  <div class="tabs" role="tablist"><button type="button" id="tIn" aria-selected="true" data-i="signin"></button><button type="button" id="tUp" aria-selected="false" data-i="signup"></button></div>
+  <form id="aForm" autocomplete="on" novalidate>
+   <label for="uname" data-i="uname"></label>
+   <input type="text" id="uname" maxlength="40" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+   <p class="rule" id="urule"></p>
+   <label for="pass" data-i="pass"></label>
+   <input type="password" id="pass" maxlength="72" autocomplete="current-password" required>
+   <div id="p2box" hidden><label for="pass2" data-i="pass2"></label><input type="password" id="pass2" maxlength="72" autocomplete="new-password"></div>
+   <p class="rule" id="prule"></p>
+   <button class="btn" type="submit" id="aBtn"></button>
+   <div class="status" id="ast" role="status" aria-live="polite"></div>
+  </form>
+  <p class="note" data-i="g_note"></p>
+ </div>
+</div>
 
-  <section id="road" class="road">
-    <div class="wrap">
-      <span class="kicker" data-i18n="k_road">Road to release</span>
-      <h2 data-i18n="h_road">The game is coming</h2>
-      <div class="countdown" id="countdown" hidden>
-        <div><b id="cd_d">0</b><span data-i18n="days">days</span></div>
-        <div><b id="cd_h">0</b><span data-i18n="hours">hours</span></div>
-        <div><b id="cd_m">0</b><span data-i18n="minutes">min</span></div>
-        <div><b id="cd_s">0</b><span data-i18n="seconds">sec</span></div>
-      </div>
-      <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="meter"><i id="meterFill"></i><span id="meterTxt">0%</span></div>
-      <ol class="steps" id="steps"></ol>
-    </div>
-  </section>
-
-  <section id="trailer">
-    <div class="wrap">
-      <span class="kicker" data-i18n="k_trailer">Watch</span>
-      <h2 data-i18n="h_trailer">The game video</h2>
-      <div class="player" id="player">
-        <button class="poster" id="poster" type="button" aria-label="Play the video">
-          <span class="play"><svg viewBox="0 0 24 24" fill="#3a2a00" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg></span>
-        </button>
-      </div>
-      <p class="small"><a href="https://www.youtube.com/channel/UCl0LLCJ4qkQitS80CtJdjAw" target="_blank" rel="noopener noreferrer" data-i18n="open_yt">Open the YouTube channel</a></p>
-    </div>
-  </section>
-
-  <section id="city" class="city">
-    <div class="wrap">
-      <span class="kicker" data-i18n="k_city">ASER CITY</span>
-      <h2 data-i18n="h_city">Every player gets a house</h2>
-      <p class="sub" data-i18n="city_d">Make an account and your house appears in the city. It starts at size 5 and grows by 1 every day you visit, up to 100.</p>
-      <div class="citywrap">
-        <div class="map">
-          <canvas id="cityCanvas" aria-label="The city of ASER WORLD with every player's house"></canvas>
-          <div class="maptools">
-            <button type="button" id="zin" aria-label="Zoom in">+</button>
-            <button type="button" id="zout" aria-label="Zoom out">−</button>
-            <button type="button" id="zme" data-i18n="find_me">My house</button>
-          </div>
-          <div class="pop" id="pop" hidden></div>
-          <div class="cityinfo"><b id="cityCount">0</b> <span data-i18n="houses">houses</span></div>
-        </div>
-        <div class="box" id="authbox">
-          <div id="authForms">
-            <div class="tabs" role="tablist">
-              <button type="button" role="tab" id="tabUp" aria-selected="true" data-i18n="sign_up">New account</button>
-              <button type="button" role="tab" id="tabIn" aria-selected="false" data-i18n="sign_in">Sign in</button>
-            </div>
-            <form id="authForm" class="field" novalidate>
-              <label for="uname" data-i18n="username">Username</label>
-              <input id="uname" type="text" maxlength="16" autocomplete="username" autocapitalize="off" spellcheck="false" required>
-              <span class="small" data-i18n="uname_rule">3 to 16 letters, numbers or _ . Don't use your real name.</span>
-              <label for="pass" data-i18n="password">Password</label>
-              <input id="pass" type="password" maxlength="72" autocomplete="new-password" required>
-              <div id="pass2Row" class="field" style="margin-top:0">
-                <label for="pass2" data-i18n="password2">Password again</label>
-                <input id="pass2" type="password" maxlength="72" autocomplete="new-password">
-              </div>
-              <span class="small" data-i18n="pass_rule">At least 8 characters. Write it down somewhere safe: a lost password can't be recovered.</span>
-              <div class="row"><button class="btn gold" type="submit" id="authBtn" data-i18n="create">Create my house</button></div>
-            </form>
-          </div>
-          <div id="who" hidden>
-            <h3><span data-i18n="hello">Hi</span> <span id="whoName"></span></h3>
-            <div class="myhouse"><span data-i18n="house_size">House size</span> <b id="mySize">5</b><span class="small"> / 100</span></div>
-            <p class="small" id="growMsg"></p>
-            <div class="row"><a class="btn ghost" href="#vote" data-i18n="go_vote">Vote for the name</a><button class="btn ghost" id="logout" type="button" data-i18n="logout">Sign out</button></div>
-          </div>
-          <div class="status" id="astatus" role="status"></div>
-          <div class="demo" id="cityDemo" hidden data-i18n="city_demo">Preview only: accounts are not connected yet, so the houses here are examples.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="features">
-    <div class="wrap">
-      <span class="kicker" data-i18n="k_features">The game</span>
-      <h2 data-i18n="h_features">Everything you can do</h2>
-      <div class="stats">
-        <span class="stat"><b>36</b><span data-i18n="s_fruits">power fruits</span></span>
-        <span class="stat"><b>7</b><span data-i18n="s_styles">fighting styles</span></span>
-        <span class="stat"><b>18</b><span data-i18n="s_skins">skin bundles</span></span>
-        <span class="stat"><b>12</b><span data-i18n="s_faces">faces</span></span>
-      </div>
-      <div class="grid">
-        <article class="feat"><img src="assets/img/fruit.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f1">Power fruits</h3><p data-i18n="f1d">Hold a fruit in your hand, eat it and get its powers. Every fruit has its own moves and a stronger V2.</p></div></article>
-        <article class="feat"><img src="assets/img/workshop.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f2">Workshop</h3><p data-i18n="f2d">Mine materials and forge your own swords and pickaxes.</p></div></article>
-        <article class="feat"><img src="assets/img/cars.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f3">Cars</h3><p data-i18n="f3d">Buy a car, park it anywhere and drive across the town.</p></div></article>
-        <article class="feat"><img src="assets/img/heist.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f4">Bank robbery</h3><p data-i18n="f4d">Rob the bank with your crew. The police are coming in one minute.</p></div></article>
-        <article class="feat"><img src="assets/img/races.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f5">Races</h3><p data-i18n="f5d">Race on the tracks, beat your best time and win coins.</p></div></article>
-        <article class="feat"><img src="assets/img/sea.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f6">The sea</h3><p data-i18n="f6d">Go down to the sea, find islands and fight sea bosses.</p></div></article>
-        <article class="feat"><img src="assets/img/caves.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f7">Caves and treasure</h3><p data-i18n="f7d">Dig deep, open treasure chests and find secret places.</p></div></article>
-        <article class="feat"><img src="assets/img/world.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f8">Play in Arabic</h3><p data-i18n="f8d">The whole game works in English and Arabic. Switch from the phone menu.</p></div></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="watch" aria-labelledby="wh">
-    <div class="wrap">
-      <img src="assets/img/watcher.jpg" alt="The watcher standing between the trees at night" width="700" height="500">
-      <div>
-        <h2 id="wh" dir="ltr">SOMETHING IS WATCHING YOU</h2>
-        <p class="line" dir="ltr">There is something looking for you…<br>and there is something want to kill you.</p>
-        <p class="sub" data-i18n="watch_d">When night falls in ASER WORLD, don't look at him.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="vote" id="vote">
-    <div class="wrap">
-      <div class="box">
-        <span class="kicker" data-i18n="k_vote">Players decide</span>
-        <h3 data-i18n="h_vote">Vote for the game's name</h3>
-        <p class="small" data-i18n="vote_rule">The name with the most votes becomes the official name of the game. One vote per player. You can change your vote until voting closes.</p>
-        <div class="opts" id="opts" aria-live="polite"></div>
-        <div class="status" id="vstatus" role="status"></div>
-        <div class="demo" id="demo" hidden data-i18n="demo">Preview only: voting is not connected yet, so these numbers are examples.</div>
-      </div>
-      <div class="box">
-        <h3 data-i18n="h_suggest">Suggest a name</h3>
-        <p class="small" id="voteNeed" data-i18n="vote_need">Make an account in the city first, then you can vote and suggest names.</p>
-        <form id="suggestForm" class="field" novalidate hidden>
-          <label for="sname" data-i18n="suggest">Suggest a new name</label>
-          <input id="sname" type="text" maxlength="24" autocomplete="off" required>
-          <span class="small" data-i18n="suggest_rule">2 to 24 letters. The team checks every name before it shows in the vote.</span>
-          <div class="row"><button class="btn gold" type="submit" data-i18n="send">Send</button></div>
-        </form>
-        <div class="status" id="sstatus" role="status"></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="community">
-    <div class="wrap">
-      <span class="kicker" data-i18n="k_comm">Community</span>
-      <h2 data-i18n="h_comm">Play with us</h2>
-      <div class="comm">
-        <a class="card dc" href="https://discord.gg/zyqsh6mMw" target="_blank" rel="noopener noreferrer">
-          <h3>DISCORD</h3>
-          <p data-i18n="dc_d">News, updates, help and the first people to play. All support is here.</p>
-          <span class="u">discord.gg/zyqsh6mMw</span>
-        </a>
-        <a class="card ytc" href="https://www.youtube.com/channel/UCl0LLCJ4qkQitS80CtJdjAw" target="_blank" rel="noopener noreferrer">
-          <h3>YOUTUBE</h3>
-          <p data-i18n="yt_d">Trailers, guides and new updates of ASER WORLD.</p>
-          <span class="u" data-i18n="yt_u">Subscribe on YouTube</span>
-        </a>
-      </div>
-    </div>
-  </section>
-</main>
-
-<footer>
-  <div class="wrap">
-    <span><b>ASER WORLD</b> · MADE BY ASER AMRO AHMED</span>
-    <span>© 2026</span>
+<!-- ===== the site (after sign-in) ===== -->
+<div id="site" hidden>
+ <section class="hero" id="home"><div class="wrap grid">
+  <div>
+   <span class="pill" data-i="h_pill"></span>
+   <h1>ASER WORLD</h1>
+   <p class="lead" data-i="h_lead"></p>
+   <p class="by" data-i="h_by"></p>
+   <div class="cta">
+    <a class="btn" href="#town3d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg><span data-i="c_town"></span></a>
+    <a class="btn gold" href="demo/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="12" r="1.2" fill="currentColor"/><circle cx="18.5" cy="14.5" r="1.2" fill="currentColor"/></svg><span data-i="c_demo"></span></a>
+    <button class="btn ghost" type="button" id="installBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg><span data-i="install"></span></button>
+   </div>
   </div>
-</footer>
+  <div class="pic"><img src="assets/img/world.jpg" alt="ASER WORLD" loading="eager"></div>
+ </div></section>
 
-<script src="assets/vendor/supabase-2.45.4.js"></script>
-<script src="assets/js/config.js"></script>
-<script src="assets/js/city.js"></script>
-<script src="assets/js/app.js"></script>
+
+
+ <section id="town3d"><div class="wrap">
+  <span class="kicker" data-i="t_k"></span><h2 data-i="t_h"></h2><p class="lead" data-i="t_p"></p>
+  <div class="frame town"><iframe id="townFrame" src="town/index.html" title="TOWN DINOSPEAR 3D" loading="lazy" allow="fullscreen; autoplay; clipboard-write" allowfullscreen></iframe></div>
+  <div class="cta"><button class="btn" type="button" id="townFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span data-i="t_full"></span></button></div>
+ </div></section>
+ <section id="app"><div class="wrap">
+  <span class="kicker" data-i="a_k"></span><h2 data-i="a_h"></h2><p class="lead" data-i="a_p"></p>
+  <div class="frame"><iframe src="app/city.html" title="DINOSPEAR app" loading="lazy" allow="clipboard-write"></iframe></div>
+ </div></section>
+
+ <section id="ideas"><div class="wrap">
+  <span class="kicker" data-i="i_k"></span><h2 data-i="i_h"></h2>
+  <div class="frame mid"><iframe src="app/ideas.html" title="Ideas" loading="lazy"></iframe></div>
+ </div></section>
+
+ <section id="roadmap"><div class="wrap">
+  <span class="kicker" data-i="r_k"></span><h2 data-i="r_h"></h2>
+  <p class="lead"><b style="font-size:28px;color:var(--blue2)">56%</b> <span data-i="r_p"></span></p>
+  <div class="bar"><i></i></div>
+  <div class="road" id="road"></div>
+ </div></section>
+
+ <section id="game"><div class="wrap">
+  <span class="kicker" data-i="f_k"></span><h2 data-i="f_h"></h2>
+  <div class="feats" id="feats"></div>
+ </div></section>
+
+ <section id="watcher"><div class="wrap">
+  <div class="watch"><img src="assets/img/watcher.jpg" alt="" loading="lazy"><div><span class="pill">THE WATCHER</span><h2 data-i="w_h"></h2><p data-i="w_p"></p></div></div>
+ </div></section>
+
+ <section id="helper"><div class="wrap">
+  <span class="kicker" data-i="hp_k"></span><h2 data-i="hp_h"></h2>
+  <div class="frame mid"><iframe src="app/helper.html" title="ASER Helper" loading="lazy"></iframe></div>
+ </div></section>
+
+ <section id="community"><div class="wrap">
+  <span class="kicker" data-i="cm_k"></span><h2 data-i="cm_h"></h2>
+  <div class="cards">
+   <div class="card"><div class="ic" style="background:#eceeff"><svg viewBox="0 0 24 24" fill="#5865f2"><path d="M20 5.3A17 17 0 0 0 15.8 4l-.5 1a15 15 0 0 0-6.6 0l-.5-1A17 17 0 0 0 4 5.3C1.4 9.2.7 13 1 16.8A17 17 0 0 0 6.2 19.4l1.1-1.7a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 12 0l.4.3-1.7.8 1.1 1.7a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.2-3-11.5zM8.7 14.5c-1 0-1.9-.9-1.9-2s.8-2 1.9-2 1.9.9 1.9 2-.8 2-1.9 2zm6.6 0c-1 0-1.9-.9-1.9-2s.8-2 1.9-2 1.9.9 1.9 2-.8 2-1.9 2z"/></svg></div><h3 data-i="cm_d"></h3><p data-i="cm_dp"></p><a class="btn" style="background:#5865f2" href="https://discord.gg/zyqsh6mMw" target="_blank" rel="noopener" data-i="cm_db"></a></div>
+   <div class="card"><div class="ic" style="background:#ffecec"><svg viewBox="0 0 24 24" fill="#ff0000"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.8 15V9l5.7 3-5.7 3z"/></svg></div><h3 data-i="cm_y"></h3><p data-i="cm_yp"></p><a class="btn" style="background:#e11d1d" href="https://www.youtube.com/@aserahmed2345" target="_blank" rel="noopener" data-i="cm_yb"></a></div>
+  </div>
+ </div></section>
+</div>
+</main>
+<footer><div class="wrap"><span data-i="foot"></span></div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="key.js"></script>
+<script>// DINOSPEAR — shared account rules V01
+// - spaces anywhere in the name or password are ignored (removed) on sign-up AND sign-in
+// - names: any letters (Arabic or English), numbers and symbols except < >  (3–16 characters)
+// - passwords: anything, at least 8 characters (after removing spaces)
+// - confirmation popup before sign-out and before deleting the account
+(function () {
+  var DSA = {};
+  DSA.u = function (s) { return String(s || '').replace(/\s+/g, ''); };
+  DSA.p = function (s) { return String(s || '').replace(/\s+/g, ''); };
+  function utf8hex(s) {
+    var b = new TextEncoder().encode(s), h = '';
+    for (var i = 0; i < b.length; i++) h += ('0' + b[i].toString(16)).slice(-2);
+    return h;
+  }
+  // same mapping as before for every name that already exists (ASCII); UTF-8 for new Arabic names
+  DSA.mail = function (name, domain) {
+    var n = DSA.u(name).toLowerCase(), d = '@' + (domain || 'players.aserworld.com');
+    if (/^[a-z0-9_]+$/.test(n)) return n + d;
+    return 'u.' + utf8hex(n) + d;
+  };
+  DSA.ok = function (name) {
+    var n = DSA.u(name), len = Array.from(n).length;
+    if (len < 3 || len > 16) return false;
+    if (/[<>\u0000-\u001f\u007f]/.test(n)) return false;
+    return ('u.' + utf8hex(n.toLowerCase())).length <= 64;
+  };
+  DSA.pok = function (pass) { return DSA.p(pass).length >= 8; };
+  DSA.lang = function () { try { return localStorage.getItem('aser_lang') === 'en' ? 'en' : 'ar'; } catch (e) { return 'ar'; } };
+  DSA.t = function (en, ar) { return DSA.lang() === 'en' ? en : ar; };
+  DSA.urule = function () { return DSA.t('Name: 3 to 16 characters — Arabic or English letters, numbers and symbols. Spaces are ignored. Don\'t use your real name.', 'الاسم: من 3 لـ 16 — حروف عربي أو إنجليزي وأرقام ورموز. المسافات مش بتتحسب. ما تكتبش اسمك الحقيقي.'); };
+  DSA.prule = function () { return DSA.t('Password: at least 8 characters — anything. Spaces are ignored. A lost password can\'t be recovered.', 'الباسورد: 8 على الأقل — أي حروف وأرقام ورموز. المسافات مش بتتحسب. لو الباسورد ضاع مش هيرجع.'); };
+
+  // in-page confirm (never a browser popup)
+  var css = '.dsa-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;font-family:Cairo,system-ui,sans-serif}' +
+    '.dsa-card{background:#fff;color:#1e293b;border-radius:20px;max-width:380px;width:100%;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}' +
+    '.dsa-card h3{margin:0 0 8px;font-size:20px}.dsa-card p{margin:0 0 16px;color:#475569;line-height:1.7;font-size:15px}' +
+    '.dsa-row{display:flex;gap:10px;justify-content:center}.dsa-row button{flex:1;border:0;border-radius:12px;padding:12px;font:700 16px Cairo,system-ui,sans-serif;cursor:pointer}' +
+    '.dsa-no{background:#e2e8f0;color:#1e293b}.dsa-yes{background:#2563eb;color:#fff}.dsa-yes.danger{background:#dc2626}';
+  function addCss() { if (document.getElementById('dsa-css')) return; var s = document.createElement('style'); s.id = 'dsa-css'; s.textContent = css; document.head.appendChild(s); }
+  DSA.confirm = function (title, text, yes, danger) {
+    addCss();
+    return new Promise(function (res) {
+      var ov = document.createElement('div'); ov.className = 'dsa-ov';
+      ov.setAttribute('dir', DSA.lang() === 'en' ? 'ltr' : 'rtl');
+      var c = document.createElement('div'); c.className = 'dsa-card'; c.setAttribute('role', 'dialog'); c.setAttribute('aria-modal', 'true');
+      var h = document.createElement('h3'); h.textContent = title;
+      var p = document.createElement('p'); p.textContent = text;
+      var row = document.createElement('div'); row.className = 'dsa-row';
+      var bn = document.createElement('button'); bn.type = 'button'; bn.className = 'dsa-no'; bn.textContent = DSA.t('Cancel', 'لأ، رجوع');
+      var by = document.createElement('button'); by.type = 'button'; by.className = 'dsa-yes' + (danger ? ' danger' : ''); by.textContent = yes;
+      row.appendChild(bn); row.appendChild(by); c.appendChild(h); c.appendChild(p); c.appendChild(row); ov.appendChild(c);
+      var done = function (v) { ov.remove(); res(v); };
+      bn.onclick = function () { done(false); }; by.onclick = function () { done(true); };
+      ov.onclick = function (e) { if (e.target === ov) done(false); };
+      document.body.appendChild(ov); bn.focus();
+    });
+  };
+  DSA.confirmOut = function () { return DSA.confirm(DSA.t('Sign out?', 'تسجيل الخروج؟'), DSA.t('Are you sure you want to sign out of your account?', 'متأكد إنك عايز تسجل خروج من حسابك؟'), DSA.t('Yes, sign out', 'أيوه، سجّل خروج')); };
+  DSA.confirmDelete = function () { return DSA.confirm(DSA.t('Delete account?', 'حذف الحساب؟'), DSA.t('Are you sure? Your account, house and coins will be deleted forever and can\'t come back.', 'متأكد؟ حسابك وبيتك وفلوسك هيتمسحوا خالص ومش هيرجعوا تاني.'), DSA.t('Yes, delete it', 'أيوه، امسح حسابي'), true); };
+  window.DSA = DSA;
+})();
+</script>
+<script>// DINOSPEAR home V01 — sign-in gate + content + install app
+(function () {
+  'use strict';
+  var S = {
+    n_home: ['Home', 'الرئيسية'], n_video: ['Video', 'الفيديو'], t_k: ['Inside the app', 'جوه البرنامج'], t_h: ['TOWN DINOSPEAR 3D', 'المدينة ثلاثية الأبعاد'], t_p: ['Walk with your avatar, enter the houses, work and play — right here.', 'اتمشّى بالأفاتار بتاعك، وادخل البيوت، واشتغل والعب — هنا على طول.'], t_full: ['Full screen', 'الشاشة كلها'], v_k: ['Watch', 'اتفرج'], v_h: ['A tour of DINOSPEAR in 5 minutes', 'جولة في دينوسبير في 5 دقايق'], n_town: ['3D Town', 'المدينة 3D'], n_app: ['Chat & Chess', 'الشات والشطرنج'], n_demo: ['Demos', 'جرّب الألعاب'], n_ideas: ['Your ideas', 'أفكاركم'], n_road: ['Roadmap', 'التطوير'], n_game: ['The game', 'اللعبة'], n_helper: ['Helper', 'المساعد'], n_comm: ['Community', 'المجتمع'],
+    signin: ['Sign in', 'تسجيل الدخول'], signup: ['New account', 'حساب جديد'], signout: ['Sign out', 'تسجيل الخروج'],
+    uname: ['Username', 'اسم المستخدم'], pass: ['Password', 'الباسورد'], pass2: ['Repeat the password', 'اكتب الباسورد تاني'],
+    g_sub: ['Sign in to see the site, the 3D town, the chat, chess and the demos.', 'سجّل دخول عشان تشوف الموقع والمدينة 3D والشات والشطرنج والديمو.'],
+    g_note: ['Same account as the 3D town. Never share your password.', 'نفس حساب المدينة 3D. ما تقولش الباسورد بتاعك لحد.'],
+    h_pill: ['In development', 'قيد التطوير'], h_lead: ['An online world of blocks: eat power fruits, learn fighting styles, drive cars, rob the bank and explore the sea with your friends.', 'عالم أونلاين من المكعبات: كُل فواكه القوة، واتعلّم أساليب القتال، وسوق العربيات، واسرق البنك، واكتشف البحر مع صحابك.'],
+    h_by: ['Made by Aser Amro Ahmed', 'صناعة أسر عمرو أحمد'], c_town: ['Enter the 3D town', 'ادخل المدينة 3D'], c_demo: ['Try the demos', 'جرّب الديمو'], install: ['Install the app', 'نزّل التطبيق'],
+    a_k: ['Your account', 'حسابك'], a_h: ['Streak, chat and chess', 'الستريك والشات والشطرنج'], a_p: ['Your streak, the WhatsApp-style chat with your 7-digit ID, chess and the guide — all in one place.', 'الستريك بتاعك، والشات زي واتساب بالـ ID بتاعك (7 أرقام)، والشطرنج، والشرح — في مكان واحد.'],
+    i_k: ['Vote', 'صوّت'], i_h: ['Your ideas and game names', 'أفكاركم وأسامي اللعبة'],
+    r_k: ['The road to release', 'الطريق لنزول اللعبة'], r_h: ['The game is coming', 'اللعبة جاية'], r_p: ['of development done', 'اكتمل من التطوير'],
+    f_k: ['The game', 'اللعبة'], f_h: ['A whole world waiting for you', 'عالم كامل مستنّيك'],
+    w_h: ['Something is watching you', 'في حاجة بتراقبك'], w_p: ['Something is looking for you…', 'في حاجة بتدوّر عليك…'],
+    hp_k: ['Questions?', 'عندك سؤال؟'], hp_h: ['ASER Helper', 'المساعد'],
+    cm_k: ['Community', 'المجتمع'], cm_h: ['Be part of the story', 'خليك جزء من الحكاية'], cm_d: ['Discord', 'الديسكورد'], cm_dp: ['Game news, your friends, support, and the first chance to play.', 'أخبار اللعبة، وصحابك، والدعم، وأول فرصة للعب.'], cm_db: ['Join the Discord', 'ادخل الديسكورد'],
+    cm_y: ['YouTube', 'اليوتيوب'], cm_yp: ['Game videos and behind the scenes.', 'فيديوهات اللعبة وكواليس التطوير.'], cm_yb: ['Subscribe', 'اشترك في القناة'],
+    foot: ['DINOSPEAR · ASER WORLD · Made by Aser Amro Ahmed · Support on Discord only', 'DINOSPEAR · ASER WORLD · صناعة أسر عمرو أحمد · الدعم على الديسكورد بس'],
+  };
+  var ROAD = [['Power fruits and fighting styles', 'فواكه القوة وأساليب القتال', 1], ['Cars, races and the bank heist', 'العربيات والسباقات وسرقة البنك', 1], ['The sea, caves and the workshop', 'البحر والكهوف والورشة', 1], ['English and Arabic', 'الإنجليزي والعربي', 1], ['The game website', 'موقع اللعبة', 1], ['The game name — players decide', 'اسم اللعبة — اللاعيبة بيقرروا', 2], ['Online server for everyone', 'سيرفر أونلاين للكل', 0], ['Mobile version', 'نسخة الموبايل', 0], ['Release day!', 'يوم نزول اللعبة!', 0]];
+  var FEATS = [['fruit', 'Power fruits', 'فواكه القوة', 'Every fruit unlocks a different power.', 'كل فاكهة بتفتح قوة مختلفة.'], ['world', 'Fighting styles', 'أساليب القتال', 'Learn and mix your style with your power.', 'اتعلّم وامزج أسلوبك مع قوتك.'], ['cars', 'Cars', 'العربيات', 'Drive around the city with your friends.', 'لفّ المدينة بعربيتك مع صحابك.'], ['races', 'Races', 'السباقات', 'Race your friends on 4 tracks.', 'اتسابق مع صحابك على 4 حلبات.'], ['heist', 'Bank heist', 'سرقة البنك', 'Plan the heist with your team.', 'خطّط للسرقة مع فريقك.'], ['sea', 'The sea', 'البحر', 'Adventures beyond the city shore.', 'مغامرات أبعد من شط المدينة.'], ['caves', 'The caves', 'الكهوف', 'Find what hides in the dark.', 'اكتشف اللي مستخبي في الضلمة.'], ['workshop', 'The workshop', 'الورشة', 'Craft new things for your world.', 'اصنع حاجات جديدة لعالمك.']];
+
+  var lang = DSA.lang(), $ = function (id) { return document.getElementById(id); };
+  var t = function (k) { var s = S[k]; return s ? s[lang === 'en' ? 0 : 1] : k; };
+  function applyLang() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'en' ? 'ltr' : 'rtl';
+    document.querySelectorAll('[data-i]').forEach(function (el) { el.textContent = t(el.dataset.i); });
+    document.querySelectorAll('.lang button').forEach(function (b) { b.classList.toggle('on', b.dataset.l === lang); });
+    $('urule').textContent = DSA.urule(); $('prule').textContent = DSA.prule();
+    $('aBtn').textContent = mode === 'up' ? t('signup') : t('signin');
+    var L = lang === 'en' ? 0 : 1;
+    $('road').innerHTML = '';
+    ROAD.forEach(function (r, i) {
+      var d = document.createElement('div'); d.className = 'step';
+      var b = document.createElement('b'); b.textContent = String(i + 1).padStart(2, '0');
+      var s = document.createElement('span'); s.textContent = r[L];
+      var e = document.createElement('em'); e.className = r[2] === 1 ? '' : r[2] === 2 ? 'vote' : 'soon';
+      e.textContent = r[2] === 1 ? (L ? 'تمّ الإنجاز' : 'Done') : r[2] === 2 ? (L ? 'دورك تختار' : 'Your vote') : (L ? 'قريبًا' : 'Soon');
+      d.appendChild(b); d.appendChild(s); d.appendChild(e); $('road').appendChild(d);
+    });
+    $('feats').innerHTML = '';
+    FEATS.forEach(function (f) {
+      var d = document.createElement('div'); d.className = 'feat';
+      var im = document.createElement('img'); im.src = 'assets/img/' + f[0] + '.jpg'; im.alt = ''; im.loading = 'lazy';
+      var c = document.createElement('div'); var h = document.createElement('h3'); h.textContent = f[1 + L]; var p = document.createElement('p'); p.textContent = f[3 + L];
+      c.appendChild(h); c.appendChild(p); d.appendChild(im); d.appendChild(c); $('feats').appendChild(d);
+    });
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) {
+    b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); };
+  });
+
+  // ---------- Supabase ----------
+  var URL = 'https://djpgranztcqxyfehynux.supabase.co', DOMAIN = 'players.aserworld.com';
+  var sb = (window.supabase && window.ASER_KEY) ? window.supabase.createClient(URL, window.ASER_KEY, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
+  var mode = 'in', busy = false;
+  function setMode(m) {
+    mode = m; $('tIn').setAttribute('aria-selected', m === 'in'); $('tUp').setAttribute('aria-selected', m === 'up');
+    $('p2box').hidden = m !== 'up'; $('pass').autocomplete = m === 'up' ? 'new-password' : 'current-password';
+    $('aBtn').textContent = m === 'up' ? t('signup') : t('signin'); status('');
+  }
+  $('tIn').onclick = function () { setMode('in'); }; $('tUp').onclick = function () { setMode('up'); };
+  function status(msg, cls) { var s = $('ast'); s.textContent = msg || ''; s.className = 'status' + (cls ? ' ' + cls : ''); }
+  function errText(e) {
+    var m = (e && (e.message || e.code)) || '';
+    if (/USERNAME_TAKEN|already registered|already been registered|User already/i.test(m)) return DSA.t('This name is taken — pick another one.', 'الاسم ده متاخد — اختار اسم تاني.');
+    if (/Invalid login credentials/i.test(m)) return DSA.t('Wrong name or password. (Spaces don\'t matter.)', 'الاسم أو الباسورد غلط. (المسافات مش بتفرق.)');
+    if (/rate|too many/i.test(m)) return DSA.t('Too many tries — wait a minute and try again.', 'محاولات كتير — استنى دقيقة وجرّب تاني.');
+    if (/Failed to fetch|NetworkError|network/i.test(m)) return DSA.t('No internet connection to the server — try again.', 'مفيش اتصال بالسيرفر — جرّب تاني.');
+    return DSA.t('Something went wrong: ', 'حصلت مشكلة: ') + m;
+  }
+  $('aForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    if (!sb) return status(DSA.t('Can\'t reach the server right now.', 'مش قادرين نوصل للسيرفر دلوقتي.'), 'err');
+    var n = DSA.u($('uname').value), p = DSA.p($('pass').value);
+    if (!DSA.ok(n)) return status(DSA.urule(), 'err');
+    if (p.length < 8) return status(DSA.prule(), 'err');
+    if (mode === 'up' && p !== DSA.p($('pass2').value)) return status(DSA.t('The two passwords are not the same.', 'الباسوردين مش زي بعض.'), 'err');
+    if (busy) return; busy = true; $('aBtn').disabled = true; status(DSA.t('Loading…', 'بنحمّل…'));
+    var email = DSA.mail(n, DOMAIN);
+    var job = mode === 'up'
+      ? sb.rpc('username_available', { p_username: n }).then(function (r) { if (r.error) throw r.error; if (!r.data) throw { message: 'USERNAME_TAKEN' }; return sb.auth.signUp({ email: email, password: p, options: { data: { username: n } } }); })
+      : sb.auth.signInWithPassword({ email: email, password: p });
+    job.then(function (r) { if (r.error) throw r.error; $('pass').value = ''; $('pass2').value = ''; status(''); })
+      .catch(function (e) { status(errText(e), 'err'); })
+      .then(function () { busy = false; $('aBtn').disabled = false; });
+  });
+  function show(user) {
+    var on = !!user;
+    $('gate').hidden = on; $('site').hidden = !on; $('nav').hidden = !on; $('outBtn').hidden = !on;
+    var nm = on ? ((user.user_metadata && user.user_metadata.username) || '') : '';
+    $('who').textContent = nm;
+  }
+  $('outBtn').onclick = function () { DSA.confirmOut().then(function (ok) { if (ok && sb) sb.auth.signOut().then(function () { show(null); scrollTo(0, 0); }); }); };
+  if (sb) {
+    sb.auth.getSession().then(function (r) { show(r.data && r.data.session ? r.data.session.user : null); });
+    sb.auth.onAuthStateChange(function (_e, s) { show(s ? s.user : null); });
+  } else show(null);
+
+  $('townFull').onclick = function () { var f = $('townFrame'); (f.requestFullscreen || f.webkitRequestFullscreen || function () { location.href = 'town/'; }).call(f); };
+  // ---------- install as an app (PWA) ----------
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; $('installBtn').hidden = false; });
+  $('installBtn').onclick = function () { if (deferred) { deferred.prompt(); deferred = null; $('installBtn').hidden = true; } };
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+
+  setMode('in'); applyLang();
+})();
+</script>
 </body>
 </html>
