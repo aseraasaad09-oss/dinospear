@@ -1,0 +1,203 @@
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            :root {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+
+            * {
+                box-sizing: border-box;
+                -webkit-font-smoothing: inherit;
+            }
+
+            h1, h2, h3, h4, h5, h6, p, figure {
+                margin: 0;
+            }
+
+            body, input, textarea, select, button {
+                font-size: 12px;
+                font-family: sans-serif;
+            }
+        </style>
+    <style id="ds-theme">:root{--night:#1f2f5c;--deep:#283f78;--panel:#30498a;--line:#5571bd;--text:#f6f8ff;--muted:#d0d9f3;color-scheme:dark}</style><link rel="manifest" href="../manifest.webmanifest"></head>
+    <body>
+        <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ideas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800&amp;family=Lalezar&amp;display=swap" rel="stylesheet">
+<style>
+:root{--night:#060a1a;--deep:#0b1330;--panel:#111c40;--line:#24336b;--gold:#ffd040;--ink:#3a2a00;--ice:#7fe3ff;--text:#eef2ff;--muted:#a9b4d6;--ok:#57e389;--bad:#ff4b5c;--r:16px;--disp:"Lalezar","Cairo",system-ui,sans-serif;--body:"Cairo",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{background:var(--night);color:var(--text);font:600 16px/1.55 var(--body);overflow-x:hidden}
+[hidden]{display:none!important}button{font-family:inherit}
+.app{width:100%;max-width:1200px;margin:0 auto;padding:22px 16px;display:flex;flex-direction:column;gap:14px;height:100%}
+.kicker{font-size:13px;letter-spacing:3px;color:var(--ice);font-weight:800}
+h2{font-family:var(--disp);font-weight:400;font-size:clamp(30px,5vw,52px);line-height:1.05;margin:2px 0;color:var(--gold);text-shadow:0 4px 0 rgba(107,74,0,.55)}
+.sub{color:var(--muted);margin:0;max-width:70ch}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;flex:1;min-height:0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px;min-height:0}
+.box h3{font-family:var(--disp);font-weight:400;font-size:28px;color:var(--gold);margin:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--deep);padding:5px;border-radius:12px}
+.seg3{grid-template-columns:repeat(3,1fr)}
+.seg button{border:0;border-radius:9px;min-height:44px;font-weight:800;font-size:15px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--gold);color:var(--ink)}
+.composer{display:grid;gap:10px;background:var(--deep);border:2px solid var(--line);border-radius:16px;padding:12px;transition:border-color .2s,box-shadow .2s}
+.composer:focus-within{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,208,64,.12)}
+.composer textarea{width:100%;resize:none;background:transparent;border:0;color:var(--text);font:600 17px/1.6 var(--body);padding:6px 4px;min-height:96px;outline:none}
+.composer textarea::placeholder{color:#7d89b3}
+.crow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:11px 22px;min-height:46px;font-weight:800;font-size:16px;cursor:pointer;background:var(--gold);color:var(--ink);box-shadow:0 4px 0 #a07800}
+.btn:disabled{opacity:.5;cursor:default}
+.small{font-size:13px;color:var(--muted)}
+.need{background:#2a2200;color:var(--gold);border:1px dashed var(--gold);border-radius:12px;padding:12px;font-weight:800;margin:0}
+.status{font-weight:800;font-size:14px}.status:empty{display:none}.status.err{color:var(--bad)}.status.ok{color:var(--ok)}
+.rules{margin:0;padding-inline-start:18px;display:grid;gap:4px;color:var(--muted);font-size:14px}
+.chosen{display:grid;gap:8px;overflow:auto;flex:1;min-height:0;align-content:start}
+.chosen .post{border-color:var(--gold)}
+.list{display:grid;gap:10px;overflow:auto;flex:1;min-height:0;align-content:start;padding-inline-end:4px}
+.post{background:var(--deep);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:6px}
+.post.yes{border-color:var(--gold);box-shadow:inset -4px 0 0 var(--gold)}[dir=ltr] .post.yes{box-shadow:inset 4px 0 0 var(--gold)}
+.post.exists{border-color:var(--ok)}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--ice),#4a6cff);color:#04122b;font-weight:800;font-size:14px;flex:none}
+.mark{margin-inline-start:auto;font-size:12px;font-weight:800;color:var(--gold);background:#2a2200;border-radius:99px;padding:2px 10px}
+.mark.exists{color:var(--ok);background:#0d2a1a}.mark.maybe{color:var(--ice);background:#0d2236}
+.post p{margin:0;overflow-wrap:anywhere;font-size:16px}
+.post.name p{font-family:var(--disp);font-size:24px;letter-spacing:.5px}
+.bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.like{background:transparent;border:2px solid var(--line);color:var(--text);border-radius:99px;min-height:40px;padding:0 14px;font-weight:800;font-size:15px;cursor:pointer}
+.like.on{border-color:#ff4d6d}
+.adm{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:99px;min-height:34px;padding:0 10px;font-weight:800;font-size:12px;cursor:pointer}
+.adm.on{border-color:var(--gold);color:var(--gold)}
+.empty{text-align:center;padding:24px;color:var(--muted)}
+@media (min-width:821px) and (max-width:1199px){body{font-size:18px}.grid{grid-template-columns:1fr}.box h3{font-size:32px}.btn,.seg button{min-height:54px;font-size:18px}.composer textarea{font-size:19px}.post p{font-size:18px}.list,.chosen{max-height:none;overflow:visible}}
+@media (max-width:820px){.app{padding:14px 12px;height:auto}h2{font-size:clamp(26px,8.5vw,34px)}.sub{font-size:14px}.grid{grid-template-columns:1fr;gap:10px}.box{padding:12px}.box h3{font-size:22px}.seg button{font-size:13px;min-height:42px}.composer textarea{font-size:16px;min-height:80px}.btn{font-size:15px;padding:10px 16px}.list{max-height:560px;overflow:auto}.chosen{max-height:240px;overflow:auto}.post p{font-size:15px}.post.name p{font-size:20px}}
+</style>
+<main class="app">
+<header><span class="kicker" data-t="k">اللاعيبة بيقرروا</span><h2 data-t="h">أفكاركم وأسامي اللعبة</h2><p class="sub" data-t="d">اكتب فكرة للعبة أو اسم ليها، ودوس ❤️ على اللي بيعجبك. الأكتر لايكات بيطلع فوق.</p></header>
+<div class="grid">
+<section class="box">
+<h3 data-t="hw">قول رأيك</h3>
+<p class="need" id="need" data-t="need" hidden="">اعمل حساب في المدينة الأول، وبعدين تقدر تكتب وتعمل لايك.</p>
+<form class="composer" id="form" novalidate="">
+<div class="seg" role="group"><button type="button" id="kIdea" aria-pressed="true">💡 <span data-t="idea">فكرة</span></button><button type="button" id="kName" aria-pressed="false">🏷️ <span data-t="name">اسم للعبة</span></button></div>
+<label for="txt" class="small" data-t="lbl">اكتب هنا</label>
+<textarea id="txt" rows="3" maxlength="280" placeholder="مثال: فاكهة تخليك تطير…"></textarea>
+<div class="crow"><span class="small" id="cnt">0 / 280</span><button class="btn" type="submit" id="post"><span data-t="send">انشر</span> ➤</button></div>
+</form>
+<div class="status" id="st" role="status"></div>
+<ul class="rules"><li data-t="r1">عربي أو إنجليزي بس.</li><li data-t="r2">لحد 5 أفكار و3 أسامي في اليوم.</li><li data-t="r3">الأدمن بيعلّم على الأفكار اللي هتدخل اللعبة ⭐.</li></ul>
+<h3 data-t="hc">⭐ الأدمن اختارها</h3>
+<div class="chosen" id="chosen"><article class="post idea yes"><div class="top"><span class="av">A</span><b>Aserboss</b><span class="mark yes">⭐ الأدمن اختارها</span></div><p dir="auto">there is events every month or weak</p><div class="bar"><button class="like" type="button">🤍 0</button><button class="adm on" type="button" title="⭐ الأدمن اختارها">⭐</button><button class="adm" type="button" title="🤔 يمكن">🤔</button><button class="adm" type="button" title="✅ موجودة في اللعبة">✅</button><button class="adm" type="button" title="شيل العلامة">✕</button></div></article></div>
+</section>
+<section class="box">
+<div class="seg seg3" role="group"><button type="button" data-k="idea" aria-pressed="true">💡 <span data-t="ideas">الأفكار</span></button><button type="button" data-k="name" aria-pressed="false">🏷️ <span data-t="names">الأسامي</span></button><button type="button" data-k="new" aria-pressed="false">🕒 <span data-t="newest">الأحدث</span></button></div>
+<div class="list" id="list" aria-live="polite"><article class="post idea"><div class="top"><span class="av">A</span><b>Aserboss</b></div><p dir="auto">wwwww</p><div class="bar"><button class="like on" type="button">❤️ 1</button><button class="adm" type="button" title="⭐ الأدمن اختارها">⭐</button><button class="adm" type="button" title="🤔 يمكن">🤔</button><button class="adm" type="button" title="✅ موجودة في اللعبة">✅</button><button class="adm on" type="button" title="شيل العلامة">✕</button></div></article><article class="post idea"><div class="top"><span class="av">S</span><b>saadamro</b></div><p dir="auto">أنا محتار لكن هفكر في فكرة جامدة</p><div class="bar"><button class="like" type="button">🤍 0</button><button class="adm" type="button" title="⭐ الأدمن اختارها">⭐</button><button class="adm" type="button" title="🤔 يمكن">🤔</button><button class="adm" type="button" title="✅ موجودة في اللعبة">✅</button><button class="adm on" type="button" title="شيل العلامة">✕</button></div></article><article class="post idea yes"><div class="top"><span class="av">A</span><b>Aserboss</b><span class="mark yes">⭐ الأدمن اختارها</span></div><p dir="auto">there is events every month or weak</p><div class="bar"><button class="like" type="button">🤍 0</button><button class="adm on" type="button" title="⭐ الأدمن اختارها">⭐</button><button class="adm" type="button" title="🤔 يمكن">🤔</button><button class="adm" type="button" title="✅ موجودة في اللعبة">✅</button><button class="adm" type="button" title="شيل العلامة">✕</button></div></article></div>
+</section>
+</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="../key.js"></script><script>// DINOSPEAR — shared account rules V01
+// - spaces anywhere in the name or password are ignored (removed) on sign-up AND sign-in
+// - names: any letters (Arabic or English), numbers and symbols except < >  (3–16 characters)
+// - passwords: anything, at least 8 characters (after removing spaces)
+// - confirmation popup before sign-out and before deleting the account
+(function () {
+  var DSA = {};
+  DSA.u = function (s) { return String(s || '').replace(/\s+/g, ''); };
+  DSA.p = function (s) { return String(s || '').replace(/\s+/g, ''); };
+  function utf8hex(s) {
+    var b = new TextEncoder().encode(s), h = '';
+    for (var i = 0; i < b.length; i++) h += ('0' + b[i].toString(16)).slice(-2);
+    return h;
+  }
+  // same mapping as before for every name that already exists (ASCII); UTF-8 for new Arabic names
+  DSA.mail = function (name, domain) {
+    var n = DSA.u(name).toLowerCase(), d = '@' + (domain || 'players.aserworld.com');
+    if (/^[a-z0-9_]+$/.test(n)) return n + d;
+    return 'u.' + utf8hex(n) + d;
+  };
+  DSA.ok = function (name) {
+    var n = DSA.u(name), len = Array.from(n).length;
+    if (len < 3 || len > 16) return false;
+    if (/[<>\u0000-\u001f\u007f]/.test(n)) return false;
+    return ('u.' + utf8hex(n.toLowerCase())).length <= 64;
+  };
+  DSA.pok = function (pass) { return DSA.p(pass).length >= 8; };
+  DSA.lang = function () { try { return localStorage.getItem('aser_lang') === 'en' ? 'en' : 'ar'; } catch (e) { return 'ar'; } };
+  DSA.t = function (en, ar) { return DSA.lang() === 'en' ? en : ar; };
+  DSA.urule = function () { return DSA.t('Name: 3 to 16 characters — Arabic or English letters, numbers and symbols. Spaces are ignored. Don\'t use your real name.', 'الاسم: من 3 لـ 16 — حروف عربي أو إنجليزي وأرقام ورموز. المسافات مش بتتحسب. ما تكتبش اسمك الحقيقي.'); };
+  DSA.prule = function () { return DSA.t('Password: at least 8 characters — anything. Spaces are ignored. A lost password can\'t be recovered.', 'الباسورد: 8 على الأقل — أي حروف وأرقام ورموز. المسافات مش بتتحسب. لو الباسورد ضاع مش هيرجع.'); };
+
+  // in-page confirm (never a browser popup)
+  var css = '.dsa-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;font-family:Cairo,system-ui,sans-serif}' +
+    '.dsa-card{background:#fff;color:#1e293b;border-radius:20px;max-width:380px;width:100%;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}' +
+    '.dsa-card h3{margin:0 0 8px;font-size:20px}.dsa-card p{margin:0 0 16px;color:#475569;line-height:1.7;font-size:15px}' +
+    '.dsa-row{display:flex;gap:10px;justify-content:center}.dsa-row button{flex:1;border:0;border-radius:12px;padding:12px;font:700 16px Cairo,system-ui,sans-serif;cursor:pointer}' +
+    '.dsa-no{background:#e2e8f0;color:#1e293b}.dsa-yes{background:#2563eb;color:#fff}.dsa-yes.danger{background:#dc2626}';
+  function addCss() { if (document.getElementById('dsa-css')) return; var s = document.createElement('style'); s.id = 'dsa-css'; s.textContent = css; document.head.appendChild(s); }
+  DSA.confirm = function (title, text, yes, danger) {
+    addCss();
+    return new Promise(function (res) {
+      var ov = document.createElement('div'); ov.className = 'dsa-ov';
+      ov.setAttribute('dir', DSA.lang() === 'en' ? 'ltr' : 'rtl');
+      var c = document.createElement('div'); c.className = 'dsa-card'; c.setAttribute('role', 'dialog'); c.setAttribute('aria-modal', 'true');
+      var h = document.createElement('h3'); h.textContent = title;
+      var p = document.createElement('p'); p.textContent = text;
+      var row = document.createElement('div'); row.className = 'dsa-row';
+      var bn = document.createElement('button'); bn.type = 'button'; bn.className = 'dsa-no'; bn.textContent = DSA.t('Cancel', 'لأ، رجوع');
+      var by = document.createElement('button'); by.type = 'button'; by.className = 'dsa-yes' + (danger ? ' danger' : ''); by.textContent = yes;
+      row.appendChild(bn); row.appendChild(by); c.appendChild(h); c.appendChild(p); c.appendChild(row); ov.appendChild(c);
+      var done = function (v) { ov.remove(); res(v); };
+      bn.onclick = function () { done(false); }; by.onclick = function () { done(true); };
+      ov.onclick = function (e) { if (e.target === ov) done(false); };
+      document.body.appendChild(ov); bn.focus();
+    });
+  };
+  DSA.confirmOut = function () { return DSA.confirm(DSA.t('Sign out?', 'تسجيل الخروج؟'), DSA.t('Are you sure you want to sign out of your account?', 'متأكد إنك عايز تسجل خروج من حسابك؟'), DSA.t('Yes, sign out', 'أيوه، سجّل خروج')); };
+  DSA.confirmDelete = function () { return DSA.confirm(DSA.t('Delete account?', 'حذف الحساب؟'), DSA.t('Are you sure? Your account, house and coins will be deleted forever and can\'t come back.', 'متأكد؟ حسابك وبيتك وفلوسك هيتمسحوا خالص ومش هيرجعوا تاني.'), DSA.t('Yes, delete it', 'أيوه، امسح حسابي'), true); };
+  window.DSA = DSA;
+})();
+</script><script>window.ASER={SUPABASE_URL:"https://djpgranztcqxyfehynux.supabase.co",SUPABASE_ANON_KEY:(window.ASER_KEY||""),ACCOUNT_DOMAIN:"players.aserworld.com"}</script>
+<script>!function(){"use strict";var e=window.ASER||{},t=function(e){return document.getElementById(e)},n="ar";try{n=localStorage.getItem("aser_lang")||"ar"}catch(e){}var a="ar"===n;function i(e,t){return a?t:e}function r(e,t,n){var a=document.createElement(e);return t&&(a.className=t),null!=n&&(a.textContent=n),a}var o={k:i("Players decide","اللاعيبة بيقرروا"),h:i("Ideas & game names","أفكاركم وأسامي اللعبة"),d:i("Write an idea for the game or a name for it, and tap ❤️ on the ones you like. Most liked first.","اكتب فكرة للعبة أو اسم ليها، ودوس ❤️ على اللي بيعجبك. الأكتر لايكات بيطلع فوق."),hw:i("Share your opinion","قول رأيك"),need:i("Make an account in the city first, then you can post and like.","اعمل حساب في المدينة الأول، وبعدين تقدر تكتب وتعمل لايك."),idea:i("Idea","فكرة"),name:i("Game name","اسم للعبة"),lbl:i("Your text","اكتب هنا"),send:i("Post","انشر"),r1:i("Arabic or English only.","عربي أو إنجليزي بس."),r2:i("Up to 5 ideas and 3 names a day.","لحد 5 أفكار و3 أسامي في اليوم."),r3:i("The admin marks the ideas that go into the game ⭐.","الأدمن بيعلّم على الأفكار اللي هتدخل اللعبة ⭐."),hc:i("⭐ Admin Chose","⭐ الأدمن اختارها"),ideas:i("Ideas","الأفكار"),names:i("Names","الأسامي"),newest:i("Newest","الأحدث")},s={yes:i("⭐ ADMIN CHOSE","⭐ الأدمن اختارها"),maybe:i("🤔 MAYBE","🤔 يمكن"),exists:i("✅ IN THE GAME","✅ موجودة في اللعبة")};document.documentElement.lang=n,document.documentElement.dir=a?"rtl":"ltr";for(var d=document.querySelectorAll("[data-t]"),u=0;u<d.length;u++){var l=d[u].getAttribute("data-t");null!=o[l]&&(d[u].textContent=o[l])}var c=!!(e.SUPABASE_URL&&e.SUPABASE_ANON_KEY&&window.supabase),p=c?window.supabase.createClient(e.SUPABASE_URL,e.SUPABASE_ANON_KEY,{auth:{persistSession:!0,autoRefreshToken:!0}}):null,m=null,h=!1,f="idea",k="idea",g=!1,A={idea:[],name:[]};function E(e,n){t("st").textContent=e||"",t("st").className="status"+(n?" "+n:"")}function y(e){f=e,t("kIdea").setAttribute("aria-pressed","idea"===e),t("kName").setAttribute("aria-pressed","name"===e);var n=t("txt");n.maxLength="idea"===e?280:24,n.rows="idea"===e?3:1,n.style.minHeight="idea"===e?"":"52px",n.placeholder="idea"===e?i("Example: a fruit that lets you fly…","مثال: فاكهة تخليك تطير…"):i("Example: DINO SPEAR","مثال: DINO SPEAR"),b()}function b(){t("cnt").textContent=t("txt").value.length+" / "+t("txt").maxLength}function v(e){k=e;for(var t=document.querySelectorAll("[data-k]"),n=0;n<t.length;n++)t[n].setAttribute("aria-pressed",t[n].getAttribute("data-k")===e);N()}t("kIdea").onclick=function(){y("idea")},t("kName").onclick=function(){y("name")},t("txt").addEventListener("input",b),t("form").addEventListener("submit",(function(e){e.preventDefault();var n=t("txt").value.replace(/\s+/g," ").trim();n&&!g&&c&&(g=!0,t("post").disabled=!0,p.rpc("add_post",{p_kind:f,p_body:n}).then((function(e){var n,a;(g=!1,t("post").disabled=!1,e.error)?E((n=e.error,a=n&&(n.message||n.code)||"",/LIMIT/.test(a)?i("You reached today's limit. Come back tomorrow.","خلّصت عدد النهارده. تعالى بكرة."):/EXISTS/.test(a)?i("This name is already there.","الاسم ده موجود خلاص."):/BAD_NAME/.test(a)?i("Names: 2 to 24 letters or numbers.","الاسم: من 2 لـ 24 حرف أو رقم."):/BAD_IDEA/.test(a)?i("Ideas: 5 to 280 letters, no < or >.","الفكرة: من 5 لـ 280 حرف ومن غير < أو >."):/BAD_LANG/.test(a)?i("Arabic or English only.","عربي أو إنجليزي بس."):/LOGIN/.test(a)?o.need:i("Something went wrong. Try again.","حصلت مشكلة. جرّب تاني.")),"err"):(t("txt").value="",b(),E(i("Posted! 🎉","اتنشرت! 🎉"),"ok"),v(f),_())})))}));var S=document.querySelectorAll("[data-k]");for(u=0;u<S.length;u++)S[u].onclick=function(e){v(e.currentTarget.getAttribute("data-k"))};function _(){c&&Promise.all([p.rpc("board",{p_kind:"idea"}),p.rpc("board",{p_kind:"name"})]).then((function(e){A.idea=(e[0].data||[]).map((function(e){return e.kind="idea",e})),A.name=(e[1].data||[]).map((function(e){return e.kind="name",e})),N()}))}function C(e){var t=r("article","post "+e.kind+(e.status&&"new"!==e.status?" "+e.status:"")),n=r("div","top");n.appendChild(r("span","av",String(e.author||"?").slice(0,1).toUpperCase())),n.appendChild(r("b",null,e.author)),s[e.status]&&n.appendChild(r("span","mark "+e.status,s[e.status]));var a=r("p",null,e.body);a.dir="auto";var d=r("div","bar"),u=r("button","like"+(e.liked?" on":""),(e.liked?"❤️ ":"🤍 ")+e.likes);return u.type="button",u.onclick=function(){m?p.rpc("toggle_like",{p_post:e.id}).then((function(e){e.error||_()})):E(o.need,"err")},d.appendChild(u),h&&[["yes","⭐"],["maybe","🤔"],["exists","✅"],["new","✕"]].forEach((function(t){var n=r("button","adm"+(e.status===t[0]?" on":""),t[1]);n.type="button",n.title=s[t[0]]||i("Remove mark","شيل العلامة"),n.onclick=function(){p.rpc("admin_set_status",{p_post:e.id,p_status:t[0]}).then(_)},d.appendChild(n)})),t.appendChild(n),t.appendChild(a),t.appendChild(d),t}function N(){var e=A.idea.concat(A.name),n="new"===k?e.slice().sort((function(e,t){return new Date(t.created_at)-new Date(e.created_at)})):A[k].slice().sort((function(e,t){return t.likes-e.likes})),a=t("list");a.innerHTML="",n.length||a.appendChild(r("p","empty",i("Nothing here yet. Be the first! ✍️","لسه مفيش حاجة هنا. كن أول واحد! ✍️"))),n.forEach((function(e){a.appendChild(C(e))}));var o=e.filter((function(e){return"yes"===e.status})),s=t("chosen");s.innerHTML="",o.length||s.appendChild(r("p","small",i("Soon: the admin will pick the best ideas.","قريب: الأدمن هيختار أحسن الأفكار."))),o.forEach((function(e){s.appendChild(C(e))}))}function I(e){m=e||null,t("need").hidden=!!m,t("form").hidden=!m,h=!1,m&&p.rpc("is_admin").then((function(e){h=!!e.data,N()})),_()}y("idea"),N(),c&&(p.auth.getSession().then((function(e){I(e.data&&e.data.session?e.data.session.user:null)})),p.auth.onAuthStateChange((function(e,t){"SIGNED_IN"!==e&&"SIGNED_OUT"!==e||I(t?t.user:null)})),setInterval((function(){document.hidden||_()}),3e4))}();</script>
+
+
+        <script type="module">
+            let height = 0
+
+            function sendEmbedHeight() {
+                window.parent.postMessage({
+                    embedHeight: height
+                }, "*")
+            }
+
+            const observer = new ResizeObserver((entries) => {
+                if (entries.length !== 1) return
+                const entry = entries[0]
+                if (entry.target !== document.body) return
+
+                height = entry.contentRect.height
+                sendEmbedHeight()
+            })
+
+            observer.observe(document.body)
+
+            window.addEventListener("message", (event) => {
+                if (event.source !== window.parent) return
+                if (event.data !== "getEmbedHeight") return
+                sendEmbedHeight()
+            })
+        </script>
+    
+
+</body></html>
