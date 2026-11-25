@@ -1,6 +1,12 @@
 {
-  "v": "V10",
+  "v": "V11",
   "date": "2026-11-25",
-  "ar": ["تحديثات البرنامج بقت من جوّه البرنامج نفسه — زرار «حدّث دلوقتي»", "لعبة الزومبي: 3 مراحل بقصة", "لعبة الاستغماية: دوّر أو استخبى", "قايمة «ألعاب البرنامج» فيها كل الألعاب"],
-  "en": ["Updates now happen inside the app — one tap on “Update now”", "Zombie Lab: 3 story levels", "Hide & Seek: seek or hide", "“App games” menu with every game"]
+  "ar": [
+    "كل لعبة على الموبايل بتسألك: تقلب الشاشة بالعرض ولا تسيبها",
+    "التحديثات بقت من جوّه البرنامج بزرار واحد"
+  ],
+  "en": [
+    "Every game on phones asks: turn the screen sideways or keep it",
+    "Updates now happen inside the app with one tap"
+  ]
 }
