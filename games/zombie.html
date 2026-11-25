@@ -3,11 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0b1020">
-<title>ZOMBIE LAB — DINOSPEAR V01</title>
+<meta name="theme-color" content="#1a0b07">
+<title>ZOMBIE MARS — DINOSPEAR V02</title>
 <link rel="stylesheet" href="ui.css">
 <script src="../assets/js/rotate.js" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+<style>
+#story{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:18px;touch-action:manipulation}
+#story[hidden]{display:none}
+#story svg.scene{width:min(92vw,680px);height:auto;max-height:58vh;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#story .cap{max-width:640px;text-align:center;font-size:clamp(16px,2.4vw,20px);line-height:1.7;font-weight:700;min-height:3.4em}
+#story .nav{display:flex;gap:10px}
+#story .dots{display:flex;gap:6px}#story .dots i{width:9px;height:9px;border-radius:50%;background:#334155}#story .dots i.on{background:#f97316}
+.flash{animation:fl .9s ease-out}@keyframes fl{0%{filter:brightness(4)}100%{filter:none}}
+#arrowTip svg{width:18px;height:18px}
+#saved{position:fixed;top:62px;inset-inline-end:12px;z-index:6;background:rgba(34,197,94,.9);color:#052e16;font-weight:900;font-size:13px;padding:6px 12px;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none}
+#saved.on{opacity:1}
+</style>
 </head>
 <body>
 <div id="app"></div>
@@ -15,31 +27,40 @@
 <div class="hud" id="hud" hidden>
  <div class="bar">
   <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-  <div class="chip" id="hLevel"></div>
-  <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg><span id="hVials">0/3</span></div>
+  <div class="chip" id="hMission" style="white-space:normal;max-width:min(62vw,440px)"></div>
+  <div class="chip" id="arrowTip"></div>
   <div class="chip"><span data-en="Seen" data-ar="انكشفت"></span><div class="meter"><i id="hAlert"></i></div></div>
-  <div class="chip" id="hTime">0:00</div>
  </div>
+ <div id="saved" data-en="Saved ✓" data-ar="اتحفظ ✓"></div>
  <div class="toast" id="toast"></div>
  <div id="joy"><div id="knob"></div></div>
  <div class="acts">
-  <button class="act" id="bHide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M12 3v18M9 12h1M14 12h1"/></svg><span data-en="Hide" data-ar="استخبى"></span></button>
+  <button class="act" id="bAtk" type="button" style="background:rgba(239,68,68,.9)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 19l6-6M14 4l6 6-9 9-6-6zM4 20l2-2"/></svg><span data-en="Attack" data-ar="اضرب"></span></button>
+  <button class="act alt" id="bHide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 18c3-7 15-7 18 0z"/></svg><span data-en="Hide" data-ar="استخبى"></span></button>
   <button class="act alt" id="bRun" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 4a2 2 0 1 0 0 .1M7 21l3-6 3 2v4M10 15l1-5 4 2 3-1M8 10l3-1"/></svg><span data-en="Run" data-ar="اجري"></span></button>
  </div>
- <div class="keys" data-en="Move: WASD / arrows · Run: Shift (makes noise) · Hide: E · Menu: Esc" data-ar="الحركة: WASD أو الأسهم · الجري: Shift (بيعمل صوت) · الاستخباء: E · القايمة: Esc"></div>
+ <div class="keys" data-en="Move: WASD · Run: Shift · Attack: Space / F · Hide: E · Menu: Esc" data-ar="الحركة: WASD · الجري: Shift · الضرب: Space أو F · الاستخباء: E · القايمة: Esc"></div>
+</div>
+
+<div id="story" hidden>
+ <svg class="scene" id="scene" viewBox="0 0 640 360"></svg>
+ <div class="cap" id="cap"></div>
+ <div class="dots" id="dots"></div>
+ <div class="nav"><button class="big" id="sNext" type="button"></button><button class="big sec" id="sSkip" type="button" data-en="Skip" data-ar="تخطّي"></button></div>
 </div>
 
 <div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
 
-<div class="screen" id="menu" style="--c1:#14532d">
+<div class="screen" id="menu" style="--c1:#7c2d12">
  <div class="card">
-  <h1>ZOMBIE LAB</h1>
-  <div class="story">
-   <p data-en="Aser was working late in the DINO lab. A green potion spilled on him… and he turned into a zombie!" data-ar="آسر كان بيشتغل متأخر في معمل DINO. جرعة خضرا وقعت عليه… واتحوّل لزومبي!"></p>
-   <p data-en="The only cure is a vaccine split into parts. In each place, grab the 3 green vials, then reach the blue vaccine case." data-ar="العلاج الوحيد لقاح متقسّم أجزاء. في كل مكان لمّ الـ 3 أنابيب الخضرا، وبعدها اوصل لصندوق اللقاح الأزرق."></p>
-   <p data-en="The humans are scared of you. If their light catches you, they chase you. Hide in lockers and bushes — but not while they are looking!" data-ar="البشر خايفين منك. لو النور بتاعهم شافك هيجروا وراك. استخبى في الدواليب والشجر — بس مش وهما باصين عليك!"></p>
+  <h1>ZOMBIE MARS</h1>
+  <p data-en="A story game: a scientist on Mars, an explosion, and a long way to the rocket home." data-ar="لعبة قصة: عالِم على المريخ، وانفجار، وطريق طويل للصاروخ اللي هيرجّعك."></p>
+  <p id="mProg" style="font-weight:800"></p>
+  <div class="row">
+   <button class="big" id="mCont" type="button" data-en="Continue" data-ar="كمّل"></button>
+   <button class="big sec" id="mNew" type="button" data-en="New game" data-ar="لعبة جديدة"></button>
+   <button class="big sec" id="mStory" type="button" data-en="Watch the story" data-ar="اتفرج على القصة"></button>
   </div>
-  <div class="lv" id="levels"></div>
   <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
  </div>
 </div>
@@ -48,315 +69,358 @@
  <div class="card">
   <h1 id="eTitle"></h1>
   <p id="eText"></p>
-  <div class="row">
-   <button class="big" id="eNext" type="button"></button>
-   <button class="big sec" id="eMenu" type="button" data-en="Levels" data-ar="المراحل"></button>
-  </div>
+  <div class="row"><button class="big" id="eNext" type="button"></button><button class="big sec" id="eMenu" type="button" data-en="Menu" data-ar="القايمة"></button></div>
  </div>
 </div>
 
 <script type="module">
-import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store } from './engine.js';
-
-// ---------- levels: '#' wall, '.' floor, 'P' start, 'V' vial, 'C' vaccine case, 'H' hiding spot, 'G' human guard ----------
-const LEVELS = [
- { en: 'The Lab', ar: 'المعمل', sky: 0x0f172a, floor: 0xd9e3ea, wall: 0xf1f5f9, trim: 0x334155, hide: 'locker', speed: 2.1, sight: 9, night: false, map: [
-  '####################',
-  '#P....#.....H#.....#',
-  '#.....#......#..V..#',
-  '#..H..###.####.....#',
-  '#...........G#..H..#',
-  '###.####.....###.###',
-  '#......#..........G#',
-  '#.V....#.....#.....#',
-  '#..H...####.##..H..#',
-  '#......#.....#.....#',
-  '##.#####..C..###.###',
-  '#......#.....#.....#',
-  '#..G...#..H..#.....#',
-  '#......###.###..V..#',
-  '#.H................#',
-  '####################'] },
- { en: 'The City at night', ar: 'المدينة بالليل', sky: 0x050816, floor: 0x334155, wall: 0x475569, trim: 0x1f2937, hide: 'bush', speed: 2.4, sight: 8, night: true, map: [
-  '######################',
-  '#P...#....#.....#....#',
-  '#.##.#.##.#.###.#.##.#',
-  '#.##...##...###...##.#',
-  '#....H....G.....H....#',
-  '#.##.###.#####.###.#.#',
-  '#.##.###.#####.###.#.#',
-  '#..V......H.....V....#',
-  '#.####.##.###.##.###.#',
-  '#.####.##.###.##.###.#',
-  '#...G.....H......G...#',
-  '#.##.###.#####.###.#.#',
-  '#.##.###...C...###.#.#',
-  '#.H......#####.....H.#',
-  '#.##.##.....V...##.#.#',
-  '######################'] },
- { en: 'The Hospital (final)', ar: 'المستشفى (النهائية)', sky: 0x111827, floor: 0xe5e7eb, wall: 0xcbd5e1, trim: 0x7f1d1d, hide: 'locker', speed: 2.7, sight: 9.5, night: false, map: [
-  '########################',
-  '#P.....#.....H#........#',
-  '#......#......#...V....#',
-  '#..H...####.###........#',
-  '#..........G..#....H...#',
-  '####.#####....####.#####',
-  '#.......#..G.......#...#',
-  '#..V....#.....#....#.H.#',
-  '#.......####.##........#',
-  '#..H....#.....#...G....#',
-  '###.#####..C..######.###',
-  '#.......#.....#........#',
-  '#...G...###.###..V.....#',
-  '#.H..........H.....G...#',
-  '########################'] }
-];
-
-const W = makeWorld({ sky: 0x0f172a, fog: 0x0f172a, fogNear: 22, fogFar: 70 });
-const { scene, camera, renderer, sun } = W;
-setupJoystick(); bindButton('bHide', 'KeyE'); bindButton('bRun', 'Run');
+import { THREE, makeWorld, mat, walls, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store } from './engine.js';
 const $ = id => document.getElementById(id);
-let level = 0, world = null, state = 'menu';
+const TOTAL = 50, HALF = 85;
 
-function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1800); }
-
-// ---------- build a level ----------
-function clearWorld() {
-  if (!world) return;
-  world.group.traverse(o => { if (o.geometry) o.geometry.dispose(); });
-  scene.remove(world.group); walls.length = 0; world = null;
+// ---------- the story scenes (drawn in code, no image files) ----------
+const SCENES = [
+ { ar: 'سنة 2087. انت كنت أشطر عالِم في قاعدة DINO على المريخ.', en: '2087. You were the best scientist at the DINO base on Mars.', svg: `
+  <rect width="640" height="360" fill="#1e293b"/><rect y="250" width="640" height="110" fill="#334155"/>
+  <rect x="40" y="40" width="200" height="120" rx="10" fill="#7c2d12"/><circle cx="140" cy="100" r="40" fill="#ea580c"/><text x="140" y="180" fill="#94a3b8" font-size="14" text-anchor="middle">MARS</text>
+  <rect x="300" y="200" width="300" height="20" fill="#cbd5e1"/><rect x="330" y="150" width="26" height="50" rx="8" fill="#4ade80"/><rect x="380" y="130" width="26" height="70" rx="8" fill="#f472b6"/><rect x="430" y="160" width="26" height="40" rx="8" fill="#60a5fa"/>
+  <g transform="translate(210 120)"><rect x="0" y="40" width="60" height="90" rx="8" fill="#f8fafc"/><rect x="8" y="0" width="44" height="44" rx="6" fill="#f2c49b"/><rect x="8" y="-6" width="44" height="12" fill="#3b2314"/><rect x="18" y="16" width="6" height="6" fill="#111"/><rect x="36" y="16" width="6" height="6" fill="#111"/><rect x="0" y="130" width="24" height="40" fill="#1e293b"/><rect x="36" y="130" width="24" height="40" fill="#1e293b"/></g>` },
+ { ar: 'في يوم، كنت بتخلط تلات مواد مع بعض… والأنابيب بدأت تفور.', en: 'One day you mixed three chemicals together… and the tubes started to bubble.', svg: `
+  <rect width="640" height="360" fill="#1e293b"/><rect y="250" width="640" height="110" fill="#334155"/>
+  <rect x="200" y="210" width="280" height="18" fill="#cbd5e1"/>
+  <rect x="250" y="130" width="34" height="80" rx="10" fill="#4ade80"/><rect x="320" y="110" width="34" height="100" rx="10" fill="#f472b6"/><rect x="390" y="140" width="34" height="70" rx="10" fill="#60a5fa"/>
+  <circle cx="267" cy="110" r="10" fill="#86efac"/><circle cx="276" cy="88" r="7" fill="#86efac"/><circle cx="337" cy="92" r="12" fill="#f9a8d4"/><circle cx="345" cy="64" r="8" fill="#f9a8d4"/><circle cx="407" cy="120" r="9" fill="#93c5fd"/>
+  <text x="320" y="320" fill="#fbbf24" font-size="40" font-weight="900" text-anchor="middle">!!!</text>` },
+ { ar: 'بوووم! الكيماويات انفجرت فيك…', en: 'BOOM! The chemicals exploded on you…', flash: true, svg: `
+  <rect width="640" height="360" fill="#fef08a"/>
+  <polygon points="320,30 360,140 470,90 390,180 520,220 380,230 420,340 320,250 220,340 260,230 120,220 250,180 170,90 280,140" fill="#f97316"/>
+  <polygon points="320,90 345,160 410,140 360,190 430,215 350,215 370,280 320,230 270,280 290,215 210,215 280,190 230,140 295,160" fill="#4ade80"/>
+  <text x="320" y="200" fill="#7c2d12" font-size="54" font-weight="900" text-anchor="middle">BOOM</text>` },
+ { ar: 'لما فقت… بقيت مخلوق نص ميت. جلدك أخضر وعينيك بتنوّر.', en: 'When you woke up… you were a half-dead creature. Green skin, glowing eyes.', svg: `
+  <rect width="640" height="360" fill="#0f172a"/><rect y="260" width="640" height="100" fill="#7c2d12"/>
+  <g transform="translate(270 70)"><rect x="0" y="60" width="100" height="120" rx="10" fill="#e2e8f0"/><polygon points="0,150 20,180 40,160 60,180 80,160 100,180 100,150" fill="#0f172a"/>
+  <rect x="14" y="0" width="72" height="66" rx="8" fill="#86c06c"/><rect x="26" y="24" width="12" height="10" fill="#bef264"/><rect x="62" y="24" width="12" height="10" fill="#bef264"/><rect x="36" y="46" width="28" height="6" fill="#14532d"/>
+  <rect x="-40" y="70" width="44" height="22" fill="#86c06c"/><rect x="96" y="70" width="44" height="22" fill="#86c06c"/><rect x="14" y="180" width="30" height="40" fill="#3f3f46"/><rect x="56" y="180" width="30" height="40" fill="#3f3f46"/></g>` },
+ { ar: 'البشر في القاعدة خايفين منك وعايزين يقضوا عليك. والمفاتيح الماشية — بإيدين ورجلين — بتقطع أي حد نصين. بس انت تقدر تضربها!', en: 'The humans at the base are scared and want to get rid of you. And the walking keys — with arms and legs — cut anyone in half. But you can fight them!', svg: `
+  <rect width="640" height="360" fill="#431407"/><rect y="250" width="640" height="110" fill="#9a3412"/>
+  <ellipse cx="140" cy="250" rx="110" ry="80" fill="#cbd5e1"/><rect x="110" y="200" width="60" height="50" fill="#64748b"/>
+  <g transform="translate(400 120)"><circle cx="40" cy="30" r="30" fill="none" stroke="#facc15" stroke-width="16"/><rect x="32" y="56" width="16" height="100" fill="#facc15"/><rect x="48" y="120" width="20" height="10" fill="#facc15"/><rect x="48" y="140" width="14" height="10" fill="#facc15"/>
+  <rect x="26" y="24" width="8" height="8" fill="#111"/><rect x="46" y="24" width="8" height="8" fill="#111"/><rect x="-10" y="80" width="42" height="10" fill="#a16207"/><rect x="48" y="80" width="42" height="10" fill="#a16207"/><rect x="26" y="150" width="10" height="40" fill="#a16207"/><rect x="44" y="150" width="10" height="40" fill="#a16207"/></g>` },
+ { ar: 'الأمل الوحيد: الصاروخ اللي في آخر المريخ. اعمل 50 مهمة — لمّ الألماس، صلّح المولّدات، واهزم المفاتيح — لحد ما الصاروخ يتفتح وتطير.', en: 'The only hope: the rocket at the far end of Mars. Do 50 missions — collect diamonds, fix generators, beat the keys — until the rocket unlocks and you fly away.', svg: `
+  <rect width="640" height="360" fill="#1a0b07"/><circle cx="520" cy="70" r="30" fill="#fde68a"/><rect y="270" width="640" height="90" fill="#9a3412"/>
+  <g transform="translate(300 60)"><polygon points="40,0 70,60 70,200 10,200 10,60" fill="#e2e8f0"/><circle cx="40" cy="90" r="16" fill="#38bdf8"/><polygon points="10,150 -20,210 10,200" fill="#ef4444"/><polygon points="70,150 100,210 70,200" fill="#ef4444"/><polygon points="20,200 60,200 40,240" fill="#f97316"/></g>
+  <polygon points="80,300 90,280 100,300" fill="#38bdf8"/><polygon points="150,310 160,290 170,310" fill="#38bdf8"/>` }
+];
+let sceneI = 0, afterStory = null;
+function showScene() {
+  const s = SCENES[sceneI];
+  $('scene').innerHTML = s.svg; $('cap').textContent = L() === 'en' ? s.en : s.ar;
+  $('scene').classList.remove('flash'); if (s.flash) { void $('scene').getBoundingClientRect(); $('scene').classList.add('flash'); beep(90, 0.6, 'sawtooth', 0.08); } else beep(500, 0.05, 'sine', 0.02);
+  $('dots').innerHTML = SCENES.map((x, i) => '<i class="' + (i === sceneI ? 'on' : '') + '"></i>').join('');
+  $('sNext').textContent = sceneI === SCENES.length - 1 ? T('Start!', 'يلا نبدأ!') : T('Next', 'التالي');
 }
-function build(n) {
-  clearWorld();
-  const LV = LEVELS[n], rows = LV.map, H = rows.length, Wd = Math.max(...rows.map(r => r.length));
-  const grid = rows.map(r => r.padEnd(Wd, '#').split(''));
-  const group = new THREE.Group(); scene.add(group);
-  const cell = (c, r) => ({ x: (c - Wd / 2) * 2 + 1, z: (r - H / 2) * 2 + 1 });
-  scene.background = new THREE.Color(LV.sky); scene.fog.color.set(LV.sky);
-  sun.intensity = LV.night ? 0.25 : 1.1;
-  scene.children.forEach(o => { if (o.isHemisphereLight) o.intensity = LV.night ? 0.32 : 0.6; });
-  const g0 = floor(group, Wd * 2, H * 2, LV.floor, 2);
-  // walls: one instanced mesh for speed; merged rectangles per row for collision
-  const wallCells = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wallCells.push([c, r]); }));
-  const geo = new THREE.BoxGeometry(2, 3, 2);
-  const inst = new THREE.InstancedMesh(geo, mat(LV.wall), wallCells.length);
-  const m4 = new THREE.Matrix4();
-  wallCells.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 1.5, p.z); inst.setMatrixAt(i, m4); });
-  inst.castShadow = inst.receiveShadow = true; group.add(inst);
-  const trim = new THREE.InstancedMesh(new THREE.BoxGeometry(2.02, 0.18, 2.02), mat(LV.trim, { emissive: LV.trim, emissiveIntensity: LV.night ? 0.6 : 0.15 }), wallCells.length);
-  wallCells.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 3.02, p.z); trim.setMatrixAt(i, m4); });
-  group.add(trim);
-  grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const isW = row[c] === '#'; if (isW && s < 0) s = c; if (!isW && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: true }); s = -1; } } });
-  // things
-  const vials = [], hides = [], guards = []; let start = null, cure = null;
-  grid.forEach((row, r) => row.forEach((ch, c) => {
-    const p = cell(c, r);
-    if (ch === 'P') start = p;
-    if (ch === 'V') {
-      const v = new THREE.Group();
-      const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.6, 14), mat(0x4ade80, { emissive: 0x22c55e, emissiveIntensity: 1.2, transparent: true, opacity: 0.9 }));
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 14), mat(0xe5e7eb)); cap.position.y = 0.36;
-      const halo = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.7, 28), new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
-      halo.rotation.x = -Math.PI / 2; halo.position.y = -0.55;
-      v.add(glass, cap, halo); v.position.set(p.x, 0.9, p.z); group.add(v); vials.push({ p, mesh: v, got: false });
-    }
-    if (ch === 'C') {
-      const cg = new THREE.Group();
-      const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1), mat(0x1e293b)); base.position.y = 0.4;
-      const glassC = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.8), mat(0x60a5fa, { emissive: 0x3b82f6, emissiveIntensity: 0.2, transparent: true, opacity: 0.55 })); glassC.position.y = 1.15;
-      const syr = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 10), mat(0x93c5fd, { emissive: 0x60a5fa, emissiveIntensity: 1 })); syr.rotation.z = Math.PI / 2; syr.position.y = 1.15;
-      cg.add(base, glassC, syr); cg.position.set(p.x, 0, p.z); group.add(cg); cure = { p, mesh: cg, glass: glassC };
-    }
-    if (ch === 'H') {
-      let m;
-      if (LV.hide === 'bush') {
-        m = new THREE.Group();
-        [[0, 0.6, 0, 0.9], [0.45, 0.5, 0.2, 0.65], [-0.4, 0.5, -0.15, 0.7]].forEach(b => { const s = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 1), mat(0x166534, { flatShading: true })); s.position.set(b[0], b[1], b[2]); s.castShadow = true; m.add(s); });
-        walls.push({ x0: p.x - 0.8, x1: p.x + 0.8, z0: p.z - 0.8, z1: p.z + 0.8, tall: false });
-      } else {
-        m = new THREE.Group();
-        const bodyL = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.3, 0.9), mat(0x64748b, { metalness: 0.4, roughness: 0.4 })); bodyL.position.y = 1.15; bodyL.castShadow = true;
-        [-0.3, 0.3].forEach(x => { const d = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.1, 0.04), mat(0x94a3b8, { metalness: 0.5, roughness: 0.35 })); d.position.set(x, 1.15, 0.46); m.add(d);
-          for (let k = 0; k < 3; k++) { const s = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.04, 0.02), mat(0x334155)); s.position.set(x, 1.9 - k * 0.1, 0.49); m.add(s); } });
-        m.add(bodyL);
-        walls.push({ x0: p.x - 0.6, x1: p.x + 0.6, z0: p.z - 0.45, z1: p.z + 0.45, tall: true });
-      }
-      m.position.set(p.x, 0, p.z); group.add(m); hides.push({ p, mesh: m });
-    }
-    if (ch === 'G') {
-      const g = makeChar({ shirt: 0xf8fafc, pants: 0x1d4ed8, skin: [0xf2c49b, 0xc68642, 0x8d5524][guards.length % 3], hair: [0x3b2314, 0x111111, 0x7c2d12][guards.length % 3] });
-      const cone = new THREE.Mesh(new THREE.CircleGeometry(LV.sight, 28, -Math.PI / 2 - 0.6, 1.2), new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide }));
-      cone.rotation.x = -Math.PI / 2; cone.position.y = 0.05; group.add(cone);
-      const light = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.3), mat(0x111827)); light.position.set(0.42, 1.0, 0.25); g.add(light);
-      g.position.set(p.x, 0, p.z); group.add(g);
-      guards.push({ mesh: g, cone, pos: { x: p.x, z: p.z }, dir: Math.random() * 6.28, path: [], st: 'patrol', lost: 0, seeing: false, spot: null });
-    }
-  }));
-  // a few lab props so rooms don't look empty
-  grid.forEach((row, r) => row.forEach((ch, c) => {
-    if (ch !== '.' || (c * 7 + r * 13) % 11 !== 0) return;
-    const nb = [grid[r - 1]?.[c], grid[r + 1]?.[c], grid[r]?.[c - 1], grid[r]?.[c + 1]];
-    const wi = nb.indexOf('#'); if (wi < 0 || nb.filter(x => x === '.').length < 3) return;
-    const p = cell(c, r), off = [[0, -0.7], [0, 0.7], [-0.7, 0], [0.7, 0]][wi], along = wi < 2;
-    if (LV.night) { const pole = box(group, p.x, p.z, 0.15, 0.15, 3.2, 0x1f2937, { solid: false }); const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), new THREE.MeshBasicMaterial({ color: 0xfef08a })); lamp.position.set(p.x, 3.3, p.z); group.add(lamp); const pl = new THREE.PointLight(0xfde68a, 6, 9, 1.6); pl.position.set(p.x, 3, p.z); group.add(pl); }
-    else { const dx = p.x + off[0], dz = p.z + off[1]; box(group, dx, dz, along ? 1.4 : 0.5, along ? 0.5 : 1.4, 0.9, 0xe2e8f0, { solid: true }); const fc = [0xf472b6, 0x60a5fa, 0xfacc15][(c + r) % 3]; const flask = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), mat(fc, { emissive: fc, emissiveIntensity: 0.5 })); flask.position.set(dx, 1.06, dz); group.add(flask); }
-  }));
-  // player zombie
-  const pm = makeChar({ skin: 0x86c06c, shirt: 0x0f766e, pants: 0x3f3f46, hair: 0x14532d, glow: 0xbef264 });
-  pm.position.set(start.x, 0, start.z); group.add(pm);
-  world = { LV, grid, Wd, H, cell, group, vials, hides, guards, cure, player: { mesh: pm, pos: { x: start.x, z: start.z }, dir: Math.PI, hidden: null, back: null }, got: 0, alert: 0, t: 0, done: false };
-  camera.position.set(start.x, 12, start.z + 10);
-}
+function playStory(then) { afterStory = then; sceneI = 0; $('menu').hidden = true; $('end').hidden = true; $('story').hidden = false; showScene(); }
+function endStory() { $('story').hidden = true; const f = afterStory; afterStory = null; f && f(); }
+$('sNext').onclick = () => { if (sceneI < SCENES.length - 1) { sceneI++; showScene(); } else endStory(); };
+$('sSkip').onclick = endStory;
+$('scene').onclick = () => $('sNext').click();
 
-// ---------- grid path finding for guards ----------
-function toCell(p) { const w = world; return { c: Math.round((p.x - 1) / 2 + w.Wd / 2), r: Math.round((p.z - 1) / 2 + w.H / 2) }; }
-const free = (c, r) => { const ch = world.grid[r]?.[c]; return ch && ch !== '#' && ch !== 'H'; };
-function path(from, to) {
-  const a = toCell(from), b = toCell(to), key = (c, r) => r * 1000 + c;
-  if (!free(b.c, b.r)) return [];
-  const prev = new Map([[key(a.c, a.r), null]]), q = [[a.c, a.r]];
-  while (q.length) {
-    const [c, r] = q.shift();
-    if (c === b.c && r === b.r) break;
-    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nc = c + dc, nr = r + dr, k = key(nc, nr); if (!prev.has(k) && free(nc, nr)) { prev.set(k, [c, r]); q.push([nc, nr]); } }
+// ---------- Mars world ----------
+const W = makeWorld({ sky: 0x2a1108, fog: 0x3b170b, fogNear: 30, fogFar: 95, ambient: 0.55, sun: 1.15 });
+const { scene, camera, renderer, sun } = W;
+setupJoystick(); bindButton('bAtk', 'KeyF'); bindButton('bHide', 'KeyE'); bindButton('bRun', 'Run');
+let seed = 7;
+const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+{ // ground with dunes
+  const g = new THREE.PlaneGeometry(HALF * 2 + 40, HALF * 2 + 40, 90, 90); g.rotateX(-Math.PI / 2);
+  const pos = g.attributes.position, col = [];
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i), edge = Math.max(0, Math.max(Math.abs(x), Math.abs(z)) - HALF) * 0.5;
+    pos.setY(i, Math.sin(x * 0.08) * Math.cos(z * 0.07) * 0.35 + edge * edge * 0.15);
+    const c = new THREE.Color(0xb4532a).lerp(new THREE.Color(0x7c2d12), (Math.sin(x * 0.21 + z * 0.13) + 1) * 0.25); col.push(c.r, c.g, c.b);
   }
-  const out = []; let cur = [b.c, b.r];
-  if (!prev.has(key(b.c, b.r))) return [];
-  while (cur) { out.unshift(world.cell(cur[0], cur[1])); cur = prev.get(key(cur[0], cur[1])); }
-  return out.slice(1);
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true })); m.receiveShadow = true; scene.add(m);
 }
-function randomFloor() {
-  for (let i = 0; i < 200; i++) { const r = 1 + Math.floor(Math.random() * (world.H - 2)), c = 1 + Math.floor(Math.random() * (world.Wd - 2)); if (free(c, r)) return world.cell(c, r); }
-  return world.player.pos;
+{ // stars + two moons
+  const sg = new THREE.BufferGeometry(), sp = [];
+  for (let i = 0; i < 500; i++) { const a = rnd() * 6.28, b = rnd() * 1.2 + 0.2, r = 150; sp.push(Math.cos(a) * Math.cos(b) * r, Math.sin(b) * r, Math.sin(a) * Math.cos(b) * r); }
+  sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, fog: false })));
+  [[60, 70, -120, 6], [-90, 50, -110, 3.5]].forEach(m => { const s = new THREE.Mesh(new THREE.SphereGeometry(m[3], 20, 14), new THREE.MeshBasicMaterial({ color: 0xd6d3d1, fog: false })); s.position.set(m[0], m[1], m[2]); scene.add(s); });
+}
+const hides = [];
+for (let i = 0; i < 90; i++) { // rocks
+  const x = (rnd() * 2 - 1) * HALF, z = (rnd() * 2 - 1) * HALF; if (Math.hypot(x, z) < 8 || Math.hypot(x, z + HALF - 8) < 9) continue;
+  const s = 0.6 + rnd() * 1.8, r = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), mat(0x6b2a12, { flatShading: true }));
+  r.position.set(x, s * 0.5, z); r.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3); r.castShadow = r.receiveShadow = true; scene.add(r);
+  walls.push({ x0: x - s * 0.8, x1: x + s * 0.8, z0: z - s * 0.8, z1: z + s * 0.8, tall: s > 1.3 });
+}
+for (let i = 0; i < 34; i++) { // dark craters to hide in
+  const x = (rnd() * 2 - 1) * (HALF - 5), z = (rnd() * 2 - 1) * (HALF - 5); if (Math.hypot(x, z) < 10) continue;
+  const g = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.45, 8, 18), mat(0x5b210d, { flatShading: true })); ring.rotation.x = Math.PI / 2; ring.position.y = 0.25; g.add(ring);
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(1.1, 18), mat(0x1c0a04)); hole.rotation.x = -Math.PI / 2; hole.position.y = 0.06; g.add(hole);
+  g.position.set(x, 0, z); scene.add(g); hides.push({ p: { x, z }, mesh: g });
+}
+const BASES = [[-48, -40], [50, -46], [-44, 48], [46, 44]].map(([x, z]) => {
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(6, 24, 14, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xe2e8f0, { metalness: 0.3, roughness: 0.3, transparent: true, opacity: 0.85 }));
+  dome.position.set(x, 0, z); dome.castShadow = true; scene.add(dome);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(6, 0.25, 8, 40), mat(0x64748b)); ring.rotation.x = Math.PI / 2; ring.position.set(x, 0.2, z); scene.add(ring);
+  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 4), mat(0x94a3b8)); ant.position.set(x, 7, z); scene.add(ant);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.25), new THREE.MeshBasicMaterial({ color: 0xef4444 })); tip.position.set(x, 9, z); scene.add(tip);
+  walls.push({ x0: x - 4.6, x1: x + 4.6, z0: z - 4.6, z1: z + 4.6, tall: true });
+  return { x, z, tip };
+});
+// the rocket on its launch pad (far north) — locked by a red ring until mission 50
+const ROCKET = { x: 0, z: -HALF + 8 }, rocket = new THREE.Group();
+{
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 9, 18), mat(0xf1f5f9, { metalness: 0.4, roughness: 0.3 })); body.position.y = 5.5;
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(1.2, 3, 18), mat(0xef4444)); nose.position.y = 11.5;
+  const win = new THREE.Mesh(new THREE.CircleGeometry(0.55, 18), new THREE.MeshBasicMaterial({ color: 0x38bdf8 })); win.position.set(0, 7.5, 1.31);
+  rocket.add(body, nose, win);
+  for (let i = 0; i < 4; i++) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3, 2), mat(0xef4444)); const a = i * Math.PI / 2; f.position.set(Math.sin(a) * 1.6, 1.8, Math.cos(a) * 1.6); f.rotation.y = a; rocket.add(f); }
+  const pad = new THREE.Mesh(new THREE.CylinderGeometry(4.5, 4.5, 0.4, 24), mat(0x475569)); pad.position.y = 0.2; rocket.add(pad);
+  rocket.position.set(ROCKET.x, 0, ROCKET.z); rocket.traverse(o => { if (o.isMesh) o.castShadow = true; }); scene.add(rocket);
+  walls.push({ x0: ROCKET.x - 1.6, x1: ROCKET.x + 1.6, z0: ROCKET.z - 1.6, z1: ROCKET.z + 1.6, tall: true });
+}
+const flame = new THREE.Mesh(new THREE.ConeGeometry(1.1, 4, 14), new THREE.MeshBasicMaterial({ color: 0xfb923c, transparent: true, opacity: 0.9 }));
+flame.rotation.x = Math.PI; flame.position.set(0, -1.4, 0); flame.visible = false; rocket.add(flame);
+const lock = new THREE.Mesh(new THREE.TorusGeometry(6, 0.18, 8, 50), new THREE.MeshBasicMaterial({ color: 0xef4444 })); lock.rotation.x = Math.PI / 2; lock.position.set(ROCKET.x, 0.3, ROCKET.z); scene.add(lock);
+
+// ---------- characters ----------
+const P = { mesh: makeChar({ skin: 0x86c06c, shirt: 0xe2e8f0, pants: 0x3f3f46, hair: 0x14532d, glow: 0xbef264 }), pos: { x: 0, z: 0 }, dir: Math.PI, hidden: null, atk: 0 };
+scene.add(P.mesh);
+const claw = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.6, 20, 1, -Math.PI / 2 - 0.9, 1.8), new THREE.MeshBasicMaterial({ color: 0xbef264, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }));
+claw.rotation.x = -Math.PI / 2; claw.position.y = 1; scene.add(claw);
+
+function makeHuman() {
+  const g = makeChar({ shirt: 0xf8fafc, pants: 0xe2e8f0, skin: 0xf2c49b, hair: 0xf8fafc });
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.24, 0.04), mat(0xf59e0b, { metalness: 0.8, roughness: 0.2, emissive: 0x7c2d12, emissiveIntensity: 0.3 })); visor.position.set(0, 0.02, 0.27); g.userData.head.add(visor);
+  const pack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.25), mat(0x94a3b8)); pack.position.set(0, 1.1, -0.3); g.add(pack);
+  const cone = new THREE.Mesh(new THREE.CircleGeometry(11, 26, -Math.PI / 2 - 0.55, 1.1), new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide }));
+  cone.rotation.x = -Math.PI / 2; cone.position.y = 0.06; scene.add(cone); scene.add(g);
+  return { mesh: g, cone };
+}
+const humans = [];
+BASES.forEach((b, bi) => { for (let k = 0; k < 2; k++) { const h = makeHuman(); humans.push(Object.assign(h, { base: b, ang: k * Math.PI + bi, r: 9 + k * 3, pos: { x: b.x + 9, z: b.z }, dir: 0, st: 'patrol', lost: 0, spd: 1, last: { x: 0, z: 0 } })); } });
+
+function makeKey() {
+  const g = new THREE.Group(), gold = mat(0xfacc15, { metalness: 0.6, roughness: 0.3 }), brown = mat(0xa16207);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.11, 8, 18), gold); ring.position.y = 1.75; g.add(ring);
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.95, 0.16), gold); shaft.position.y = 1.0; g.add(shaft);
+  [[0.15, 0.7], [0.12, 0.85]].forEach(t => { const b = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.09, 0.14), gold); b.position.set(t[0], t[1], 0); g.add(b); });
+  const eyeM = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  [-0.12, 0.12].forEach(x => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.05), eyeM); e.position.set(x, 1.78, 0.12); g.add(e); const pu = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.02), mat(0x111111)); pu.position.set(x, 1.78, 0.15); g.add(pu); });
+  const arms = [-1, 1].map(s => { const a = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.08), brown); a.geometry.translate(s * 0.25, 0, 0); a.position.set(s * 0.08, 1.25, 0); g.add(a); return a; });
+  const legs = [-1, 1].map(s => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.55, 0.09), brown); l.geometry.translate(0, -0.27, 0); l.position.set(s * 0.1, 0.55, 0); g.add(l); return l; });
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  let t = 0; g.userData.anim = (dt, sp) => { t += dt * 9; legs[0].rotation.x = Math.sin(t) * 0.7 * sp; legs[1].rotation.x = -Math.sin(t) * 0.7 * sp; arms[0].rotation.z = 0.3 + Math.sin(t * 2) * 0.4; arms[1].rotation.z = -0.3 - Math.sin(t * 2) * 0.4; };
+  scene.add(g); return g;
+}
+let keys = [];
+function spawnKey(x, z, mission) { const m = makeKey(); m.position.set(x, 0, z); keys.push({ mesh: m, pos: { x, z }, dir: 0, alive: true, mission: !!mission, wander: rnd() * 6.28 }); }
+function clearKeys() { keys.forEach(k => scene.remove(k.mesh)); keys = []; }
+
+// ---------- 50 missions (same list for every player) ----------
+const TYPES = ['reach', 'gems', 'keys', 'fix', 'sneak'];
+function mission(i) {
+  seed = 1000 + i * 77; const type = i === 0 ? 'reach' : TYPES[(i + Math.floor(rnd() * 5)) % 5];
+  const ang = rnd() * 6.28, r = 14 + rnd() * Math.min(HALF - 22, 8 + i * 2.5);
+  let x = Math.cos(ang) * r, z = Math.sin(ang) * r;
+  if (type === 'sneak') { const b = BASES[Math.floor(rnd() * 4)], a = rnd() * 6.28; x = b.x + Math.cos(a) * 7; z = b.z + Math.sin(a) * 7; }
+  return { i, type, x, z, n: type === 'keys' ? 2 + Math.min(3, Math.floor(i / 12)) : 3 };
+}
+const NAMES = {
+  reach: ['Reach the signal beacon', 'اوصل لإشارة الراديو'], gems: ['Collect 3 Mars diamonds', 'لمّ 3 ألماس من المريخ'],
+  keys: ['Defeat the walking keys', 'اهزم المفاتيح الماشية'], fix: ['Fix the generator (stay next to it)', 'صلّح المولّد (فضل جنبه)'],
+  sneak: ['Steal a fuel can from the human base', 'اسرق علبة وقود من قاعدة البشر']
+};
+let M = null, objs = [], fixT = 0, gemsGot = 0;
+const objGroup = new THREE.Group(); scene.add(objGroup);
+function setupMission(i) {
+  objGroup.clear(); objs = []; clearKeys(); fixT = 0; gemsGot = 0;
+  if (i >= TOTAL) { M = { i, type: 'rocket', x: ROCKET.x, z: ROCKET.z + 6 }; lock.visible = false; hudMission(); return; }
+  lock.visible = true; M = mission(i);
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 40, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide }));
+  beam.position.set(M.x, 20, M.z); objGroup.add(beam);
+  if (M.type === 'reach') { const f = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3), mat(0xe5e7eb)); f.position.set(M.x, 1.5, M.z); const fl = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 0.04), new THREE.MeshBasicMaterial({ color: 0x22d3ee })); fl.position.set(M.x + 0.5, 2.7, M.z); objGroup.add(f, fl); }
+  if (M.type === 'gems') for (let k = 0; k < 3; k++) { const a = k * 2.1 + i, gx = M.x + Math.cos(a) * 4, gz = M.z + Math.sin(a) * 4; const d = new THREE.Mesh(new THREE.OctahedronGeometry(0.45), mat(0x67e8f9, { emissive: 0x06b6d4, emissiveIntensity: 0.9, metalness: 0.3, roughness: 0.1 })); d.position.set(gx, 1, gz); objGroup.add(d); objs.push({ p: { x: gx, z: gz }, mesh: d, got: false }); }
+  if (M.type === 'keys') for (let k = 0; k < M.n; k++) spawnKey(M.x + Math.cos(k * 2) * 5, M.z + Math.sin(k * 2) * 5, true);
+  if (M.type === 'fix') { const gen = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, 1.2), mat(0x475569, { metalness: 0.5 })); gen.position.set(M.x, 0.7, M.z); const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.25), new THREE.MeshBasicMaterial({ color: 0xef4444 })); bulb.position.set(M.x, 1.6, M.z); objGroup.add(gen, bulb); objs.push({ bulb }); }
+  if (M.type === 'sneak') { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.9, 14), mat(0xf97316, { emissive: 0xc2410c, emissiveIntensity: 0.4 })); c.position.set(M.x, 0.45, M.z); objGroup.add(c); }
+  const extra = Math.min(6, Math.floor(i / 6)); // the further you get, the more keys roam around
+  for (let k = 0; k < extra; k++) { seed = 5000 + i * 13 + k; const x = (rnd() * 2 - 1) * (HALF - 10), z = (rnd() * 2 - 1) * (HALF - 10); if (Math.hypot(x - P.pos.x, z - P.pos.z) > 15) spawnKey(x, z, false); }
+  humans.forEach(h => { h.spd = 1 + Math.min(0.8, i / 60); });
+  hudMission();
+}
+function hudMission() {
+  if (M.type === 'rocket') { $('hMission').textContent = T('All 50 done! Find the rocket and board it', 'خلصت الـ 50! روح للصاروخ واركبه'); return; }
+  const nm = NAMES[M.type], extra = M.type === 'gems' ? ' (' + gemsGot + '/3)' : M.type === 'keys' ? ' (' + keys.filter(k => k.alive && k.mission).length + ')' : '';
+  $('hMission').textContent = T('Mission ', 'مهمة ') + (M.i + 1) + '/' + TOTAL + ': ' + (L() === 'en' ? nm[0] : nm[1]) + extra;
 }
 
-// ---------- game loop ----------
+// ---------- autosave ----------
+function save(silent) {
+  if (!M) return;
+  store.set('zm_save', { m: M.i, x: P.pos.x, z: P.pos.z, t: Date.now() });
+  if (!silent) { const s = $('saved'); s.classList.add('on'); setTimeout(() => s.classList.remove('on'), 1400); }
+}
+const load = () => store.get('zm_save', null);
+
+// ---------- game state ----------
+let state = 'menu', alert = 0, saveT = 0, deadAnim = null, launchT = 0;
+const toast = (msg, ms) => { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1900); };
+function placePlayer(x, z) { P.pos.x = x; P.pos.z = z; P.hidden = null; P.mesh.visible = true; P.mesh.position.set(x, 0, z); P.mesh.rotation.set(0, Math.PI, 0); }
+function begin(fromSave) {
+  const sv = fromSave ? load() : null, mi = sv ? sv.m : 0;
+  if (sv) placePlayer(sv.x, sv.z); else placePlayer(0, 4);
+  setupMission(mi);
+  humans.forEach(h => { h.st = 'patrol'; h.pos.x = h.base.x + Math.cos(h.ang) * h.r; h.pos.z = h.base.z + Math.sin(h.ang) * h.r; });
+  alert = 0; deadAnim = null; launchT = 0; rocket.position.y = 0; flame.visible = false;
+  $('menu').hidden = true; $('end').hidden = true; $('hud').hidden = false; state = 'play';
+  save(true);
+  toast(mi >= TOTAL ? T('Go to the rocket!', 'روح للصاروخ!') : T('Follow the blue light', 'امشي ورا النور الأزرق'), 2200);
+}
+function completeMission() {
+  beep(660, 0.1, 'triangle'); setTimeout(() => beep(990, 0.2, 'triangle'), 120);
+  const next = M.i + 1;
+  toast(next >= TOTAL ? T('Mission 50 done! The rocket is unlocked!', 'خلصت المهمة 50! الصاروخ اتفتح!') : T('Mission done! ' + next + '/50', 'المهمة خلصت! ' + next + '/50'), 2200);
+  setupMission(next); save(false);
+}
+function die(kind) {
+  if (state !== 'play') return; state = 'dying'; $('hud').hidden = true;
+  beep(140, 0.5, 'sawtooth', 0.07);
+  if (kind === 'cut') {
+    P.mesh.visible = false;
+    const halves = [-1, 1].map(s => { const g = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.9, 0.38), mat(s < 0 ? 0xe2e8f0 : 0x86c06c)); b.position.y = 0.95; g.add(b); g.position.set(P.pos.x + s * 0.16, 0, P.pos.z); scene.add(g); return { g, s }; });
+    deadAnim = { halves, t: 0, msg: T('A walking key cut you in half!', 'مفتاح ماشي قطعك نصين!') };
+  } else deadAnim = { halves: [], t: 0, msg: T('The humans caught you!', 'البشر مسكوك!') };
+}
+function afterDeath() {
+  deadAnim.halves.forEach(h => scene.remove(h.g));
+  state = 'end'; $('end').hidden = false;
+  $('eTitle').textContent = T('You lost', 'خسرت');
+  $('eText').textContent = deadAnim.msg + ' ' + T('Don\'t worry — the game is saved. You go back to mission ' + Math.min(TOTAL, M.i + 1) + '.', 'متقلقش — اللعبة متحفظة. هترجع لمهمة ' + Math.min(TOTAL, M.i + 1) + '.');
+  $('eNext').textContent = T('Continue', 'كمّل'); $('eNext').onclick = () => begin(true);
+}
+function launch() { state = 'launch'; launchT = 0; P.mesh.visible = false; flame.visible = true; $('hud').hidden = true; store.set('zm_won', true); store.set('zm_save', null); beep(80, 2, 'sawtooth', 0.06); }
+const angDiff = (a, b) => Math.abs(((a - b) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+
 function step(dt) {
-  const w = world, P = w.player, LV = w.LV, inp = readInput();
-  w.t += dt;
-  // hide / unhide
-  if (hit('KeyE')) {
-    if (P.hidden) { P.mesh.visible = true; P.pos.x = P.back.x; P.pos.z = P.back.z; P.hidden = null; toast(T('You came out', 'خرجت')); }
+  const inp = readInput();
+  if (hit('KeyE')) { // hide in a crater
+    if (P.hidden) { P.hidden = null; P.mesh.visible = true; toast(T('Out of the crater', 'خرجت من الحفرة'), 900); }
     else {
-      const h = w.hides.find(h => dist(h.p, P.pos) < 2.1);
-      if (h) {
-        P.hidden = h; P.back = { x: P.pos.x, z: P.pos.z }; P.mesh.visible = false; beep(220, 0.15, 'sine');
-        const watcher = w.guards.find(g => g.seeing);
-        if (watcher) { watcher.st = 'pull'; watcher.spot = h; watcher.path = path(watcher.pos, P.back); toast(T('They saw you hide!', 'شافوك وانت بتستخبى!')); }
-        else toast(T('Hidden — they cannot see you', 'مستخبي — مش شايفينك'));
-      } else toast(T('Go next to a locker or bush', 'قرّب من دولاب أو شجرة'), 1200);
+      const h = hides.find(h => dist(h.p, P.pos) < 2.2);
+      if (h) { const seen = humans.some(u => u.seeing); P.hidden = h; P.pos.x = h.p.x; P.pos.z = h.p.z; P.mesh.visible = false; beep(220, 0.15, 'sine');
+        if (seen) { humans.forEach(u => { if (u.seeing) u.st = 'pull'; }); toast(T('They saw you jump in!', 'شافوك وانت بتنط جوّه!')); } else toast(T('Hidden in the crater', 'مستخبي في الحفرة')); }
+      else toast(T('Hide in a dark crater', 'استخبى في حفرة غامقة'), 1100);
     }
   }
-  // move
-  let noisy = false;
-  if (!P.hidden) {
-    const sp = inp.run ? 5.2 : 3.2; noisy = inp.run && (inp.x || inp.z);
-    moveCircle(P.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38);
-    const mv = Math.hypot(inp.x, inp.z);
+  if (!P.hidden) { // move
+    const sp = inp.run ? 5.4 : 3.4, mv = Math.hypot(inp.x, inp.z);
+    moveCircle(P.pos, inp.x * sp * dt, inp.z * sp * dt, 0.4);
+    P.pos.x = Math.max(-HALF, Math.min(HALF, P.pos.x)); P.pos.z = Math.max(-HALF, Math.min(HALF, P.pos.z));
     if (mv > 0.05) P.dir = Math.atan2(inp.x, inp.z);
-    P.mesh.position.set(P.pos.x, 0, P.pos.z); P.mesh.rotation.y = P.dir;
-    P.mesh.userData.anim(dt, mv * (inp.run ? 1.6 : 1), true);
+    P.mesh.position.set(P.pos.x, 0, P.pos.z); P.mesh.rotation.y = P.dir; P.mesh.userData.anim(dt, mv * (inp.run ? 1.6 : 1), true);
   }
-  // vials & cure
-  w.vials.forEach(v => {
-    v.mesh.rotation.y += dt * 2; v.mesh.position.y = 0.9 + Math.sin(w.t * 3) * 0.12;
-    if (!v.got && !P.hidden && dist(v.p, P.pos) < 1.2) { v.got = true; v.mesh.visible = false; w.got++; beep(660, 0.1); beep(990, 0.18, 'triangle'); $('hVials').textContent = w.got + '/3'; toast(w.got < 3 ? T('Vial ' + w.got + ' of 3!', 'أنبوبة ' + w.got + ' من 3!') : T('All vials! The vaccine case is open — go!', 'جمعت الكل! صندوق اللقاح اتفتح — روح له!'), 2200); }
+  P.atk = Math.max(0, P.atk - dt); // attack: a claw swipe in front of you
+  if ((hit('KeyF') || hit('Space')) && !P.hidden && P.atk <= 0) {
+    P.atk = 0.45; beep(300, 0.08, 'square', 0.04);
+    keys.forEach(k => { if (!k.alive) return; const d = dist(k.pos, P.pos), a = Math.atan2(k.pos.x - P.pos.x, k.pos.z - P.pos.z); if (d < 2.4 && angDiff(a, P.dir) < 1.2) { k.alive = false; k.dieT = 0; beep(880, 0.1, 'triangle'); } });
+    hudMission();
+  }
+  claw.material.opacity = P.atk > 0.25 ? (P.atk - 0.25) * 4 : 0; claw.position.set(P.pos.x, 1, P.pos.z); claw.rotation.z = P.dir;
+  keys.forEach(k => { // walking keys chase when they see you
+    if (!k.alive) { k.dieT += dt; k.mesh.rotation.z = Math.min(1.5, k.dieT * 4); k.mesh.position.y = -k.dieT * 0.8; if (k.dieT > 1.5) { scene.remove(k.mesh); k.gone = true; } return; }
+    const d = dist(k.pos, P.pos); let tx, tz, sp = 1.4;
+    if (!P.hidden && d < 13 && canSee(k.pos, P.pos)) { tx = P.pos.x; tz = P.pos.z; sp = 3.3 + Math.min(0.9, M.i / 50); }
+    else { k.wander += (Math.random() - 0.5) * dt * 2; tx = k.pos.x + Math.sin(k.wander) * 3; tz = k.pos.z + Math.cos(k.wander) * 3; }
+    const dx = tx - k.pos.x, dz = tz - k.pos.z, m = Math.hypot(dx, dz) || 1;
+    moveCircle(k.pos, dx / m * sp * dt, dz / m * sp * dt, 0.35);
+    k.pos.x = Math.max(-HALF, Math.min(HALF, k.pos.x)); k.pos.z = Math.max(-HALF, Math.min(HALF, k.pos.z));
+    k.dir = Math.atan2(dx, dz); k.mesh.position.set(k.pos.x, Math.abs(Math.sin(performance.now() / 90)) * 0.08, k.pos.z); k.mesh.rotation.y = k.dir; k.mesh.userData.anim(dt, sp / 3);
+    if (!P.hidden && d < 0.9) die('cut');
   });
-  if (w.cure) {
-    w.cure.glass.material.emissiveIntensity = w.got >= 3 ? 0.9 + Math.sin(w.t * 5) * 0.5 : 0.15;
-    if (!P.hidden && dist(w.cure.p, P.pos) < 1.6) { if (w.got >= 3) return win(); if (!w.cureMsg) { w.cureMsg = 1; toast(T('Locked — find the 3 green vials first', 'مقفول — لمّ الـ 3 أنابيب الخضرا الأول'), 1800); } }
-    else w.cureMsg = 0;
-  }
-  // guards
+  keys = keys.filter(k => !k.gone);
   let anySee = false;
-  w.guards.forEach(g => {
-    const d = dist(g.pos, P.pos);
-    const ang = Math.atan2(P.pos.x - g.pos.x, P.pos.z - g.pos.z);
-    let da = Math.abs(((ang - g.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
-    g.seeing = !P.hidden && ((d < LV.sight && da < 0.6 && canSee(g.pos, P.pos)) || d < 1.6);
-    if (g.seeing) { anySee = true; w.alert = Math.min(1, w.alert + dt * (1.6 - d / LV.sight)); if (w.alert > 0.35 && g.st !== 'pull') { g.st = 'chase'; g.lost = 0; } }
-    if (noisy && d < 7 && g.st === 'patrol') { g.st = 'look'; g.path = path(g.pos, P.pos); }
-    let target = null, sp = LV.speed;
-    if (g.st === 'chase') {
-      sp = LV.speed * 1.65;
-      if (g.seeing) { target = P.pos; g.path = []; g.last = { x: P.pos.x, z: P.pos.z }; }
-      else { g.lost += dt; if (!g.path.length && g.last) g.path = path(g.pos, g.last); if (g.lost > 3.5) { g.st = 'patrol'; g.path = []; } }
-      if (d < 0.95 && !P.hidden) return lose(T('A human caught you!', 'واحد من البشر مسكك!'));
-    }
-    if (g.st === 'pull') { sp = LV.speed * 1.6; if (!g.path.length) g.path = path(g.pos, P.back); if (dist(g.pos, P.back) < 1.3) return lose(T('They pulled you out of your hiding spot!', 'طلّعوك من مكانك!')); }
-    if (g.st === 'look' && !g.path.length) g.st = 'patrol';
-    if (g.st === 'patrol' && !g.path.length) g.path = path(g.pos, randomFloor());
-    if (!target && g.path.length) { target = g.path[0]; if (dist(g.pos, target) < 0.35) { g.path.shift(); target = g.path[0]; } }
-    if (target) {
-      const dx = target.x - g.pos.x, dz = target.z - g.pos.z, m = Math.hypot(dx, dz) || 1;
-      moveCircle(g.pos, dx / m * sp * dt, dz / m * sp * dt, 0.36);
-      const want = Math.atan2(dx, dz); let diff = ((want - g.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI; g.dir += diff * Math.min(1, dt * 8);
-    } else g.dir += dt * 0.8;
-    g.mesh.position.set(g.pos.x, 0, g.pos.z); g.mesh.rotation.y = g.dir; g.mesh.userData.anim(dt, target ? sp / 2.5 : 0, false);
-    g.cone.position.set(g.pos.x, 0.05, g.pos.z); g.cone.rotation.z = g.dir;
-    g.cone.material.color.set(g.st === 'chase' || g.st === 'pull' ? 0xef4444 : g.st === 'look' ? 0xfb923c : 0xfde047);
-    g.cone.material.opacity = g.st === 'chase' ? 0.28 : 0.18;
+  humans.forEach(h => { // humans walk around their dome and chase when they see you
+    const d = dist(h.pos, P.pos), ang = Math.atan2(P.pos.x - h.pos.x, P.pos.z - h.pos.z);
+    h.seeing = !P.hidden && ((d < 11 && angDiff(ang, h.dir) < 0.55 && canSee(h.pos, P.pos)) || d < 1.8);
+    if (h.seeing) { anySee = true; alert = Math.min(1, alert + dt * (1.7 - d / 11)); if (alert > 0.4 && h.st !== 'pull') { h.st = 'chase'; h.lost = 0; } h.last = { x: P.pos.x, z: P.pos.z }; }
+    let tx, tz, sp = 2.0 * h.spd;
+    if (h.st === 'chase') { sp = 3.5 * h.spd; if (!h.seeing) { h.lost += dt; if (h.lost > 3) h.st = 'back'; } tx = h.last.x; tz = h.last.z; if (d < 1 && !P.hidden) die('human'); }
+    else if (h.st === 'pull') { sp = 3.4 * h.spd; tx = P.pos.x; tz = P.pos.z; if (d < 1.4) die('human'); }
+    else { if (h.st === 'back' && Math.abs(dist(h.pos, h.base) - h.r) < 1.5) h.st = 'patrol'; h.ang += dt * 0.25 * h.spd; tx = h.base.x + Math.cos(h.ang) * h.r; tz = h.base.z + Math.sin(h.ang) * h.r; }
+    const dx = tx - h.pos.x, dz = tz - h.pos.z, m = Math.hypot(dx, dz);
+    if (m > 0.1) { moveCircle(h.pos, dx / m * sp * dt, dz / m * sp * dt, 0.38); const want = Math.atan2(dx, dz); h.dir += (((want - h.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 6); }
+    h.mesh.position.set(h.pos.x, 0, h.pos.z); h.mesh.rotation.y = h.dir; h.mesh.userData.anim(dt, m > 0.1 ? sp / 2.4 : 0);
+    h.cone.position.set(h.pos.x, 0.06, h.pos.z); h.cone.rotation.z = h.dir;
+    h.cone.material.color.set(h.st === 'chase' || h.st === 'pull' ? 0xef4444 : 0xfde047); h.cone.material.opacity = h.st === 'chase' ? 0.26 : 0.16;
   });
-  if (!anySee) w.alert = Math.max(0, w.alert - dt * 0.25);
+  if (!anySee) alert = Math.max(0, alert - dt * 0.22);
   if (state !== 'play') return;
-  $('hAlert').style.width = (w.alert * 100) + '%';
-  const s = Math.floor(w.t); $('hTime').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-  const focus = P.hidden ? P.back : P.pos;
-  follow(camera, focus, dt, innerWidth < innerHeight ? 14 : 11, innerWidth < innerHeight ? 9 : 8);
-  sun.position.set(focus.x + 14, 28, focus.z + 10); sun.target.position.set(focus.x, 0, focus.z);
+  const dm = dist(P.pos, M); // mission checks
+  if (M.type === 'reach') { if (dm < 2.2) completeMission(); }
+  else if (M.type === 'gems') { objs.forEach(o => { o.mesh.rotation.y += dt * 2; if (!o.got && dist(o.p, P.pos) < 1.3) { o.got = true; o.mesh.visible = false; gemsGot++; beep(1200, 0.08, 'sine'); hudMission(); } }); if (gemsGot >= 3) completeMission(); }
+  else if (M.type === 'keys') { if (!keys.some(k => k.alive && k.mission)) completeMission(); }
+  else if (M.type === 'fix') { if (dm < 2.4 && !P.hidden) { fixT += dt; objs[0].bulb.material.color.set(fixT > 3 ? 0x22c55e : 0xfacc15); if (Math.floor(fixT * 4) !== Math.floor((fixT - dt) * 4)) beep(400 + fixT * 150, 0.04, 'square', 0.025); if (fixT > 3) completeMission(); } else fixT = Math.max(0, fixT - dt); }
+  else if (M.type === 'sneak') { if (dm < 1.4 && !P.hidden) completeMission(); }
+  else if (M.type === 'rocket' && dist(P.pos, ROCKET) < 5.5) return launch();
+  const ax = M.x - P.pos.x, az = M.z - P.pos.z, deg = Math.atan2(ax, -az) * 180 / Math.PI;
+  $('arrowTip').innerHTML = '<svg viewBox="0 0 24 24" style="transform:rotate(' + deg.toFixed(0) + 'deg)" fill="#22d3ee"><path d="M12 2l7 18-7-4-7 4z"/></svg>' + Math.round(dm) + 'm';
+  $('hAlert').style.width = (alert * 100) + '%';
+  saveT += dt; if (saveT > 20 && alert < 0.1 && !P.hidden) { saveT = 0; save(true); }
+  BASES.forEach(b => b.tip.material.color.set(Math.sin(performance.now() / 300) > 0 ? 0xef4444 : 0x7f1d1d));
 }
 
-// ---------- screens ----------
 function showMenu() {
-  state = 'menu'; $('hud').hidden = true; $('end').hidden = true; $('menu').hidden = false;
-  const done = store.get('zl_done', 0), best = store.get('zl_best', {});
-  const box = $('levels'); box.innerHTML = '';
-  LEVELS.forEach((lv, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.disabled = i > done;
-    if (i < done) b.className = 'done';
-    const name = document.createElement('b'); name.textContent = (i + 1) + '. ' + (L() === 'en' ? lv.en : lv.ar); b.appendChild(name);
-    b.appendChild(document.createTextNode(i > done ? T('Locked', 'مقفولة') : best[i] ? T('Best ', 'أحسن وقت ') + best[i] + 's' : T('Play', 'العب')));
-    b.onclick = () => start(i); box.appendChild(b);
-  });
+  state = 'menu'; $('hud').hidden = true; $('end').hidden = true; $('story').hidden = true; $('menu').hidden = false;
+  const sv = load();
+  $('mCont').hidden = !sv;
+  $('mProg').textContent = sv ? (sv.m >= TOTAL ? T('All missions done — the rocket is waiting!', 'كل المهمات خلصت — الصاروخ مستنيك!') : T('Saved: mission ' + (sv.m + 1) + ' of 50', 'متحفظ: مهمة ' + (sv.m + 1) + ' من 50')) : '';
+  if (store.get('zm_won', false)) $('mProg').textContent += ' ' + T('· You escaped Mars once!', '· هربت من المريخ قبل كده!');
 }
-function start(n) {
-  level = n; build(n); state = 'play';
-  $('menu').hidden = true; $('end').hidden = true; $('hud').hidden = false;
-  $('hLevel').textContent = (n + 1) + '. ' + (L() === 'en' ? LEVELS[n].en : LEVELS[n].ar);
-  $('hVials').textContent = '0/3'; $('hAlert').style.width = '0';
-  toast(T('Find the 3 green vials', 'دوّر على الـ 3 أنابيب الخضرا'), 2200);
-}
-function win() {
-  if (state !== 'play') return; state = 'end'; beep(523, 0.15, 'triangle'); setTimeout(() => beep(784, 0.3, 'triangle'), 150);
-  const secs = Math.round(world.t), best = store.get('zl_best', {});
-  if (!best[level] || secs < best[level]) { best[level] = secs; store.set('zl_best', best); }
-  store.set('zl_done', Math.max(store.get('zl_done', 0), level + 1));
-  const last = level === LEVELS.length - 1;
-  $('eTitle').textContent = last ? T('Aser is human again!', 'آسر رجع إنسان تاني!') : T('Vaccine part found!', 'لقيت جزء من اللقاح!');
-  $('eText').textContent = last ? T('You built the full vaccine in ' + secs + ' seconds. The DINO lab is safe. You are a legend!', 'جمّعت اللقاح كله في ' + secs + ' ثانية. معمل DINO بقى في أمان. انت أسطورة!')
-    : T('Time: ' + secs + ' s. The next part is hidden somewhere harder…', 'الوقت: ' + secs + ' ثانية. الجزء الجاي متخبّي في مكان أصعب…');
-  $('eNext').textContent = last ? T('Play again', 'العب تاني') : T('Next level', 'المرحلة الجاية');
-  $('eNext').onclick = () => start(last ? 0 : level + 1);
-  $('hud').hidden = true; $('end').hidden = false;
-}
-function lose(msg) {
-  if (state !== 'play') return; state = 'end'; beep(160, 0.4, 'sawtooth');
-  $('eTitle').textContent = T('Caught!', 'اتمسكت!'); $('eText').textContent = msg + ' ' + T('Stay out of the light and hide early.', 'ابعد عن النور واستخبى بدري.');
-  $('eNext').textContent = T('Try again', 'جرّب تاني'); $('eNext').onclick = () => start(level);
-  $('hud').hidden = true; $('end').hidden = false;
-}
-$('eMenu').onclick = showMenu; $('bBack').onclick = showMenu;
-addEventListener('keydown', e => { if (e.code === 'Escape' && state === 'play') showMenu(); });
-document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); if (state === 'menu') showMenu(); });
+$('mCont').onclick = () => begin(true);
+$('mNew').onclick = () => { store.set('zm_save', null); playStory(() => begin(false)); };
+$('mStory').onclick = () => playStory(showMenu);
+$('eMenu').onclick = showMenu; $('bBack').onclick = () => { save(true); showMenu(); };
+addEventListener('keydown', e => { if (e.code === 'Escape' && state === 'play') { save(true); showMenu(); } });
+addEventListener('pagehide', () => { if (state === 'play') save(true); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && state === 'play') save(true); });
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); if (state === 'menu') showMenu(); if (!$('story').hidden) showScene(); if (M && state === 'play') hudMission(); });
+placePlayer(0, 4); setupMission(0);
 setLang(L()); showMenu();
+if (!store.get('zm_seen_story', false)) { store.set('zm_seen_story', true); playStory(() => begin(false)); } // first time: the story plays by itself
 
-// idle scene behind the menu
-build(0);
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (state === 'play' && world) step(dt);
-  else if (world) { const t = now / 4000; camera.position.set(Math.sin(t) * 18, 16, Math.cos(t) * 18); camera.lookAt(0, 0, 0); }
+  if (state === 'play') step(dt);
+  if (state === 'play' || state === 'dying') {
+    const f = P.pos; follow(camera, f, dt, innerWidth < innerHeight ? 15 : 12, innerWidth < innerHeight ? 10 : 9);
+    sun.position.set(f.x + 16, 30, f.z + 12); sun.target.position.set(f.x, 0, f.z);
+  }
+  if (state === 'dying') {
+    deadAnim.t += dt;
+    deadAnim.halves.forEach(h => { h.g.position.x += h.s * dt * 0.8; h.g.rotation.z = -h.s * Math.min(1.4, deadAnim.t * 2); });
+    if (deadAnim.t > 1.6) afterDeath();
+  }
+  if (state === 'launch' || (state === 'end' && launchT > 0)) {
+    launchT += dt;
+    if (launchT > 1) rocket.position.y += dt * (launchT - 1) * 9;
+    flame.scale.setScalar(1 + Math.sin(now / 40) * 0.15);
+    camera.position.lerp(new THREE.Vector3(ROCKET.x + 22, 10 + Math.min(60, rocket.position.y * 0.5), ROCKET.z + 26), 1 - Math.pow(0.02, dt));
+    camera.lookAt(ROCKET.x, rocket.position.y + 6, ROCKET.z);
+    sun.position.set(ROCKET.x + 16, 30, ROCKET.z + 12); sun.target.position.set(ROCKET.x, 0, ROCKET.z);
+    if (state === 'launch' && launchT > 7) {
+      state = 'end'; $('end').hidden = false;
+      $('eTitle').textContent = T('You escaped Mars!', 'هربت من المريخ!');
+      $('eText').textContent = T('After 50 missions the creature-scientist flies home. Part 2 (space levels) comes in a next update!', 'بعد 50 مهمة العالِم المخلوق طار راجع. الجزء التاني (مراحل الفضاء) جاي في تحديث قريب!');
+      $('eNext').textContent = T('Play again', 'العب تاني'); $('eNext').onclick = () => { store.set('zm_save', null); playStory(() => begin(false)); };
+    }
+  }
+  if (state === 'menu' || (state === 'end' && launchT === 0)) { const a = now / 6000; camera.position.set(Math.sin(a) * 40, 22, Math.cos(a) * 40); camera.lookAt(0, 0, 0); }
   renderer.render(scene, camera); endFrame();
   requestAnimationFrame(frame);
 }
