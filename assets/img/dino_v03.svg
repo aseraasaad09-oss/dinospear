@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+ <defs>
+  <radialGradient id="sky" cx="50%" cy="78%" r="85%"><stop offset="0" stop-color="#ffd27a"/><stop offset=".25" stop-color="#ff8f4d"/><stop offset=".55" stop-color="#7a3f8f"/><stop offset="1" stop-color="#14183a"/></radialGradient>
+  <linearGradient id="mt1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b2a5e"/><stop offset="1" stop-color="#2a1838"/></linearGradient>
+  <linearGradient id="mt2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1a33"/><stop offset="1" stop-color="#130c1a"/></linearGradient>
+  <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a1f"/><stop offset="1" stop-color="#140d08"/></linearGradient>
+  <radialGradient id="skinB" cx="35%" cy="30%" r="85%"><stop offset="0" stop-color="#8fd36b"/><stop offset=".35" stop-color="#4f9a3a"/><stop offset=".75" stop-color="#2c5e25"/><stop offset="1" stop-color="#16331a"/></radialGradient>
+  <radialGradient id="skinH" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#a6e07e"/><stop offset=".4" stop-color="#5aa843"/><stop offset="1" stop-color="#1f4720"/></radialGradient>
+  <linearGradient id="bellyG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e7dca0"/><stop offset="1" stop-color="#a99a5c"/></linearGradient>
+  <linearGradient id="rimL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb35c" stop-opacity="0"/><stop offset="1" stop-color="#ffb35c" stop-opacity=".85"/></linearGradient>
+  <linearGradient id="shaftG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a2c12"/><stop offset=".5" stop-color="#a8713d"/><stop offset="1" stop-color="#3b220d"/></linearGradient>
+  <linearGradient id="bladeG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdfdfd"/><stop offset=".3" stop-color="#c9d2dc"/><stop offset=".6" stop-color="#6f7c8c"/><stop offset="1" stop-color="#e6ecf2"/></linearGradient>
+  <radialGradient id="eyeG" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff3a0"/><stop offset=".55" stop-color="#ff9a00"/><stop offset="1" stop-color="#7a3a00"/></radialGradient>
+  <pattern id="sc" width="22" height="16" patternUnits="userSpaceOnUse"><path d="M0 16a11 11 0 0 1 22 0" fill="none" stroke="#0f2a12" stroke-opacity=".38" stroke-width="2"/><circle cx="11" cy="10" r="1.6" fill="#c8f0a0" opacity=".18"/></pattern>
+  <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="glow"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="ds" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".55"/></filter>
+ </defs>
+
+ <!-- sky + sun -->
+ <rect width="1024" height="1024" fill="url(#sky)"/>
+ <circle cx="512" cy="760" r="210" fill="#ffe7a3" opacity=".55" filter="url(#glow)"/>
+ <circle cx="512" cy="760" r="120" fill="#fff1c7" opacity=".9"/>
+ <!-- mountains -->
+ <path d="M0 700L140 520 250 610 380 470 520 640 650 500 790 620 900 520 1024 640V1024H0z" fill="url(#mt1)" opacity=".9"/>
+ <path d="M0 790L120 690 260 760 360 680 470 770 600 700 760 790 880 720 1024 780V1024H0z" fill="url(#mt2)"/>
+ <!-- volcano smoke -->
+ <path d="M380 470c-30-60 20-90 0-150 40 30 60 80 30 140z" fill="#2b1838" opacity=".5" filter="url(#soft)"/>
+ <!-- ground -->
+ <path d="M0 860C200 830 820 830 1024 860V1024H0z" fill="url(#ground)"/>
+ <ellipse cx="520" cy="905" rx="300" ry="34" fill="#000" opacity=".55" filter="url(#soft)"/>
+
+ <!-- SPEAR (behind body, held by both hands) -->
+ <g filter="url(#ds)">
+  <path d="M250 930L760 170" stroke="url(#shaftG)" stroke-width="24" stroke-linecap="round"/>
+  <path d="M250 930L760 170" stroke="#fff" stroke-opacity=".18" stroke-width="5" stroke-linecap="round" transform="translate(-6 -3)"/>
+  <rect x="715" y="206" width="56" height="24" rx="8" transform="rotate(-56 743 218)" fill="#c98a1a" stroke="#6b4300" stroke-width="3"/>
+  <path d="M760 170l-8-86 80-24-14 84z" fill="url(#bladeG)" stroke="#4b5868" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M766 160l46-80" stroke="#fff" stroke-width="5" opacity=".8"/>
+  <path d="M752 84l-30-6 18 30M832 60l26-18-6 32" fill="none" stroke="#c98a1a" stroke-width="7" stroke-linecap="round"/>
+ </g>
+
+ <!-- TAIL -->
+ <g filter="url(#ds)">
+  <path d="M360 690C250 720 150 780 60 850c90-20 190-60 300-80z" fill="url(#skinB)" stroke="#0f2a12" stroke-width="5"/>
+  <path d="M360 690C250 720 150 780 60 850c90-20 190-60 300-80z" fill="url(#sc)"/>
+ </g>
+
+ <!-- BACK LEG -->
+ <path d="M410 720c-30 60-40 120-20 170h-40c-10 12 0 22 18 22h86c6-60 20-120 40-170z" fill="#24501f" stroke="#0f2a12" stroke-width="5"/>
+
+ <!-- BODY -->
+ <g filter="url(#ds)">
+  <path d="M360 760C330 640 380 520 470 450c70-55 150-60 190-30 40 30 40 90 10 160-30 75-60 150-120 200-60 40-150 40-190-20z" fill="url(#skinB)" stroke="#0f2a12" stroke-width="6"/>
+  <path d="M360 760C330 640 380 520 470 450c70-55 150-60 190-30 40 30 40 90 10 160-30 75-60 150-120 200-60 40-150 40-190-20z" fill="url(#sc)"/>
+  <path d="M560 470c40 40 40 120 10 190-24 56-54 110-100 130-30 12-60 8-80-6 60-10 110-60 140-130 30-70 40-140 30-184z" fill="url(#bellyG)" opacity=".95"/>
+  <path d="M590 500l20 8M585 540l24 6M576 580l24 4M562 620l22 2M545 660l20 0" stroke="#7d6f3a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M640 430c30 30 34 90 8 150" fill="none" stroke="url(#rimL)" stroke-width="12" stroke-linecap="round"/>
+  <!-- back spikes -->
+  <path d="M430 470l-10-52 40 30zM480 438l2-58 34 46zM540 420l16-56 22 54z" fill="#e2671e" stroke="#6b2a07" stroke-width="4" stroke-linejoin="round"/>
+ </g>
+
+ <!-- FRONT LEG -->
+ <g filter="url(#ds)">
+  <path d="M470 740c40 30 60 80 50 150h50c14 10 8 24-10 24h-110c-10-60-10-110 0-160z" fill="url(#skinB)" stroke="#0f2a12" stroke-width="5"/>
+  <path d="M520 914l-6 14M548 914l-4 16M574 914l0 14" stroke="#e8e2c8" stroke-width="6" stroke-linecap="round"/>
+ </g>
+
+ <!-- NECK + HEAD -->
+ <g filter="url(#ds)">
+  <path d="M560 470c20-60 50-110 110-140l60 40c-40 30-70 70-90 130z" fill="url(#skinH)" stroke="#0f2a12" stroke-width="6"/>
+  <path d="M600 360c10-70 70-120 150-120 70 0 140 30 170 80 10 18 4 40-14 48l-60 26c20 6 30 20 24 34-10 24-60 30-110 26-60-4-120-20-150-50-20-14-24-30-10-44z" fill="url(#skinH)" stroke="#0f2a12" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M600 360c10-70 70-120 150-120 70 0 140 30 170 80 10 18 4 40-14 48l-60 26c20 6 30 20 24 34-10 24-60 30-110 26-60-4-120-20-150-50-20-14-24-30-10-44z" fill="url(#sc)"/>
+  <!-- jaw line + teeth -->
+  <path d="M640 410c60 20 140 24 230 0" fill="none" stroke="#0f2a12" stroke-width="6" stroke-linecap="round"/>
+  <path d="M690 414l8 16 8-14 8 16 8-15 8 16 8-15 8 15 8-15 8 14 8-15 8 13" fill="#f4f0dc" stroke="#6b6650" stroke-width="2" stroke-linejoin="round"/>
+  <!-- nostril, brow, eye -->
+  <ellipse cx="880" cy="330" rx="9" ry="6" fill="#0f2a12"/>
+  <path d="M700 300c30-26 80-30 110-10" fill="none" stroke="#173a16" stroke-width="14" stroke-linecap="round"/>
+  <ellipse cx="752" cy="320" rx="24" ry="20" fill="url(#eyeG)" stroke="#0f2a12" stroke-width="5"/>
+  <ellipse cx="756" cy="322" rx="6" ry="15" fill="#120a00"/>
+  <circle cx="744" cy="312" r="6" fill="#fff"/>
+  <!-- head spikes + rim light -->
+  <path d="M640 300l-30-40 46 14zM672 268l-18-48 42 30z" fill="#e2671e" stroke="#6b2a07" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M760 250c60 0 120 24 150 70" fill="none" stroke="url(#rimL)" stroke-width="10" stroke-linecap="round"/>
+  <path d="M700 280c20-20 60-30 90-26" fill="none" stroke="#d6ffb0" stroke-width="6" stroke-linecap="round" opacity=".45"/>
+ </g>
+
+ <!-- ARMS gripping the spear (in front of the spear) -->
+ <g filter="url(#ds)">
+  <path d="M600 500c-10 40-40 70-80 90l-10 24c-4 12 10 18 20 10l30-30 26-20c30-20 46-50 50-80z" fill="url(#skinH)" stroke="#0f2a12" stroke-width="5"/>
+  <path d="M640 560c-6 50-30 90-60 110l-8 22c-4 12 10 18 20 8l26-28c24-24 40-60 46-100z" fill="url(#skinH)" stroke="#0f2a12" stroke-width="5"/>
+  <!-- claws wrapped on the shaft -->
+  <path d="M514 610c10-8 22-10 30-4M520 626c10-6 22-6 30 0" stroke="#efe6c6" stroke-width="6" stroke-linecap="round"/>
+  <path d="M572 682c10-8 22-10 30-4M576 698c10-6 22-6 30 0" stroke="#efe6c6" stroke-width="6" stroke-linecap="round"/>
+ </g>
+
+ <!-- foreground light & vignette -->
+ <rect width="1024" height="1024" fill="url(#sky)" opacity=".06"/>
+ <radialGradient id="vg" cx="50%" cy="50%" r="75%"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient>
+ <rect width="1024" height="1024" fill="url(#vg)"/>
+</svg>

@@ -6,7 +6,8 @@
 <title>DINOSPEAR</title>
 <meta name="description" content="DINOSPEAR — موقع ASER WORLD: المدينة 3D، الشات، الشطرنج، الأفكار، والديمو.">
 <meta name="theme-color" content="#2f6fe4">
-<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9IiMyZjZmZTQiLz48cGF0aCBkPSJNMTQgNDRjMC0xMiA4LTIyIDIxLTIyaDVjNiAwIDEwIDQgMTAgOXYzYzAgMi0yIDQtNCA0aC05bC0zIDZIMTR6IiBmaWxsPSIjN2JkODhmIi8+PHBhdGggZD0iTTI3IDIybDMtNyAzIDdNMzUgMjJsMy03IDMgN00yMCAyNmwyLTYgNCA1IiBmaWxsPSIjNGNhZjYzIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOSIgcj0iMi42IiBmaWxsPSIjMTYyMTNmIi8+PHBhdGggZD0iTTQwIDM3aDYiIHN0cm9rZT0iIzE2MjEzZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOCA1NEw1NiAxMCIgc3Ryb2tlPSIjZmZkMDQwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NiAxMGwtOSAyIDcgN3oiIGZpbGw9IiNmZmQwNDAiLz48cGF0aCBkPSJNMTQgNDRoMTh2NEgxNHoiIGZpbGw9IiM0Y2FmNjMiLz48L3N2Zz4=" type="image/svg+xml">
+<script>try{var t=localStorage.getItem("ds_theme")||"day";if(t==="auto"){var h=new Date().getHours();t=(h>=19||h<6)?"night":"day"}document.documentElement.dataset.theme=t;if(localStorage.getItem("ds_motion")==="off")document.documentElement.dataset.motion="off"}catch(e){}</script>
+<link rel="icon" href="assets/img/logo_v02.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -111,18 +112,79 @@ footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
  .acct .who{display:none}
  section{padding:40px 0}
 }
-</style>
-</head>
+
+/* views: one screen at a time, iframes fill the screen (no double scrolling) */
+section[data-v]{display:none}body.v-home section[data-v="home"]{display:block}
+body.v-pchat #pchat,body.v-admin #admin,body.v-town3d #town3d,body.v-app #app,body.v-demo #demo,body.v-ideas #ideas,body.v-helper #helper{display:block}
+section.full{padding:8px 0 0}section.full .wrap{max-width:none;padding:0 8px}
+section.full .kicker,section.full h2,section.full .lead{display:none}#admin h2{display:block!important}
+section.full .frame{margin-top:0;border-radius:16px}
+section.full .frame iframe{height:calc(100dvh - var(--hh,64px) - 16px)!important;min-height:0}
+section.full .cta{display:none}
+body.v-full footer{display:none}body.v-full{overflow:hidden}
+nav.main a.on{background:var(--blue);color:#fff}
+
+html[data-theme="night"]{--bg:#0b1226;--bg2:#0f1833;--card:#16213f;--ink:#eef2ff;--muted:#a9b6dc;--line:#2a3a6b;--blue:#4f8dff;--blue2:#8fb4ff}
+html[data-theme="night"] body{background:radial-gradient(1200px 700px at 80% -10%,#1d2f6b 0,var(--bg) 55%,#070b18 100%)}
+html[data-theme="night"] header{background:rgba(12,18,40,.85)}
+html[data-theme="night"] input[type=text],html[data-theme="night"] input[type=password],html[data-theme="night"] textarea{background:#0f1833;color:var(--ink)}
+html[data-theme="night"] .tabs{background:#0f1833}html[data-theme="night"] .tabs button[aria-selected="true"]{background:#1d2b55}
+html[data-theme="night"] .btn.ghost{background:transparent;color:var(--ink)}
+html[data-theme="night"] .lang button{background:transparent;color:var(--muted)}
+body{transition:background .4s,color .4s}
+.hero .pic{position:relative}.hero .pic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.35));pointer-events:none}
+.hero .dino{position:absolute;inset-inline-end:-18px;bottom:-26px;width:42%;max-width:260px;filter:drop-shadow(0 18px 24px rgba(0,0,0,.45));animation:bob 4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-1deg)}}
+.feat{transition:transform .2s,box-shadow .2s}.feat:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(30,60,140,.18)}
+.iconbtn{width:42px;height:42px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.iconbtn svg{width:22px;height:22px}
+/* settings + admin + public chat */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(5,10,25,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet[hidden]{display:none}
+.sheet .box{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:24px;max-width:460px;width:100%;padding:22px;max-height:90vh;overflow:auto}
+.sheet h3{margin:0 0 14px;font-size:22px}.opt{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.seg{display:flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}.seg button{border:0;background:transparent;color:var(--muted);padding:8px 12px;font-weight:800;cursor:pointer}.seg button.on{background:var(--blue);color:#fff}
+.pc{display:flex;flex-direction:column;height:calc(100dvh - var(--hh,64px) - 16px);background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.pc .feed{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.pc .msg{max-width:80%;padding:8px 12px;border-radius:14px;background:var(--bg);align-self:flex-start;line-height:1.6}
+.pc .msg.me{align-self:flex-end;background:var(--blue);color:#fff}.pc .msg b{display:block;font-size:12.5px;opacity:.8}.pc .msg .adm{color:#f5b800}
+.pc form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}.pc input{flex:1;padding:12px;border-radius:12px;border:2px solid var(--line);font:600 16px var(--body);background:var(--bg2);color:var(--ink)}
+.pc .note{padding:6px 14px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line)}
+.adm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:12px}
+.adm-grid button{min-height:52px}.adm-out{white-space:pre-wrap;background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;min-height:48px;font-family:ui-monospace,monospace;font-size:13.5px;direction:ltr;text-align:left}
+.admin-wrap{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;height:calc(100dvh - var(--hh,64px) - 16px);overflow:auto}
+.admin-wrap input{width:100%;padding:12px;border-radius:12px;border:2px solid var(--line);font:600 16px var(--body);background:var(--bg2);color:var(--ink);margin-top:6px}
+html[data-motion="off"] *{animation:none!important;transition:none!important}</style>
+<style id="v04">
+/* V04: one long page — no small scrolling boxes; compact header on phones; uses the full width */
+body.v-scroll #app,body.v-scroll #ideas,body.v-scroll #helper,body.v-scroll #pchat,body.v-scroll #admin{padding:8px 0 24px}
+body.v-scroll section .wrap{max-width:none;padding:0 8px}
+body.v-scroll section .kicker,body.v-scroll section h2:not(#admin h2),body.v-scroll section .lead,body.v-scroll section .cta{display:none}
+body.v-scroll .frame{margin-top:0;border-radius:16px}
+body.v-scroll .pc{height:auto;min-height:calc(100dvh - var(--hh,64px) - 24px)}body.v-scroll .pc .feed{overflow:visible;min-height:50vh}
+body.v-scroll .pc form{position:sticky;bottom:0;background:var(--card);z-index:2}
+body.v-scroll .admin-wrap{height:auto;overflow:visible}
+body.v-scroll #app,body.v-scroll #ideas,body.v-scroll #helper,body.v-scroll #pchat,body.v-scroll #admin{display:none}
+body.v-app #app,body.v-ideas #ideas,body.v-helper #helper,body.v-pchat #pchat,body.v-admin #admin{display:block}
+@media (max-width:760px){
+ header .wrap{gap:6px;padding-top:6px;padding-bottom:6px}
+ .brand{font-size:18px}.brand img{width:30px;height:30px}
+ .iconbtn{width:38px;height:38px}
+ nav.main{display:flex;overflow-x:auto;scrollbar-width:none;gap:4px;-webkit-overflow-scrolling:touch}nav.main::-webkit-scrollbar{display:none}
+ nav.main a{white-space:nowrap;padding:8px 12px;font-size:14.5px}
+}
+@media (min-width:1500px){.wrap{max-width:1400px}}
+</style><script src="assets/js/icons.js" defer></script></head>
 <body>
 <header>
  <div class="wrap">
-  <a class="brand" href="#top" aria-label="DINOSPEAR"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9IiMyZjZmZTQiLz48cGF0aCBkPSJNMTQgNDRjMC0xMiA4LTIyIDIxLTIyaDVjNiAwIDEwIDQgMTAgOXYzYzAgMi0yIDQtNCA0aC05bC0zIDZIMTR6IiBmaWxsPSIjN2JkODhmIi8+PHBhdGggZD0iTTI3IDIybDMtNyAzIDdNMzUgMjJsMy03IDMgN00yMCAyNmwyLTYgNCA1IiBmaWxsPSIjNGNhZjYzIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOSIgcj0iMi42IiBmaWxsPSIjMTYyMTNmIi8+PHBhdGggZD0iTTQwIDM3aDYiIHN0cm9rZT0iIzE2MjEzZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOCA1NEw1NiAxMCIgc3Ryb2tlPSIjZmZkMDQwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NiAxMGwtOSAyIDcgN3oiIGZpbGw9IiNmZmQwNDAiLz48cGF0aCBkPSJNMTQgNDRoMTh2NEgxNHoiIGZpbGw9IiM0Y2FmNjMiLz48L3N2Zz4=" alt="">DINOSPEAR</a>
+  <a class="brand" href="#top" aria-label="DINOSPEAR"><img src="assets/img/logo_v02.svg" alt="">DINOSPEAR</a>
   <nav class="main" id="nav" hidden>
-   <a href="#home" data-i="n_home"></a><a href="#town3d" data-i="n_town"></a><a href="#app" data-i="n_app"></a><a href="demo/" data-i="n_demo"></a><a href="#ideas" data-i="n_ideas"></a><a href="#roadmap" data-i="n_road"></a><a href="#game" data-i="n_game"></a><a href="#helper" data-i="n_helper"></a><a href="#community" data-i="n_comm"></a>
+   <a href="#home" data-i="n_home"></a><a href="#town3d" data-i="n_town"></a><a href="#app" data-i="n_app"></a><a href="#pchat" data-i="n_pchat"></a><a href="#demo" data-i="n_demo"></a><a href="#ideas" data-i="n_ideas"></a><a href="#helper" data-i="n_helper"></a><a href="#video" data-i="n_video"></a><a href="article.html" data-i="n_art"></a><a href="#roadmap" data-i="n_road"></a><a href="#community" data-i="n_comm"></a><a href="#admin" id="navAdmin" hidden data-i="n_admin"></a>
   </nav>
   <div class="acct">
    <div class="lang"><button type="button" data-l="ar">ع</button><button type="button" data-l="en">EN</button></div>
-   <span class="who" id="who"></span>
+   <span class="who" id="who"></span><button class="iconbtn" type="button" id="themeBtn" title="Day / Night"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button><button class="iconbtn" type="button" id="setBtn" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
    <button class="btn sm ghost" type="button" id="outBtn" hidden data-i="signout"></button>
   </div>
  </div>
@@ -132,7 +194,7 @@ footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
 <!-- ===== sign-in gate: nothing else is shown until you sign in ===== -->
 <div id="gate">
  <div class="gcard">
-  <div class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTUiIGZpbGw9IiMyZjZmZTQiLz48cGF0aCBkPSJNMTQgNDRjMC0xMiA4LTIyIDIxLTIyaDVjNiAwIDEwIDQgMTAgOXYzYzAgMi0yIDQtNCA0aC05bC0zIDZIMTR6IiBmaWxsPSIjN2JkODhmIi8+PHBhdGggZD0iTTI3IDIybDMtNyAzIDdNMzUgMjJsMy03IDMgN00yMCAyNmwyLTYgNCA1IiBmaWxsPSIjNGNhZjYzIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSIyOSIgcj0iMi42IiBmaWxsPSIjMTYyMTNmIi8+PHBhdGggZD0iTTQwIDM3aDYiIHN0cm9rZT0iIzE2MjEzZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOCA1NEw1NiAxMCIgc3Ryb2tlPSIjZmZkMDQwIiBzdHJva2Utd2lkdGg9IjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NiAxMGwtOSAyIDcgN3oiIGZpbGw9IiNmZmQwNDAiLz48cGF0aCBkPSJNMTQgNDRoMTh2NEgxNHoiIGZpbGw9IiM0Y2FmNjMiLz48L3N2Zz4=" alt=""><h1>DINOSPEAR</h1></div>
+  <div class="logo"><img src="assets/img/logo_v02.svg" alt=""><h1>DINOSPEAR</h1></div>
   <p class="sub" data-i="g_sub"></p>
   <div class="tabs" role="tablist"><button type="button" id="tIn" aria-selected="true" data-i="signin"></button><button type="button" id="tUp" aria-selected="false" data-i="signup"></button></div>
   <form id="aForm" autocomplete="on" novalidate>
@@ -152,7 +214,7 @@ footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
 
 <!-- ===== the site (after sign-in) ===== -->
 <div id="site" hidden>
- <section class="hero" id="home"><div class="wrap grid">
+ <section class="hero" id="home" data-v="home"><div class="wrap grid">
   <div>
    <span class="pill" data-i="h_pill"></span>
    <h1>ASER WORLD</h1>
@@ -160,52 +222,73 @@ footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
    <p class="by" data-i="h_by"></p>
    <div class="cta">
     <a class="btn" href="#town3d"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg><span data-i="c_town"></span></a>
-    <a class="btn gold" href="demo/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="12" r="1.2" fill="currentColor"/><circle cx="18.5" cy="14.5" r="1.2" fill="currentColor"/></svg><span data-i="c_demo"></span></a>
+    <a class="btn gold" href="#demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="5"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="12" r="1.2" fill="currentColor"/><circle cx="18.5" cy="14.5" r="1.2" fill="currentColor"/></svg><span data-i="c_demo"></span></a>
     <button class="btn ghost" type="button" id="installBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg><span data-i="install"></span></button>
    </div>
   </div>
-  <div class="pic"><img src="assets/img/world.jpg" alt="ASER WORLD" loading="eager"></div>
+  <div class="pic"><img src="assets/img/world.jpg" alt="ASER WORLD" loading="eager"><img class="dino" src="assets/img/dino_v03.svg" alt=""></div>
  </div></section>
 
 
 
- <section id="town3d"><div class="wrap">
+ <section id="town3d" data-v="town3d" class="full"><div class="wrap">
   <span class="kicker" data-i="t_k"></span><h2 data-i="t_h"></h2><p class="lead" data-i="t_p"></p>
-  <div class="frame town"><iframe id="townFrame" src="town/index.html" title="TOWN DINOSPEAR 3D" loading="lazy" allow="fullscreen; autoplay; clipboard-write" allowfullscreen></iframe></div>
+  <div class="frame"><iframe id="townFrame" data-src="town/index.html" title="TOWN DINOSPEAR 3D" loading="lazy" allow="fullscreen; autoplay; clipboard-write" allowfullscreen></iframe></div>
   <div class="cta"><button class="btn" type="button" id="townFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span data-i="t_full"></span></button></div>
  </div></section>
- <section id="app"><div class="wrap">
+ <section id="video" data-v="home"><div class="wrap">
+  <span class="kicker" data-i="v_k"></span><h2 data-i="v_h"></h2>
+  <div class="frame"><video src="assets/video/DINOSPEAR_Video_V01.mp4" poster="assets/video/poster.jpg" controls preload="none" playsinline style="display:block;width:100%;aspect-ratio:16/9;background:#000"></video></div>
+ </div></section>
+ <section id="app" data-v="app" class="full"><div class="wrap">
   <span class="kicker" data-i="a_k"></span><h2 data-i="a_h"></h2><p class="lead" data-i="a_p"></p>
-  <div class="frame"><iframe src="app/city.html" title="DINOSPEAR app" loading="lazy" allow="clipboard-write"></iframe></div>
+  <div class="frame"><iframe data-src="app/city.html" title="DINOSPEAR app" loading="lazy" allow="clipboard-write"></iframe></div>
  </div></section>
 
- <section id="ideas"><div class="wrap">
+
+ <section id="demo" data-v="demo" class="full"><div class="wrap">
+  <div class="frame"><iframe data-src="demo/index.html" title="ASER demos" allow="fullscreen; autoplay" allowfullscreen></iframe></div>
+ </div></section>
+
+ <section id="pchat" data-v="pchat" class="full"><div class="wrap">
+  <div class="pc"><div class="feed" id="pcFeed" aria-live="polite"></div>
+   <div class="note" data-i="pc_rules"></div>
+   <form id="pcForm" autocomplete="off"><input id="pcIn" maxlength="300" data-ph="pc_ph"><button class="btn" type="submit" data-i="pc_send"></button></form></div>
+ </div></section>
+ <section id="admin" data-v="admin" class="full"><div class="wrap"><div class="admin-wrap">
+  <h2 style="font-size:32px" data-i="ad_h"></h2>
+  <label for="adUser" data-i="ad_user"></label><input id="adUser" autocomplete="off">
+  <label for="adArg" data-i="ad_arg"></label><input id="adArg" autocomplete="off">
+  <div class="adm-grid" id="adBtns"></div>
+  <div class="adm-out" id="adOut">—</div>
+ </div></div></section>
+ <section id="ideas" data-v="ideas" class="full"><div class="wrap">
   <span class="kicker" data-i="i_k"></span><h2 data-i="i_h"></h2>
-  <div class="frame mid"><iframe src="app/ideas.html" title="Ideas" loading="lazy"></iframe></div>
+  <div class="frame"><iframe data-src="app/ideas.html" title="Ideas" loading="lazy"></iframe></div>
  </div></section>
 
- <section id="roadmap"><div class="wrap">
+ <section id="roadmap" data-v="home"><div class="wrap">
   <span class="kicker" data-i="r_k"></span><h2 data-i="r_h"></h2>
   <p class="lead"><b style="font-size:28px;color:var(--blue2)">56%</b> <span data-i="r_p"></span></p>
   <div class="bar"><i></i></div>
   <div class="road" id="road"></div>
  </div></section>
 
- <section id="game"><div class="wrap">
+ <section id="game" data-v="home"><div class="wrap">
   <span class="kicker" data-i="f_k"></span><h2 data-i="f_h"></h2>
   <div class="feats" id="feats"></div>
  </div></section>
 
- <section id="watcher"><div class="wrap">
+ <section id="watcher" data-v="home"><div class="wrap">
   <div class="watch"><img src="assets/img/watcher.jpg" alt="" loading="lazy"><div><span class="pill">THE WATCHER</span><h2 data-i="w_h"></h2><p data-i="w_p"></p></div></div>
  </div></section>
 
- <section id="helper"><div class="wrap">
+ <section id="helper" data-v="helper" class="full"><div class="wrap">
   <span class="kicker" data-i="hp_k"></span><h2 data-i="hp_h"></h2>
-  <div class="frame mid"><iframe src="app/helper.html" title="ASER Helper" loading="lazy"></iframe></div>
+  <div class="frame"><iframe data-src="app/helper.html" title="ASER Helper" loading="lazy"></iframe></div>
  </div></section>
 
- <section id="community"><div class="wrap">
+ <section id="community" data-v="home"><div class="wrap">
   <span class="kicker" data-i="cm_k"></span><h2 data-i="cm_h"></h2>
   <div class="cards">
    <div class="card"><div class="ic" style="background:#eceeff"><svg viewBox="0 0 24 24" fill="#5865f2"><path d="M20 5.3A17 17 0 0 0 15.8 4l-.5 1a15 15 0 0 0-6.6 0l-.5-1A17 17 0 0 0 4 5.3C1.4 9.2.7 13 1 16.8A17 17 0 0 0 6.2 19.4l1.1-1.7a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 12 0l.4.3-1.7.8 1.1 1.7a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.2-3-11.5zM8.7 14.5c-1 0-1.9-.9-1.9-2s.8-2 1.9-2 1.9.9 1.9 2-.8 2-1.9 2zm6.6 0c-1 0-1.9-.9-1.9-2s.8-2 1.9-2 1.9.9 1.9 2-.8 2-1.9 2z"/></svg></div><h3 data-i="cm_d"></h3><p data-i="cm_dp"></p><a class="btn" style="background:#5865f2" href="https://discord.gg/zyqsh6mMw" target="_blank" rel="noopener" data-i="cm_db"></a></div>
@@ -214,183 +297,28 @@ footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
  </div></section>
 </div>
 </main>
+
+<div class="sheet" id="sheet" hidden><div class="box" role="dialog" aria-modal="true">
+ <h3 data-i="st_h"></h3>
+ <div class="opt"><b data-i="st_theme"></b><div class="seg" id="segTheme"><button type="button" data-v="day" data-i="st_day"></button><button type="button" data-v="night" data-i="st_night"></button><button type="button" data-v="auto" data-i="st_auto"></button></div></div>
+ <div class="opt"><b data-i="st_lang"></b><div class="seg" id="segLang"><button type="button" data-v="ar">عربي</button><button type="button" data-v="en">English</button></div></div>
+ <div class="opt"><b data-i="st_motion"></b><div class="seg" id="segMotion"><button type="button" data-v="on" data-i="st_on"></button><button type="button" data-v="off" data-i="st_off"></button></div></div>
+ <div class="opt"><b data-i="st_acc"></b><span id="stWho" style="direction:ltr"></span></div>
+ <div style="display:flex;gap:10px;margin-top:16px"><button class="btn ghost" type="button" id="stOut" data-i="signout" style="flex:1"></button><button class="btn" type="button" id="stClose" data-i="close" style="flex:1"></button></div>
+</div></div>
 <footer><div class="wrap"><span data-i="foot"></span></div></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="key.js"></script>
-<script>// DINOSPEAR — shared account rules V01
-// - spaces anywhere in the name or password are ignored (removed) on sign-up AND sign-in
-// - names: any letters (Arabic or English), numbers and symbols except < >  (3–16 characters)
-// - passwords: anything, at least 8 characters (after removing spaces)
-// - confirmation popup before sign-out and before deleting the account
-(function () {
-  var DSA = {};
-  DSA.u = function (s) { return String(s || '').replace(/\s+/g, ''); };
-  DSA.p = function (s) { return String(s || '').replace(/\s+/g, ''); };
-  function utf8hex(s) {
-    var b = new TextEncoder().encode(s), h = '';
-    for (var i = 0; i < b.length; i++) h += ('0' + b[i].toString(16)).slice(-2);
-    return h;
-  }
-  // same mapping as before for every name that already exists (ASCII); UTF-8 for new Arabic names
-  DSA.mail = function (name, domain) {
-    var n = DSA.u(name).toLowerCase(), d = '@' + (domain || 'players.aserworld.com');
-    if (/^[a-z0-9_]+$/.test(n)) return n + d;
-    return 'u.' + utf8hex(n) + d;
-  };
-  DSA.ok = function (name) {
-    var n = DSA.u(name), len = Array.from(n).length;
-    if (len < 3 || len > 16) return false;
-    if (/[<>\u0000-\u001f\u007f]/.test(n)) return false;
-    return ('u.' + utf8hex(n.toLowerCase())).length <= 64;
-  };
-  DSA.pok = function (pass) { return DSA.p(pass).length >= 8; };
-  DSA.lang = function () { try { return localStorage.getItem('aser_lang') === 'en' ? 'en' : 'ar'; } catch (e) { return 'ar'; } };
-  DSA.t = function (en, ar) { return DSA.lang() === 'en' ? en : ar; };
-  DSA.urule = function () { return DSA.t('Name: 3 to 16 characters — Arabic or English letters, numbers and symbols. Spaces are ignored. Don\'t use your real name.', 'الاسم: من 3 لـ 16 — حروف عربي أو إنجليزي وأرقام ورموز. المسافات مش بتتحسب. ما تكتبش اسمك الحقيقي.'); };
-  DSA.prule = function () { return DSA.t('Password: at least 8 characters — anything. Spaces are ignored. A lost password can\'t be recovered.', 'الباسورد: 8 على الأقل — أي حروف وأرقام ورموز. المسافات مش بتتحسب. لو الباسورد ضاع مش هيرجع.'); };
-
-  // in-page confirm (never a browser popup)
-  var css = '.dsa-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;font-family:Cairo,system-ui,sans-serif}' +
-    '.dsa-card{background:#fff;color:#1e293b;border-radius:20px;max-width:380px;width:100%;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}' +
-    '.dsa-card h3{margin:0 0 8px;font-size:20px}.dsa-card p{margin:0 0 16px;color:#475569;line-height:1.7;font-size:15px}' +
-    '.dsa-row{display:flex;gap:10px;justify-content:center}.dsa-row button{flex:1;border:0;border-radius:12px;padding:12px;font:700 16px Cairo,system-ui,sans-serif;cursor:pointer}' +
-    '.dsa-no{background:#e2e8f0;color:#1e293b}.dsa-yes{background:#2563eb;color:#fff}.dsa-yes.danger{background:#dc2626}';
-  function addCss() { if (document.getElementById('dsa-css')) return; var s = document.createElement('style'); s.id = 'dsa-css'; s.textContent = css; document.head.appendChild(s); }
-  DSA.confirm = function (title, text, yes, danger) {
-    addCss();
-    return new Promise(function (res) {
-      var ov = document.createElement('div'); ov.className = 'dsa-ov';
-      ov.setAttribute('dir', DSA.lang() === 'en' ? 'ltr' : 'rtl');
-      var c = document.createElement('div'); c.className = 'dsa-card'; c.setAttribute('role', 'dialog'); c.setAttribute('aria-modal', 'true');
-      var h = document.createElement('h3'); h.textContent = title;
-      var p = document.createElement('p'); p.textContent = text;
-      var row = document.createElement('div'); row.className = 'dsa-row';
-      var bn = document.createElement('button'); bn.type = 'button'; bn.className = 'dsa-no'; bn.textContent = DSA.t('Cancel', 'لأ، رجوع');
-      var by = document.createElement('button'); by.type = 'button'; by.className = 'dsa-yes' + (danger ? ' danger' : ''); by.textContent = yes;
-      row.appendChild(bn); row.appendChild(by); c.appendChild(h); c.appendChild(p); c.appendChild(row); ov.appendChild(c);
-      var done = function (v) { ov.remove(); res(v); };
-      bn.onclick = function () { done(false); }; by.onclick = function () { done(true); };
-      ov.onclick = function (e) { if (e.target === ov) done(false); };
-      document.body.appendChild(ov); bn.focus();
-    });
-  };
-  DSA.confirmOut = function () { return DSA.confirm(DSA.t('Sign out?', 'تسجيل الخروج؟'), DSA.t('Are you sure you want to sign out of your account?', 'متأكد إنك عايز تسجل خروج من حسابك؟'), DSA.t('Yes, sign out', 'أيوه، سجّل خروج')); };
-  DSA.confirmDelete = function () { return DSA.confirm(DSA.t('Delete account?', 'حذف الحساب؟'), DSA.t('Are you sure? Your account, house and coins will be deleted forever and can\'t come back.', 'متأكد؟ حسابك وبيتك وفلوسك هيتمسحوا خالص ومش هيرجعوا تاني.'), DSA.t('Yes, delete it', 'أيوه، امسح حسابي'), true); };
-  window.DSA = DSA;
-})();
-</script>
-<script>// DINOSPEAR home V01 — sign-in gate + content + install app
-(function () {
-  'use strict';
-  var S = {
-    n_home: ['Home', 'الرئيسية'], n_video: ['Video', 'الفيديو'], t_k: ['Inside the app', 'جوه البرنامج'], t_h: ['TOWN DINOSPEAR 3D', 'المدينة ثلاثية الأبعاد'], t_p: ['Walk with your avatar, enter the houses, work and play — right here.', 'اتمشّى بالأفاتار بتاعك، وادخل البيوت، واشتغل والعب — هنا على طول.'], t_full: ['Full screen', 'الشاشة كلها'], v_k: ['Watch', 'اتفرج'], v_h: ['A tour of DINOSPEAR in 5 minutes', 'جولة في دينوسبير في 5 دقايق'], n_town: ['3D Town', 'المدينة 3D'], n_app: ['Chat & Chess', 'الشات والشطرنج'], n_demo: ['Demos', 'جرّب الألعاب'], n_ideas: ['Your ideas', 'أفكاركم'], n_road: ['Roadmap', 'التطوير'], n_game: ['The game', 'اللعبة'], n_helper: ['Helper', 'المساعد'], n_comm: ['Community', 'المجتمع'],
-    signin: ['Sign in', 'تسجيل الدخول'], signup: ['New account', 'حساب جديد'], signout: ['Sign out', 'تسجيل الخروج'],
-    uname: ['Username', 'اسم المستخدم'], pass: ['Password', 'الباسورد'], pass2: ['Repeat the password', 'اكتب الباسورد تاني'],
-    g_sub: ['Sign in to see the site, the 3D town, the chat, chess and the demos.', 'سجّل دخول عشان تشوف الموقع والمدينة 3D والشات والشطرنج والديمو.'],
-    g_note: ['Same account as the 3D town. Never share your password.', 'نفس حساب المدينة 3D. ما تقولش الباسورد بتاعك لحد.'],
-    h_pill: ['In development', 'قيد التطوير'], h_lead: ['An online world of blocks: eat power fruits, learn fighting styles, drive cars, rob the bank and explore the sea with your friends.', 'عالم أونلاين من المكعبات: كُل فواكه القوة، واتعلّم أساليب القتال، وسوق العربيات، واسرق البنك، واكتشف البحر مع صحابك.'],
-    h_by: ['Made by Aser Amro Ahmed', 'صناعة أسر عمرو أحمد'], c_town: ['Enter the 3D town', 'ادخل المدينة 3D'], c_demo: ['Try the demos', 'جرّب الديمو'], install: ['Install the app', 'نزّل التطبيق'],
-    a_k: ['Your account', 'حسابك'], a_h: ['Streak, chat and chess', 'الستريك والشات والشطرنج'], a_p: ['Your streak, the WhatsApp-style chat with your 7-digit ID, chess and the guide — all in one place.', 'الستريك بتاعك، والشات زي واتساب بالـ ID بتاعك (7 أرقام)، والشطرنج، والشرح — في مكان واحد.'],
-    i_k: ['Vote', 'صوّت'], i_h: ['Your ideas and game names', 'أفكاركم وأسامي اللعبة'],
-    r_k: ['The road to release', 'الطريق لنزول اللعبة'], r_h: ['The game is coming', 'اللعبة جاية'], r_p: ['of development done', 'اكتمل من التطوير'],
-    f_k: ['The game', 'اللعبة'], f_h: ['A whole world waiting for you', 'عالم كامل مستنّيك'],
-    w_h: ['Something is watching you', 'في حاجة بتراقبك'], w_p: ['Something is looking for you…', 'في حاجة بتدوّر عليك…'],
-    hp_k: ['Questions?', 'عندك سؤال؟'], hp_h: ['ASER Helper', 'المساعد'],
-    cm_k: ['Community', 'المجتمع'], cm_h: ['Be part of the story', 'خليك جزء من الحكاية'], cm_d: ['Discord', 'الديسكورد'], cm_dp: ['Game news, your friends, support, and the first chance to play.', 'أخبار اللعبة، وصحابك، والدعم، وأول فرصة للعب.'], cm_db: ['Join the Discord', 'ادخل الديسكورد'],
-    cm_y: ['YouTube', 'اليوتيوب'], cm_yp: ['Game videos and behind the scenes.', 'فيديوهات اللعبة وكواليس التطوير.'], cm_yb: ['Subscribe', 'اشترك في القناة'],
-    foot: ['DINOSPEAR · ASER WORLD · Made by Aser Amro Ahmed · Support on Discord only', 'DINOSPEAR · ASER WORLD · صناعة أسر عمرو أحمد · الدعم على الديسكورد بس'],
-  };
-  var ROAD = [['Power fruits and fighting styles', 'فواكه القوة وأساليب القتال', 1], ['Cars, races and the bank heist', 'العربيات والسباقات وسرقة البنك', 1], ['The sea, caves and the workshop', 'البحر والكهوف والورشة', 1], ['English and Arabic', 'الإنجليزي والعربي', 1], ['The game website', 'موقع اللعبة', 1], ['The game name — players decide', 'اسم اللعبة — اللاعيبة بيقرروا', 2], ['Online server for everyone', 'سيرفر أونلاين للكل', 0], ['Mobile version', 'نسخة الموبايل', 0], ['Release day!', 'يوم نزول اللعبة!', 0]];
-  var FEATS = [['fruit', 'Power fruits', 'فواكه القوة', 'Every fruit unlocks a different power.', 'كل فاكهة بتفتح قوة مختلفة.'], ['world', 'Fighting styles', 'أساليب القتال', 'Learn and mix your style with your power.', 'اتعلّم وامزج أسلوبك مع قوتك.'], ['cars', 'Cars', 'العربيات', 'Drive around the city with your friends.', 'لفّ المدينة بعربيتك مع صحابك.'], ['races', 'Races', 'السباقات', 'Race your friends on 4 tracks.', 'اتسابق مع صحابك على 4 حلبات.'], ['heist', 'Bank heist', 'سرقة البنك', 'Plan the heist with your team.', 'خطّط للسرقة مع فريقك.'], ['sea', 'The sea', 'البحر', 'Adventures beyond the city shore.', 'مغامرات أبعد من شط المدينة.'], ['caves', 'The caves', 'الكهوف', 'Find what hides in the dark.', 'اكتشف اللي مستخبي في الضلمة.'], ['workshop', 'The workshop', 'الورشة', 'Craft new things for your world.', 'اصنع حاجات جديدة لعالمك.']];
-
-  var lang = DSA.lang(), $ = function (id) { return document.getElementById(id); };
-  var t = function (k) { var s = S[k]; return s ? s[lang === 'en' ? 0 : 1] : k; };
-  function applyLang() {
-    document.documentElement.lang = lang; document.documentElement.dir = lang === 'en' ? 'ltr' : 'rtl';
-    document.querySelectorAll('[data-i]').forEach(function (el) { el.textContent = t(el.dataset.i); });
-    document.querySelectorAll('.lang button').forEach(function (b) { b.classList.toggle('on', b.dataset.l === lang); });
-    $('urule').textContent = DSA.urule(); $('prule').textContent = DSA.prule();
-    $('aBtn').textContent = mode === 'up' ? t('signup') : t('signin');
-    var L = lang === 'en' ? 0 : 1;
-    $('road').innerHTML = '';
-    ROAD.forEach(function (r, i) {
-      var d = document.createElement('div'); d.className = 'step';
-      var b = document.createElement('b'); b.textContent = String(i + 1).padStart(2, '0');
-      var s = document.createElement('span'); s.textContent = r[L];
-      var e = document.createElement('em'); e.className = r[2] === 1 ? '' : r[2] === 2 ? 'vote' : 'soon';
-      e.textContent = r[2] === 1 ? (L ? 'تمّ الإنجاز' : 'Done') : r[2] === 2 ? (L ? 'دورك تختار' : 'Your vote') : (L ? 'قريبًا' : 'Soon');
-      d.appendChild(b); d.appendChild(s); d.appendChild(e); $('road').appendChild(d);
-    });
-    $('feats').innerHTML = '';
-    FEATS.forEach(function (f) {
-      var d = document.createElement('div'); d.className = 'feat';
-      var im = document.createElement('img'); im.src = 'assets/img/' + f[0] + '.jpg'; im.alt = ''; im.loading = 'lazy';
-      var c = document.createElement('div'); var h = document.createElement('h3'); h.textContent = f[1 + L]; var p = document.createElement('p'); p.textContent = f[3 + L];
-      c.appendChild(h); c.appendChild(p); d.appendChild(im); d.appendChild(c); $('feats').appendChild(d);
-    });
-  }
-  document.querySelectorAll('.lang button').forEach(function (b) {
-    b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); };
-  });
-
-  // ---------- Supabase ----------
-  var URL = 'https://djpgranztcqxyfehynux.supabase.co', DOMAIN = 'players.aserworld.com';
-  var sb = (window.supabase && window.ASER_KEY) ? window.supabase.createClient(URL, window.ASER_KEY, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
-  var mode = 'in', busy = false;
-  function setMode(m) {
-    mode = m; $('tIn').setAttribute('aria-selected', m === 'in'); $('tUp').setAttribute('aria-selected', m === 'up');
-    $('p2box').hidden = m !== 'up'; $('pass').autocomplete = m === 'up' ? 'new-password' : 'current-password';
-    $('aBtn').textContent = m === 'up' ? t('signup') : t('signin'); status('');
-  }
-  $('tIn').onclick = function () { setMode('in'); }; $('tUp').onclick = function () { setMode('up'); };
-  function status(msg, cls) { var s = $('ast'); s.textContent = msg || ''; s.className = 'status' + (cls ? ' ' + cls : ''); }
-  function errText(e) {
-    var m = (e && (e.message || e.code)) || '';
-    if (/USERNAME_TAKEN|already registered|already been registered|User already/i.test(m)) return DSA.t('This name is taken — pick another one.', 'الاسم ده متاخد — اختار اسم تاني.');
-    if (/Invalid login credentials/i.test(m)) return DSA.t('Wrong name or password. (Spaces don\'t matter.)', 'الاسم أو الباسورد غلط. (المسافات مش بتفرق.)');
-    if (/rate|too many/i.test(m)) return DSA.t('Too many tries — wait a minute and try again.', 'محاولات كتير — استنى دقيقة وجرّب تاني.');
-    if (/Failed to fetch|NetworkError|network/i.test(m)) return DSA.t('No internet connection to the server — try again.', 'مفيش اتصال بالسيرفر — جرّب تاني.');
-    return DSA.t('Something went wrong: ', 'حصلت مشكلة: ') + m;
-  }
-  $('aForm').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    if (!sb) return status(DSA.t('Can\'t reach the server right now.', 'مش قادرين نوصل للسيرفر دلوقتي.'), 'err');
-    var n = DSA.u($('uname').value), p = DSA.p($('pass').value);
-    if (!DSA.ok(n)) return status(DSA.urule(), 'err');
-    if (p.length < 8) return status(DSA.prule(), 'err');
-    if (mode === 'up' && p !== DSA.p($('pass2').value)) return status(DSA.t('The two passwords are not the same.', 'الباسوردين مش زي بعض.'), 'err');
-    if (busy) return; busy = true; $('aBtn').disabled = true; status(DSA.t('Loading…', 'بنحمّل…'));
-    var email = DSA.mail(n, DOMAIN);
-    var job = mode === 'up'
-      ? sb.rpc('username_available', { p_username: n }).then(function (r) { if (r.error) throw r.error; if (!r.data) throw { message: 'USERNAME_TAKEN' }; return sb.auth.signUp({ email: email, password: p, options: { data: { username: n } } }); })
-      : sb.auth.signInWithPassword({ email: email, password: p });
-    job.then(function (r) { if (r.error) throw r.error; $('pass').value = ''; $('pass2').value = ''; status(''); })
-      .catch(function (e) { status(errText(e), 'err'); })
-      .then(function () { busy = false; $('aBtn').disabled = false; });
-  });
-  function show(user) {
-    var on = !!user;
-    $('gate').hidden = on; $('site').hidden = !on; $('nav').hidden = !on; $('outBtn').hidden = !on;
-    var nm = on ? ((user.user_metadata && user.user_metadata.username) || '') : '';
-    $('who').textContent = nm;
-  }
-  $('outBtn').onclick = function () { DSA.confirmOut().then(function (ok) { if (ok && sb) sb.auth.signOut().then(function () { show(null); scrollTo(0, 0); }); }); };
-  if (sb) {
-    sb.auth.getSession().then(function (r) { show(r.data && r.data.session ? r.data.session.user : null); });
-    sb.auth.onAuthStateChange(function (_e, s) { show(s ? s.user : null); });
-  } else show(null);
-
-  $('townFull').onclick = function () { var f = $('townFrame'); (f.requestFullscreen || f.webkitRequestFullscreen || function () { location.href = 'town/'; }).call(f); };
-  // ---------- install as an app (PWA) ----------
-  var deferred = null;
-  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; $('installBtn').hidden = false; });
-  $('installBtn').onclick = function () { if (deferred) { deferred.prompt(); deferred = null; $('installBtn').hidden = true; } };
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
-
-  setMode('in'); applyLang();
-})();
-</script>
-<script src="assets/js/views.js"></script>
+<script src="assets/js/ds_auth.js"></script>
+<script src="assets/js/home.js"></script>
+<div class="sheet" id="offSheet" hidden><div class="box" style="text-align:center">
+<h3 id="offH">مفيش نت</h3><p id="offP" style="line-height:1.8;color:var(--muted)">تحب تدخل الوضع الأوفلاين؟ فيه الألعاب اللي بتشتغل من غير نت والمقال عن اللعبة.</p>
+<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px"><a class="btn" id="offGo" href="offline.html">أيوه، ادخل الأوفلاين</a><button class="btn ghost" id="offNo" type="button">لأ، استنى النت</button></div></div></div>
+<script>/* V04: no internet = ask before showing the sign-in */(function(){var ar=(document.documentElement.lang||'ar').indexOf('en')!==0;function T(a,e){return ar?a:e}
+function ask(){var sh=document.getElementById('offSheet');if(!sh||!sh.hidden)return;document.getElementById('offH').textContent=T('مفيش نت','No internet');document.getElementById('offP').textContent=T('تحب تدخل الوضع الأوفلاين؟ فيه الألعاب اللي بتشتغل من غير نت والمقال عن اللعبة.','Do you want the offline mode? It has the games that work without internet and the article about the game.');document.getElementById('offGo').textContent=T('أيوه، ادخل الأوفلاين','Yes, go offline');document.getElementById('offNo').textContent=T('لأ، استنى النت','No, wait for internet');sh.hidden=false}
+document.getElementById('offNo').onclick=function(){document.getElementById('offSheet').hidden=true};
+if(!navigator.onLine)ask();addEventListener('offline',ask);addEventListener('online',function(){document.getElementById('offSheet').hidden=true});
+setTimeout(function(){if(!window.supabase&&!navigator.onLine)ask()},2500)})();</script>
 </body>
 </html>

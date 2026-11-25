@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ASER WORLD — المقال</title>
+<link rel="icon" href="favicon.svg"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2f6fe4">
+<style>
+:root{--bg:#eef4ff;--card:#fff;--ink:#14213d;--muted:#55627f;--line:#d7e2f7;--blue:#2f6fe4;--gold:#f5b800}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1226;--card:#16213f;--ink:#eef2ff;--muted:#a9b6dc;--line:#2a3a6b;--blue:#4f8dff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.9 system-ui,"Segoe UI",Tahoma,sans-serif}
+.top{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px max(14px,env(safe-area-inset-left));background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top a,.top button{font:700 15px system-ui;color:var(--blue);background:transparent;border:2px solid var(--line);border-radius:12px;padding:8px 14px;text-decoration:none;cursor:pointer}
+main{max-width:860px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.2;margin:18px 0 6px}h2{font-size:clamp(22px,4.4vw,30px);margin:34px 0 8px;display:flex;gap:10px;align-items:center}
+.lead{color:var(--muted);font-size:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin:14px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.grid .card{margin:0}.grid b{display:block;font-size:18px;margin-bottom:4px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--blue);display:inline-block}
+ul{padding-inline-start:22px}li{margin:4px 0}
+.fruits{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.fruits img{width:64px;height:64px;object-fit:contain;background:var(--bg);border-radius:16px;padding:4px}
+[data-l="en"]{display:none}html[lang="en"] [data-l="en"]{display:revert}html[lang="en"] [data-l="ar"]{display:none}
+</style>
+<script>try{var L=localStorage.getItem('ds_article_lang');if(L==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr'}}catch(e){}</script>
+<script src="assets/js/icons.js" defer></script>
+</head>
+<body>
+<div class="top">
+  <a href="./" id="back"><span data-l="ar">➡️ رجوع</span><span data-l="en">⬅️ Back</span></a>
+  <button type="button" id="lang"><span data-l="ar">English</span><span data-l="en">عربي</span></button>
+</div>
+<main>
+<div data-l="ar">
+  <h1>ASER WORLD</h1>
+  <p class="lead">لعبة أونلاين من صناعة أسر عمرو أحمد، وموقع DINOSPEAR اللي بيجمع اللعبة والمجتمع بتاعها في مكان واحد. المقال ده بيشتغل بالنت ومن غير نت.</p>
+
+  <h2>🎮 اللعبة الأونلاين</h2>
+  <div class="card">عالم كبير بتلعب فيه مع صحابك أونلاين. في النص <b>ASER TOWN</b>، وحواليها 8 جزر، كل واحدة ليها شكل وألعاب خاصة بيها، والبحر حوالين كل حاجة.</div>
+  <div class="grid">
+    <div class="card"><b>🌾 المزرعة</b>ازرع البذور في جنينتك، استنى المحصول، واجمعه وبيعه في محل البيع.</div>
+    <div class="card"><b>🍇 فواكه القوة</b>39 فاكهة، وكل واحدة ليها شكل وحركات خاصة (Z X C V). فيه فواكه بتحولك لتنين أو ماموث أو تي ركس.</div>
+    <div class="card"><b>⚔️ القتال</b>سيوف، أساليب قتال، أسلحة من محل السلاح، وبيكاكس للمناجم.</div>
+    <div class="card"><b>🚗 العربيات</b>محل العربيات، الباركينج، والميكانيكي. كلهم في منطقة CAR ZONE.</div>
+    <div class="card"><b>🌊 البحر</b>الميناء، المراكب، جزر الكنوز، ووحوش البحر. البحر على نفس مستوى الأرض، وتوصله بتاكسي المركب.</div>
+    <div class="card"><b>🏦 البنك والمدينة</b>ASER CITY فيها بيوت للبيع، والبوليس، والبنك.</div>
+    <div class="card"><b>📱 التليفون</b>من التليفون اللي جوه اللعبة: الخريطة، الشات، المهمات، والإعدادات.</div>
+    <div class="card"><b>⚙️ الجودة</b>F8 بيغيّر جودة الجرافيك، وF9 بيظهر سرعة اللعبة (FPS). اللعبة بتظبط نفسها لوحدها على الجهاز الضعيف.</div>
+  </div>
+  <div class="card"><b>🍇 شكل الفواكه</b><div class="fruits" id="fr"></div></div>
+
+  <h2>🩴 SILENT SLIPPER</h2>
+  <div class="card">لعبة تفادي سريعة. الشباشب بتتحدف عليك من كل ناحية، والأرض بتقع تحت رجلك، ولازم تفضل عايش لحد آخر الوقت. فيها مستويات من <b>EASY</b> لحد <b>INFINITE</b>، وكل مستوى أصعب من اللي قبله. بتتفتح كمان من كمبيوتر <b>ASER OS</b> جوه اللعبة الأونلاين، وزرار <b>رجوع</b> بيرجّعك للأونلاين.</div>
+
+  <h2>🌐 موقع DINOSPEAR</h2>
+  <div class="grid">
+    <div class="card"><b>🏙️ المدينة 3D</b>مدينة على الويب تتمشى فيها مع اللاعيبة التانيين.</div>
+    <div class="card"><b>💬 الشات</b>شات عام. الشتايم بتتخبى لوحدها بكل اللغات، واللي يكرر الإساءة بيتحظر.</div>
+    <div class="card"><b>💡 أفكاركم</b>اكتب فكرة أو اسم للعبة، والأكتر إعجابات بيطلع فوق.</div>
+    <div class="card"><b>🎮 الديمو</b>ألعاب تجربة سريعة، وفيه منها بيشتغل من غير نت.</div>
+    <div class="card"><b>📱 تطبيق</b>الموقع بيتنزل على التليفون والكمبيوتر زي التطبيق، وبيتحدّث لوحده.</div>
+    <div class="card"><b>📶 من غير نت</b>لو مفيش نت، بيسألك تحب تدخل الوضع الأوفلاين، وفيه الألعاب والمقال ده.</div>
+  </div>
+  <div class="card">الدعم عن طريق سيرفر Discord بس. اللعبة والموقع لسه بيتطوروا، وكل نسخة ليها رقم (V01، V02…).</div>
+</div>
+
+<div data-l="en">
+  <h1>ASER WORLD</h1>
+  <p class="lead">An online game made by Aser Amro Ahmed, and the DINOSPEAR website that brings the game and its community together. This article works online and offline.</p>
+  <h2>🎮 The online game</h2>
+  <div class="card">A big world you play with friends online. <b>ASER TOWN</b> is in the middle, with 8 islands around it, each with its own look and games, and the sea all around.</div>
+  <div class="grid">
+    <div class="card"><b>🌾 Farming</b>Plant seeds in your garden, wait for the harvest, collect it and sell it.</div>
+    <div class="card"><b>🍇 Power fruits</b>39 fruits, each with its own look and moves (Z X C V). Some turn you into a dragon, a mammoth or a T-Rex.</div>
+    <div class="card"><b>⚔️ Fighting</b>Swords, fighting styles, weapons from the gun shop and a pickaxe for the mines.</div>
+    <div class="card"><b>🚗 Cars</b>Car dealer, parking and mechanic, all in the CAR ZONE.</div>
+    <div class="card"><b>🌊 The sea</b>Harbor, ships, treasure islands and sea monsters. The sea is at the same level as the land; the boat taxi takes you there.</div>
+    <div class="card"><b>🏦 Bank and city</b>ASER CITY has houses for sale, the police and the bank.</div>
+    <div class="card"><b>📱 The phone</b>The in-game phone has the map, chat, quests and settings.</div>
+    <div class="card"><b>⚙️ Quality</b>F8 changes the graphics quality, F9 shows the FPS. The game adjusts itself on weak computers.</div>
+  </div>
+  <div class="card"><b>🍇 The fruits</b><div class="fruits" id="fr2"></div></div>
+  <h2>🩴 SILENT SLIPPER</h2>
+  <div class="card">A fast dodge game: slippers fly at you from every side and the floor falls under your feet — stay alive until time runs out. Levels go from <b>EASY</b> to <b>INFINITE</b>. It also opens from the <b>ASER OS</b> computer inside the online game, and <b>BACK</b> returns you there.</div>
+  <h2>🌐 The DINOSPEAR website</h2>
+  <div class="grid">
+    <div class="card"><b>🏙️ 3D town</b>A web town to walk around with other players.</div>
+    <div class="card"><b>💬 Chat</b>Public chat. Bad words are hidden in every language and repeated abuse means a ban.</div>
+    <div class="card"><b>💡 Your ideas</b>Post an idea or a name; the most liked go to the top.</div>
+    <div class="card"><b>🎮 Demos</b>Quick test games, some work without internet.</div>
+    <div class="card"><b>📱 App</b>Installs on phones and computers like an app and updates by itself.</div>
+    <div class="card"><b>📶 No internet</b>With no internet it asks if you want the offline mode, with the games and this article.</div>
+  </div>
+  <div class="card">Support is only through the Discord server. The game and the site are still growing; every release has a number (V01, V02…).</div>
+</div>
+</main>
+<script>
+(function(){var h=document.documentElement;document.getElementById('lang').onclick=function(){var en=h.lang!=='en';h.lang=en?'en':'ar';h.dir=en?'ltr':'rtl';try{localStorage.setItem('ds_article_lang',en?'en':'ar')}catch(e){}};
+var F=['00_dragon','01_rocket','02_lightning','03_ice','04_shadow','05_gravity','06_slipper','07_mammoth','08_trex','09_magma','10_light','11_quake','12_buddha','13_phoenix','14_leopard','15_spider','16_string','17_venom','18_sound','19_sand','20_barrier','21_spirit','22_bomb','23_spike','24_rubber','25_portal','26_kitsune','27_black_hole','28_creation','29_wind','30_time','31_magnet','32_water','33_dough','34_gas','35_meme','36_star','37_pyramids','38_glitch'];
+['fr','fr2'].forEach(function(id){var b=document.getElementById(id);F.forEach(function(f){var i=new Image();i.loading='lazy';i.src='assets/img/fruits/'+f+'.png';i.alt=f.slice(3).replace('_',' ');b.appendChild(i)})});
+if(!navigator.onLine)document.getElementById('back').href='offline.html';})();
+</script>
+</body>
+</html>

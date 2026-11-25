@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DINOSPEAR — من غير نت</title>
+<link rel="icon" href="favicon.svg"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2f6fe4">
+<style>
+:root{--bg:#eef4ff;--card:#fff;--ink:#14213d;--muted:#55627f;--line:#d7e2f7;--blue:#2f6fe4}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1226;--card:#16213f;--ink:#eef2ff;--muted:#a9b6dc;--line:#2a3a6b;--blue:#4f8dff}}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:400 17px/1.8 system-ui,"Segoe UI",Tahoma,sans-serif}
+main{max-width:900px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 16px 40px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.head img{width:52px;height:52px;border-radius:14px}
+h1{font-size:clamp(26px,6vw,40px);margin:10px 0 0}.lead{color:var(--muted)}
+.badge{display:inline-flex;gap:6px;align-items:center;background:#ffe9b0;color:#7a5200;border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px;margin-top:18px}
+a.tile{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;transition:transform .15s}
+a.tile:hover{transform:translateY(-3px)}a.tile b{font-size:21px}a.tile span{color:var(--muted)}
+a.tile .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--bg)}
+button{font:700 16px system-ui;border:0;border-radius:14px;padding:12px 18px;background:var(--blue);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--blue);border:2px solid var(--line)}
+[data-l="en"]{display:none}html[lang="en"] [data-l="en"]{display:revert}html[lang="en"] [data-l="ar"]{display:none}
+</style>
+<script>try{if(localStorage.getItem('ds_article_lang')==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr'}}catch(e){}</script>
+<script src="assets/js/icons.js" defer></script>
+</head>
+<body>
+<main>
+  <div class="head">
+    <img src="assets/img/icon-192.png" alt="DINOSPEAR">
+    <button class="ghost" type="button" id="lang"><span data-l="ar">English</span><span data-l="en">عربي</span></button>
+  </div>
+  <h1><span data-l="ar">الوضع الأوفلاين</span><span data-l="en">Offline mode</span></h1>
+  <p class="badge" id="state"><span data-l="ar">📡 مفيش نت دلوقتي</span><span data-l="en">📡 No internet right now</span></p>
+  <p class="lead"><span data-l="ar">هنا الحاجات اللي بتشتغل من غير نت. الشات والمدينة 3D والحساب محتاجين نت.</span><span data-l="en">Here is what works without internet. Chat, the 3D town and your account need internet.</span></p>
+  <div class="grid">
+    <a class="tile" href="demo/index.html?offline=1"><div class="ic">🎮</div><b><span data-l="ar">الألعاب</span><span data-l="en">Games</span></b><span><span data-l="ar">SILENT SLIPPER وألعاب الديمو.</span><span data-l="en">SILENT SLIPPER and the demo games.</span></span></a>
+    <a class="tile" href="article.html"><div class="ic">📖</div><b><span data-l="ar">المقال</span><span data-l="en">The article</span></b><span><span data-l="ar">كل حاجة عن اللعبة الأونلاين وSILENT SLIPPER والموقع.</span><span data-l="en">All about the online game, SILENT SLIPPER and the site.</span></span></a>
+  </div>
+  <p style="margin-top:22px"><button type="button" id="retry"><span data-l="ar">🔁 جرّب النت تاني</span><span data-l="en">🔁 Try the internet again</span></button></p>
+</main>
+<script>
+(function(){var h=document.documentElement;document.getElementById('lang').onclick=function(){var en=h.lang!=='en';h.lang=en?'en':'ar';h.dir=en?'ltr':'rtl';try{localStorage.setItem('ds_article_lang',en?'en':'ar')}catch(e){}};
+function go(){location.href='./'}document.getElementById('retry').onclick=function(){if(navigator.onLine)go();else alertish()};
+function alertish(){var s=document.getElementById('state');s.style.transform='scale(1.08)';setTimeout(function(){s.style.transform=''},250)}
+addEventListener('online',function(){var s=document.getElementById('state');s.innerHTML='<span data-l="ar">✅ النت رجع — دوس جرّب النت تاني</span><span data-l="en">✅ Internet is back — press try again</span>'});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(function(){});})();
+</script>
+</body>
+</html>

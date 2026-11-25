@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>DINOSPEAR — Update / تحديث</title>
+<style>
+body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#0f172a;color:#fff;font:700 18px system-ui,sans-serif;text-align:center}
+.c{padding:28px}.bar{width:240px;height:10px;border-radius:9px;background:#1e293b;margin:18px auto;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#22c55e;transition:width .4s}
+small{display:block;opacity:.7;font-weight:500;margin-top:6px}
+a{color:#86efac}
+</style>
+</head>
+<body>
+<div class="c">
+  <div id="t">جاري تحديث DINOSPEAR…</div>
+  <small id="e">Updating DINOSPEAR…</small>
+  <div class="bar"><i id="b"></i></div>
+  <small id="s"></small>
+</div>
+<script>
+// V07: wipes the old saved copy of the site on this phone, then opens the newest version.
+// Player data (accounts, coins, saves) lives in Supabase and localStorage — it is NOT deleted.
+(async function () {
+  var b = document.getElementById('b'), s = document.getElementById('s');
+  function step(p, msg) { b.style.width = p + '%'; s.textContent = msg; }
+  try {
+    step(20, 'old app copy / النسخة القديمة');
+    if ('serviceWorker' in navigator) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(function (r) { return r.unregister(); }));
+    }
+    step(55, 'cache / الملفات المحفوظة');
+    if (window.caches) {
+      var keys = await caches.keys();
+      await Promise.all(keys.map(function (k) { return caches.delete(k); }));
+    }
+    step(100, 'done / خلاص ✓');
+    document.getElementById('t').textContent = 'تم التحديث ✓';
+    document.getElementById('e').textContent = 'Updated ✓';
+  } catch (err) {
+    step(100, 'opening / بيفتح');
+  }
+  setTimeout(function () { location.replace('./?v=' + Date.now()); }, 900);
+})();
+</script>
+</body>
+</html>

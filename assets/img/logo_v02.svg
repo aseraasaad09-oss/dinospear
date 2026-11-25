@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+ <defs>
+  <radialGradient id="bg" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#3b82f6"/><stop offset=".6" stop-color="#1d4ed8"/><stop offset="1" stop-color="#0b2a7a"/></radialGradient>
+  <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset=".5" stop-color="#d99a14"/><stop offset="1" stop-color="#8a5a00"/></linearGradient>
+  <radialGradient id="skin" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#9ff0a8"/><stop offset=".45" stop-color="#3fbf5a"/><stop offset="1" stop-color="#1c6b32"/></radialGradient>
+  <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3f7c8"/><stop offset="1" stop-color="#b9c77a"/></linearGradient>
+  <linearGradient id="spike" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset="1" stop-color="#d9480f"/></linearGradient>
+  <linearGradient id="shaft" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8b5a2b"/><stop offset=".5" stop-color="#c58a4a"/><stop offset="1" stop-color="#5a3615"/></linearGradient>
+  <linearGradient id="blade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#cfd8e3"/><stop offset=".7" stop-color="#8a99ad"/><stop offset="1" stop-color="#e8eef5"/></linearGradient>
+  <radialGradient id="eye" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff4a8"/><stop offset=".5" stop-color="#f5b800"/><stop offset="1" stop-color="#a86b00"/></radialGradient>
+  <pattern id="scales" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M0 14a9 9 0 0 1 18 0" fill="none" stroke="#1b5e2c" stroke-opacity=".35" stroke-width="1.6"/></pattern>
+  <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#000" flood-opacity=".45"/></filter>
+ </defs>
+ <!-- badge -->
+ <rect x="16" y="16" width="480" height="480" rx="110" fill="url(#rim)"/>
+ <rect x="30" y="30" width="452" height="452" rx="98" fill="url(#bg)"/>
+ <path d="M30 128c0-55 43-98 98-98h256c55 0 98 43 98 98v40C380 120 140 120 30 200z" fill="#fff" opacity=".10"/>
+ <!-- spear behind -->
+ <g filter="url(#sh)">
+  <path d="M78 438L392 124" stroke="url(#shaft)" stroke-width="22" stroke-linecap="round"/>
+  <path d="M392 124l-10-58 70-12-12 70-58 10z" fill="url(#blade)" stroke="#5b6b80" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M396 120l40-40" stroke="#fff" stroke-width="4" opacity=".7"/>
+  <rect x="356" y="148" width="40" height="16" rx="6" transform="rotate(-45 376 156)" fill="#d99a14"/>
+ </g>
+ <!-- dino head -->
+ <g filter="url(#sh)">
+  <path d="M120 300l18-52 26 40zM170 248l22-56 26 46zM228 222l26-54 24 50z" fill="url(#spike)" stroke="#9a3412" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M96 392c0-84 64-160 170-160h50c58 0 100 34 106 84l4 30c3 22-14 40-36 40h-70l-18 30H120c-14 0-24-10-24-24z" fill="url(#skin)" stroke="#124d24" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M96 392c0-84 64-160 170-160h50c58 0 100 34 106 84l4 30c3 22-14 40-36 40h-70l-18 30H120c-14 0-24-10-24-24z" fill="url(#scales)"/>
+  <path d="M232 386h132c-8 22-26 34-50 34h-64z" fill="url(#belly)" stroke="#124d24" stroke-width="4"/>
+  <path d="M300 386l8 14 10-14 10 14 10-14 10 14" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="412" cy="318" r="5" fill="#124d24"/>
+  <path d="M300 262c26-14 58-14 78 6" fill="none" stroke="#124d24" stroke-width="9" stroke-linecap="round"/>
+  <ellipse cx="338" cy="292" rx="24" ry="22" fill="url(#eye)" stroke="#124d24" stroke-width="4"/>
+  <ellipse cx="342" cy="294" rx="6" ry="16" fill="#111"/>
+  <circle cx="332" cy="284" r="5" fill="#fff"/>
+  <path d="M150 300c30-40 80-56 120-56" fill="none" stroke="#c8ffd0" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+ </g>
+</svg>

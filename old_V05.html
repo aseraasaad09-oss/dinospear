@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ASER WORLD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="ASER WORLD is a blocky online game: eat power fruits, learn fighting styles, drive cars, rob the bank, race and explore the sea with your friends. Get your own house in ASER CITY, vote for the game's name and join the Discord.">
+<meta name="theme-color" content="#060a1a">
+<link rel="canonical" href="https://aserworld.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ASER WORLD">
+<meta property="og:description" content="Power fruits, fighting styles, cars, bank heists, races and the sea. Vote for the game's name!">
+<meta property="og:image" content="https://aserworld.com/assets/img/world.jpg">
+<meta property="og:url" content="https://aserworld.com/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Lalezar&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="top" id="top-bar">
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="ASER WORLD"><span class="cube">A</span><span class="bname">ASER WORLD</span></a>
+    <nav class="links" aria-label="Sections">
+      <a href="#road" data-sec="road"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 9 4h6l5 16M12 6v2m0 4v2m0 4v2"/></svg><span data-i18n="nav_road">Release</span></a>
+      <a href="#trailer" data-sec="trailer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg><span data-i18n="nav_trailer">Trailer</span></a>
+      <a href="#city" data-sec="city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V10l5-4 5 4v11M13 21V4h8v17M6 13h4M6 17h4M16 8h2M16 12h2M16 16h2"/></svg><span data-i18n="nav_city">The city</span></a>
+      <a href="#features" data-sec="features"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span data-i18n="nav_features">The game</span></a>
+      <a href="#vote" data-sec="vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg><span data-i18n="nav_vote">Vote</span></a>
+      <a href="#community" data-sec="community"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 2.5-5 5-5s5 2 5 5m0 0c0-3 2.5-5 5-5s5 2 5 5"/></svg><span data-i18n="nav_community">Community</span></a>
+    </nav>
+    <div class="actions">
+      <button class="lang" id="lang" type="button" aria-label="Change language">عربي</button>
+      <a class="btn gold small-btn" href="#city" data-i18n="my_house_btn">My house</a>
+      <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menu"><i></i><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+<div class="menu" id="menu" hidden>
+  <div class="menu-in">
+    <div class="menu-head"><span class="bname">ASER WORLD</span><button type="button" class="close" id="menuClose" aria-label="Close">✕</button></div>
+    <nav class="tiles" aria-label="Sections">
+      <a href="#road" class="tile t-road"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 9 4h6l5 16M12 6v2m0 4v2m0 4v2"/></svg><span data-i18n="nav_road">Release</span></a>
+      <a href="#trailer" class="tile t-trailer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor"/></svg><span data-i18n="nav_trailer">Trailer</span></a>
+      <a href="#city" class="tile t-city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21V10l5-4 5 4v11M13 21V4h8v17M6 13h4M6 17h4M16 8h2M16 12h2M16 16h2"/></svg><span data-i18n="nav_city">The city</span></a>
+      <a href="#features" class="tile t-features"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span data-i18n="nav_features">The game</span></a>
+      <a href="#vote" class="tile t-vote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="3"/></svg><span data-i18n="nav_vote">Vote</span></a>
+      <a href="#community" class="tile t-community"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 2.5-5 5-5s5 2 5 5m0 0c0-3 2.5-5 5-5s5 2 5 5"/></svg><span data-i18n="nav_community">Community</span></a>
+    </nav>
+    <a class="btn gold menu-cta" href="#city" data-i18n="get_house">Get your house in the city</a>
+  </div>
+</div>
+
+<main id="top">
+  <section class="hero">
+    <div class="shot" role="img" aria-label="ASER WORLD town from above"></div>
+    <div class="shade"></div>
+    <div class="wrap">
+      <span class="badge"><i></i><span data-i18n="badge">In development · join the Discord to play first</span></span>
+      <h1>ASER WORLD</h1>
+      <p class="tag" data-i18n="tagline">A blocky online world. Eat power fruits, learn fighting styles, drive cars, rob the bank and race your friends.</p>
+      <div class="cta">
+        <a class="btn discord" href="https://discord.gg/zyqsh6mMw" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.9 19.9 0 0 0 6 3l1.3-2a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.7-3.6-13.7ZM8.3 15.3c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>
+          <span data-i18n="join_discord">Join the Discord</span>
+        </a>
+        <a class="btn gold" href="#city" data-i18n="get_house">Get your house in the city</a>
+      </div>
+      <span class="credit">MADE BY ASER AMRO AHMED</span>
+    </div>
+  </section>
+
+  <section id="road" class="road">
+    <div class="wrap">
+      <span class="kicker" data-i18n="k_road">Road to release</span>
+      <h2 data-i18n="h_road">The game is coming</h2>
+      <div class="countdown" id="countdown" hidden>
+        <div><b id="cd_d">0</b><span data-i18n="days">days</span></div>
+        <div><b id="cd_h">0</b><span data-i18n="hours">hours</span></div>
+        <div><b id="cd_m">0</b><span data-i18n="minutes">min</span></div>
+        <div><b id="cd_s">0</b><span data-i18n="seconds">sec</span></div>
+      </div>
+      <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="meter"><i id="meterFill"></i><span id="meterTxt">0%</span></div>
+      <ol class="steps" id="steps"></ol>
+    </div>
+  </section>
+
+  <section id="trailer">
+    <div class="wrap">
+      <span class="kicker" data-i18n="k_trailer">Watch</span>
+      <h2 data-i18n="h_trailer">The game video</h2>
+      <div class="player" id="player">
+        <button class="poster" id="poster" type="button" aria-label="Play the video">
+          <span class="play"><svg viewBox="0 0 24 24" fill="#3a2a00" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg></span>
+        </button>
+      </div>
+      <p class="small"><a href="https://www.youtube.com/channel/UCl0LLCJ4qkQitS80CtJdjAw" target="_blank" rel="noopener noreferrer" data-i18n="open_yt">Open the YouTube channel</a></p>
+    </div>
+  </section>
+
+  <section id="city" class="city">
+    <div class="wrap">
+      <span class="kicker" data-i18n="k_city">ASER CITY</span>
+      <h2 data-i18n="h_city">Every player gets a house</h2>
+      <p class="sub" data-i18n="city_d">Make an account and your house appears in the city. It starts at size 5 and grows by 1 every day you visit, up to 100.</p>
+      <div class="citywrap">
+        <div class="map">
+          <canvas id="cityCanvas" aria-label="The city of ASER WORLD with every player's house"></canvas>
+          <div class="maptools">
+            <button type="button" id="zin" aria-label="Zoom in">+</button>
+            <button type="button" id="zout" aria-label="Zoom out">−</button>
+            <button type="button" id="zme" data-i18n="find_me">My house</button>
+          </div>
+          <div class="pop" id="pop" hidden></div>
+          <div class="cityinfo"><b id="cityCount">0</b> <span data-i18n="houses">houses</span></div>
+        </div>
+        <div class="box" id="authbox">
+          <div id="authForms">
+            <div class="tabs" role="tablist">
+              <button type="button" role="tab" id="tabUp" aria-selected="true" data-i18n="sign_up">New account</button>
+              <button type="button" role="tab" id="tabIn" aria-selected="false" data-i18n="sign_in">Sign in</button>
+            </div>
+            <form id="authForm" class="field" novalidate>
+              <label for="uname" data-i18n="username">Username</label>
+              <input id="uname" type="text" maxlength="16" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+              <span class="small" data-i18n="uname_rule">3 to 16 letters, numbers or _ . Don't use your real name.</span>
+              <label for="pass" data-i18n="password">Password</label>
+              <input id="pass" type="password" maxlength="72" autocomplete="new-password" required>
+              <div id="pass2Row" class="field" style="margin-top:0">
+                <label for="pass2" data-i18n="password2">Password again</label>
+                <input id="pass2" type="password" maxlength="72" autocomplete="new-password">
+              </div>
+              <span class="small" data-i18n="pass_rule">At least 8 characters. Write it down somewhere safe: a lost password can't be recovered.</span>
+              <div class="row"><button class="btn gold" type="submit" id="authBtn" data-i18n="create">Create my house</button></div>
+            </form>
+          </div>
+          <div id="who" hidden>
+            <h3><span data-i18n="hello">Hi</span> <span id="whoName"></span></h3>
+            <div class="myhouse"><span data-i18n="house_size">House size</span> <b id="mySize">5</b><span class="small"> / 100</span></div>
+            <p class="small" id="growMsg"></p>
+            <div class="row"><a class="btn ghost" href="#vote" data-i18n="go_vote">Vote for the name</a><button class="btn ghost" id="logout" type="button" data-i18n="logout">Sign out</button></div>
+          </div>
+          <div class="status" id="astatus" role="status"></div>
+          <div class="demo" id="cityDemo" hidden data-i18n="city_demo">Preview only: accounts are not connected yet, so the houses here are examples.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <span class="kicker" data-i18n="k_features">The game</span>
+      <h2 data-i18n="h_features">Everything you can do</h2>
+      <div class="stats">
+        <span class="stat"><b>36</b><span data-i18n="s_fruits">power fruits</span></span>
+        <span class="stat"><b>7</b><span data-i18n="s_styles">fighting styles</span></span>
+        <span class="stat"><b>18</b><span data-i18n="s_skins">skin bundles</span></span>
+        <span class="stat"><b>12</b><span data-i18n="s_faces">faces</span></span>
+      </div>
+      <div class="grid">
+        <article class="feat"><img src="assets/img/fruit.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f1">Power fruits</h3><p data-i18n="f1d">Hold a fruit in your hand, eat it and get its powers. Every fruit has its own moves and a stronger V2.</p></div></article>
+        <article class="feat"><img src="assets/img/workshop.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f2">Workshop</h3><p data-i18n="f2d">Mine materials and forge your own swords and pickaxes.</p></div></article>
+        <article class="feat"><img src="assets/img/cars.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f3">Cars</h3><p data-i18n="f3d">Buy a car, park it anywhere and drive across the town.</p></div></article>
+        <article class="feat"><img src="assets/img/heist.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f4">Bank robbery</h3><p data-i18n="f4d">Rob the bank with your crew. The police are coming in one minute.</p></div></article>
+        <article class="feat"><img src="assets/img/races.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f5">Races</h3><p data-i18n="f5d">Race on the tracks, beat your best time and win coins.</p></div></article>
+        <article class="feat"><img src="assets/img/sea.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f6">The sea</h3><p data-i18n="f6d">Go down to the sea, find islands and fight sea bosses.</p></div></article>
+        <article class="feat"><img src="assets/img/caves.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f7">Caves and treasure</h3><p data-i18n="f7d">Dig deep, open treasure chests and find secret places.</p></div></article>
+        <article class="feat"><img src="assets/img/world.jpg" alt="" width="1280" height="720"><div><h3 data-i18n="f8">Play in Arabic</h3><p data-i18n="f8d">The whole game works in English and Arabic. Switch from the phone menu.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="watch" aria-labelledby="wh">
+    <div class="wrap">
+      <img src="assets/img/watcher.jpg" alt="The watcher standing between the trees at night" width="700" height="500">
+      <div>
+        <h2 id="wh" dir="ltr">SOMETHING IS WATCHING YOU</h2>
+        <p class="line" dir="ltr">There is something looking for you…<br>and there is something want to kill you.</p>
+        <p class="sub" data-i18n="watch_d">When night falls in ASER WORLD, don't look at him.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="vote" id="vote">
+    <div class="wrap">
+      <div class="box">
+        <span class="kicker" data-i18n="k_vote">Players decide</span>
+        <h3 data-i18n="h_vote">Vote for the game's name</h3>
+        <p class="small" data-i18n="vote_rule">The name with the most votes becomes the official name of the game. One vote per player. You can change your vote until voting closes.</p>
+        <div class="opts" id="opts" aria-live="polite"></div>
+        <div class="status" id="vstatus" role="status"></div>
+        <div class="demo" id="demo" hidden data-i18n="demo">Preview only: voting is not connected yet, so these numbers are examples.</div>
+      </div>
+      <div class="box">
+        <h3 data-i18n="h_suggest">Suggest a name</h3>
+        <p class="small" id="voteNeed" data-i18n="vote_need">Make an account in the city first, then you can vote and suggest names.</p>
+        <form id="suggestForm" class="field" novalidate hidden>
+          <label for="sname" data-i18n="suggest">Suggest a new name</label>
+          <input id="sname" type="text" maxlength="24" autocomplete="off" required>
+          <span class="small" data-i18n="suggest_rule">2 to 24 letters. The team checks every name before it shows in the vote.</span>
+          <div class="row"><button class="btn gold" type="submit" data-i18n="send">Send</button></div>
+        </form>
+        <div class="status" id="sstatus" role="status"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="community">
+    <div class="wrap">
+      <span class="kicker" data-i18n="k_comm">Community</span>
+      <h2 data-i18n="h_comm">Play with us</h2>
+      <div class="comm">
+        <a class="card dc" href="https://discord.gg/zyqsh6mMw" target="_blank" rel="noopener noreferrer">
+          <h3>DISCORD</h3>
+          <p data-i18n="dc_d">News, updates, help and the first people to play. All support is here.</p>
+          <span class="u">discord.gg/zyqsh6mMw</span>
+        </a>
+        <a class="card ytc" href="https://www.youtube.com/channel/UCl0LLCJ4qkQitS80CtJdjAw" target="_blank" rel="noopener noreferrer">
+          <h3>YOUTUBE</h3>
+          <p data-i18n="yt_d">Trailers, guides and new updates of ASER WORLD.</p>
+          <span class="u" data-i18n="yt_u">Subscribe on YouTube</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span><b>ASER WORLD</b> · MADE BY ASER AMRO AHMED</span>
+    <span>© 2026</span>
+  </div>
+</footer>
+
+<script src="assets/vendor/supabase-2.45.4.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/city.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
