@@ -8,7 +8,7 @@
     pc_rules: ['Be respectful. Bad words are hidden automatically (★★★) in every language; 100+ bad messages in a day = automatic 1-day ban.', 'خليك محترم. الشتايم بتتشفّر لوحدها (★★★) بكل اللغات، واللي يبعت أكتر من 100 رسالة فيها شتايم في يوم بيتبند يوم كامل أوتوماتيك.'],
     pc_ph: ['Write to everyone…', 'اكتب للكل…'], pc_send: ['Send', 'ابعت'], pc_banned: ['You are banned until', 'انت متبند لحد'],
     ad_h: ['Admin panel', 'لوحة الأدمن'], ad_user: ['Player name', 'اسم اللاعب'], ad_arg: ['Value (hours / amount / word / message)', 'القيمة (ساعات / عدد / كلمة / رسالة)'],
-    st_h: ['Settings', 'الإعدادات'], st_theme: ['Mode', 'الوضع'], st_day: ['Day', 'صباحي'], st_night: ['Night', 'ليلي'], st_auto: ['Auto', 'تلقائي'], st_lang: ['Language', 'اللغة'], st_motion: ['Animations', 'الحركة'], st_on: ['On', 'شغّال'], st_off: ['Off', 'مقفول'], st_acc: ['Account', 'الحساب'], n_video: ['Video', 'الفيديو'], t_k: ['Inside the app', 'جوه البرنامج'], t_h: ['TOWN DINOSPEAR 3D', 'المدينة ثلاثية الأبعاد'], t_p: ['Walk with your avatar, enter the houses, work and play — right here.', 'اتمشّى بالأفاتار بتاعك، وادخل البيوت، واشتغل والعب — هنا على طول.'], t_full: ['Full screen', 'الشاشة كلها'], v_k: ['Watch', 'اتفرج'], v_h: ['A tour of DINOSPEAR in 5 minutes', 'جولة في دينوسبير في 5 دقايق'], n_town: ['3D Town', 'المدينة 3D'], n_app: ['Chat & Chess', 'الشات والشطرنج'], n_demo: ['App games', 'ألعاب البرنامج'], n_ideas: ['Your ideas', 'أفكاركم'], n_road: ['Roadmap', 'التطوير'], n_game: ['The game', 'اللعبة'], n_helper: ['Helper', 'المساعد'], n_comm: ['Community', 'المجتمع'],
+    st_h: ['Settings', 'الإعدادات'], st_theme: ['Mode', 'الوضع'], st_day: ['Day', 'صباحي'], st_night: ['Night', 'ليلي'], st_auto: ['Auto', 'تلقائي'], st_lang: ['Language', 'اللغة'], st_motion: ['Animations', 'الحركة'], st_on: ['On', 'شغّال'], st_off: ['Off', 'مقفول'], st_acc: ['Account', 'الحساب'], n_video: ['Video', 'الفيديو'], t_k: ['Inside the app', 'جوه البرنامج'], t_h: ['TOWN DINOSPEAR 3D', 'المدينة ثلاثية الأبعاد'], t_p: ['Walk with your avatar, enter the houses, work and play — right here.', 'اتمشّى بالأفاتار بتاعك، وادخل البيوت، واشتغل والعب — هنا على طول.'], t_full: ['Full screen', 'الشاشة كلها'], v_k: ['Watch', 'اتفرج'], v_h: ['A tour of DINOSPEAR in 5 minutes', 'جولة في دينوسبير في 5 دقايق'], n_town: ['3D Town', 'المدينة 3D'], n_app: ['Chat & Chess', 'الشات والشطرنج'], n_demo: ['App games', 'ألعاب البرنامج'], st_ver: ['App version', 'إصدار البرنامج'], n_ideas: ['Your ideas', 'أفكاركم'], n_road: ['Roadmap', 'التطوير'], n_game: ['The game', 'اللعبة'], n_helper: ['Helper', 'المساعد'], n_comm: ['Community', 'المجتمع'],
     signin: ['Sign in', 'تسجيل الدخول'], signup: ['New account', 'حساب جديد'], signout: ['Sign out', 'تسجيل الخروج'],
     uname: ['Username', 'اسم المستخدم'], pass: ['Password', 'الباسورد'], pass2: ['Repeat the password', 'اكتب الباسورد تاني'],
     g_sub: ['Sign in to see the site, the 3D town, the chat, chess and the demos.', 'سجّل دخول عشان تشوف الموقع والمدينة 3D والشات والشطرنج والديمو.'],
@@ -239,15 +239,75 @@
     t.textContent = DSA.t('💡 Got an idea or a comment for the game? Write it in Your ideas!', '💡 عندك فكرة أو كومنت للعبة؟ اكتبها في أفكاركم!');
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
-  // V04: the phone app updates by itself — a new version of the site = the app reloads to it
+  // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
+  var APP_V = 'V10';
+  var UPD = { box: null, shown: '' };
+  function wipeAndReload() {
+    var p = [];
+    if ('serviceWorker' in navigator) p.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }));
+    if (window.caches) p.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }));
+    Promise.all(p).catch(function () {}).then(function () { location.replace(location.pathname + '?v=' + Date.now() + location.hash); });
+  }
+  function updBox(info, auto) {
+    if (!UPD.box) {
+      var b = document.createElement('div'); b.id = 'updBox';
+      b.style.cssText = 'position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:90;width:min(440px,calc(100vw - 24px));background:#0f172a;color:#fff;border:2px solid #22c55e;border-radius:20px;padding:14px 16px;box-shadow:0 18px 50px rgba(0,0,0,.45);font-weight:600';
+      document.body.appendChild(b); UPD.box = b;
+    }
+    var en = (document.documentElement.lang || 'ar').indexOf('en') === 0, b = UPD.box;
+    b.innerHTML = '';
+    var h = document.createElement('div'); h.style.cssText = 'font-weight:900;font-size:17px;margin-bottom:6px';
+    h.textContent = auto ? (en ? 'Updating the app…' : 'جاري تحديث البرنامج…') : (en ? 'New update ' : 'تحديث جديد ') + info.v + ' 🎉';
+    b.appendChild(h);
+    var list = (en ? info.en : info.ar) || [];
+    if (list.length) { var ul = document.createElement('ul'); ul.style.cssText = 'margin:0 0 10px;padding-inline-start:20px;line-height:1.7;font-size:14px;opacity:.92'; list.slice(0, 5).forEach(function (x) { var li = document.createElement('li'); li.textContent = x; ul.appendChild(li); }); b.appendChild(ul); }
+    if (auto) return;
+    var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px';
+    var go = document.createElement('button'); go.type = 'button'; go.className = 'btn'; go.style.flex = '2'; go.textContent = en ? 'Update now' : 'حدّث دلوقتي';
+    go.onclick = function () { h.textContent = en ? 'Updating…' : 'جاري التحديث…'; row.remove(); wipeAndReload(); };
+    var later = document.createElement('button'); later.type = 'button'; later.className = 'btn ghost'; later.style.flex = '1'; later.textContent = en ? 'Later' : 'بعدين';
+    later.onclick = function () { b.remove(); UPD.box = null; };
+    row.appendChild(go); row.appendChild(later); b.appendChild(row);
+  }
+  var bootT = Date.now();
+  function checkUpdate(manual) {
+    if (!navigator.onLine) { if (manual) manual(null); return; }
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (info) {
+      if (manual) manual(info);
+      if (!info || !info.v || info.v === APP_V) return;
+      // right after opening the app: update straight away (nothing to lose yet); later: ask, so a game is never cut
+      if (Date.now() - bootT < 8000) { updBox(info, true); wipeAndReload(); }
+      else if (UPD.shown !== info.v || !UPD.box) { UPD.shown = info.v; updBox(info, false); }
+    }).catch(function () { if (manual) manual(null); });
+  }
+  window.DS_checkUpdate = checkUpdate;
+  // settings: show the version + a "check for updates" button
+  (function () {
+    var acc = $('stWho'); if (!acc) return;
+    var opt = document.createElement('div'); opt.className = 'opt';
+    var lb = document.createElement('b'); lb.setAttribute('data-i', 'st_ver'); lb.textContent = DSA.t('App version', 'إصدار البرنامج');
+    var wrap = document.createElement('span'); wrap.style.cssText = 'display:flex;gap:8px;align-items:center';
+    var vv = document.createElement('span'); vv.textContent = APP_V; vv.style.direction = 'ltr';
+    var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn ghost'; bt.style.cssText = 'padding:8px 12px'; bt.textContent = DSA.t('Check for update', 'دوّر على تحديث');
+    bt.onclick = function () {
+      bt.textContent = DSA.t('Checking…', 'بدوّر…');
+      checkUpdate(function (info) {
+        if (!info) bt.textContent = DSA.t('No internet', 'مفيش نت');
+        else if (info.v === APP_V) bt.textContent = DSA.t('You have the newest ✓', 'عندك آخر نسخة ✓');
+        else { bt.textContent = DSA.t('Updating…', 'بيحدّث…'); wipeAndReload(); }
+        setTimeout(function () { bt.textContent = DSA.t('Check for update', 'دوّر على تحديث'); }, 2500);
+      });
+    };
+    wrap.appendChild(vv); wrap.appendChild(bt); opt.appendChild(lb); opt.appendChild(wrap);
+    acc.parentNode.parentNode.insertBefore(opt, acc.parentNode.nextSibling);
+  })();
   if ('serviceWorker' in navigator) {
-    var hadCtl = !!navigator.serviceWorker.controller, reloaded = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function () { if (hadCtl && !reloaded) { reloaded = true; location.reload(); } hadCtl = true; });
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
-      function chk() { if (navigator.onLine) reg.update().catch(function () {}); }
-      setInterval(chk, 60000); document.addEventListener('visibilitychange', function () { if (!document.hidden) chk(); });
+      setInterval(function () { if (navigator.onLine) reg.update().catch(function () {}); }, 120000);
     }).catch(function () {});
   }
+  checkUpdate(); setInterval(function () { if (!document.hidden) checkUpdate(); }, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) checkUpdate(); });
 
   setMode('in'); applyLang();
 })();

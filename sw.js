@@ -1,7 +1,7 @@
 // DINOSPEAR service worker V08
 // • every update of the site reaches the phone app by itself (new version = auto reload)
 // • works with no internet: offline page, article and the offline games stay saved
-const V = 'dinospear-v09';
+const V = 'dinospear-v10';
 const CORE = ['./', 'index.html', 'offline.html', 'article.html', 'manifest.webmanifest', 'favicon.svg',
   'assets/css/style.css', 'assets/js/home.js', 'assets/js/icons.js', 'assets/js/ds_auth.js', 'assets/js/config.js', 'key.js',
   'assets/img/logo_v02.svg', 'assets/img/dino_v03.svg', 'assets/img/dinospear.svg', 'assets/img/icon-192.png', 'assets/img/icon-512.png',
@@ -26,7 +26,8 @@ self.addEventListener('fetch', e => {
   const r = e.request; if (r.method !== 'GET') return;
   const u = new URL(r.url);
   const same = u.origin === location.origin, cdn = CDN.includes(u.hostname);
-  if (!same && !cdn) return;                                   // Supabase and other sites: never cached
+  if (!same && !cdn) return;
+  if (same && u.pathname.endsWith('/version.json')) return;     // update check always asks the internet                                   // Supabase and other sites: never cached
   if (cdn) { e.respondWith(caches.match(r).then(hit => hit || fetch(r).then(res => save(r, res)))); return; }   // libraries never change
   if (r.mode === 'navigate') {
     e.respondWith(Promise.race([fetch(r, { cache: 'no-store' }), timeout(6000)]).then(res => save(r, res))
