@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>ZOMBIE LAB — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="hud" id="hud" hidden>
+ <div class="bar">
+  <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="chip" id="hLevel"></div>
+  <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.2"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg><span id="hVials">0/3</span></div>
+  <div class="chip"><span data-en="Seen" data-ar="انكشفت"></span><div class="meter"><i id="hAlert"></i></div></div>
+  <div class="chip" id="hTime">0:00</div>
+ </div>
+ <div class="toast" id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+ <div class="acts">
+  <button class="act" id="bHide" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M12 3v18M9 12h1M14 12h1"/></svg><span data-en="Hide" data-ar="استخبى"></span></button>
+  <button class="act alt" id="bRun" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 4a2 2 0 1 0 0 .1M7 21l3-6 3 2v4M10 15l1-5 4 2 3-1M8 10l3-1"/></svg><span data-en="Run" data-ar="اجري"></span></button>
+ </div>
+ <div class="keys" data-en="Move: WASD / arrows · Run: Shift (makes noise) · Hide: E · Menu: Esc" data-ar="الحركة: WASD أو الأسهم · الجري: Shift (بيعمل صوت) · الاستخباء: E · القايمة: Esc"></div>
+</div>
+
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+
+<div class="screen" id="menu" style="--c1:#14532d">
+ <div class="card">
+  <h1>ZOMBIE LAB</h1>
+  <div class="story">
+   <p data-en="Aser was working late in the DINO lab. A green potion spilled on him… and he turned into a zombie!" data-ar="آسر كان بيشتغل متأخر في معمل DINO. جرعة خضرا وقعت عليه… واتحوّل لزومبي!"></p>
+   <p data-en="The only cure is a vaccine split into parts. In each place, grab the 3 green vials, then reach the blue vaccine case." data-ar="العلاج الوحيد لقاح متقسّم أجزاء. في كل مكان لمّ الـ 3 أنابيب الخضرا، وبعدها اوصل لصندوق اللقاح الأزرق."></p>
+   <p data-en="The humans are scared of you. If their light catches you, they chase you. Hide in lockers and bushes — but not while they are looking!" data-ar="البشر خايفين منك. لو النور بتاعهم شافك هيجروا وراك. استخبى في الدواليب والشجر — بس مش وهما باصين عليك!"></p>
+  </div>
+  <div class="lv" id="levels"></div>
+  <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
+ </div>
+</div>
+
+<div class="screen" id="end" hidden style="--c1:#1e3a8a">
+ <div class="card">
+  <h1 id="eTitle"></h1>
+  <p id="eText"></p>
+  <div class="row">
+   <button class="big" id="eNext" type="button"></button>
+   <button class="big sec" id="eMenu" type="button" data-en="Levels" data-ar="المراحل"></button>
+  </div>
+ </div>
+</div>
+
+<script type="module">
+import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store } from './engine.js';
+
+// ---------- levels: '#' wall, '.' floor, 'P' start, 'V' vial, 'C' vaccine case, 'H' hiding spot, 'G' human guard ----------
+const LEVELS = [
+ { en: 'The Lab', ar: 'المعمل', sky: 0x0f172a, floor: 0xd9e3ea, wall: 0xf1f5f9, trim: 0x334155, hide: 'locker', speed: 2.1, sight: 9, night: false, map: [
+  '####################',
+  '#P....#.....H#.....#',
+  '#.....#......#..V..#',
+  '#..H..###.####.....#',
+  '#...........G#..H..#',
+  '###.####.....###.###',
+  '#......#..........G#',
+  '#.V....#.....#.....#',
+  '#..H...####.##..H..#',
+  '#......#.....#.....#',
+  '##.#####..C..###.###',
+  '#......#.....#.....#',
+  '#..G...#..H..#.....#',
+  '#......###.###..V..#',
+  '#.H................#',
+  '####################'] },
+ { en: 'The City at night', ar: 'المدينة بالليل', sky: 0x050816, floor: 0x334155, wall: 0x475569, trim: 0x1f2937, hide: 'bush', speed: 2.4, sight: 8, night: true, map: [
+  '######################',
+  '#P...#....#.....#....#',
+  '#.##.#.##.#.###.#.##.#',
+  '#.##...##...###...##.#',
+  '#....H....G.....H....#',
+  '#.##.###.#####.###.#.#',
+  '#.##.###.#####.###.#.#',
+  '#..V......H.....V....#',
+  '#.####.##.###.##.###.#',
+  '#.####.##.###.##.###.#',
+  '#...G.....H......G...#',
+  '#.##.###.#####.###.#.#',
+  '#.##.###...C...###.#.#',
+  '#.H......#####.....H.#',
+  '#.##.##.....V...##.#.#',
+  '######################'] },
+ { en: 'The Hospital (final)', ar: 'المستشفى (النهائية)', sky: 0x111827, floor: 0xe5e7eb, wall: 0xcbd5e1, trim: 0x7f1d1d, hide: 'locker', speed: 2.7, sight: 9.5, night: false, map: [
+  '########################',
+  '#P.....#.....H#........#',
+  '#......#......#...V....#',
+  '#..H...####.###........#',
+  '#..........G..#....H...#',
+  '####.#####....####.#####',
+  '#.......#..G.......#...#',
+  '#..V....#.....#....#.H.#',
+  '#.......####.##........#',
+  '#..H....#.....#...G....#',
+  '###.#####..C..######.###',
+  '#.......#.....#........#',
+  '#...G...###.###..V.....#',
+  '#.H..........H.....G...#',
+  '########################'] }
+];
+
+const W = makeWorld({ sky: 0x0f172a, fog: 0x0f172a, fogNear: 22, fogFar: 70 });
+const { scene, camera, renderer, sun } = W;
+setupJoystick(); bindButton('bHide', 'KeyE'); bindButton('bRun', 'Run');
+const $ = id => document.getElementById(id);
+let level = 0, world = null, state = 'menu';
+
+function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1800); }
+
+// ---------- build a level ----------
+function clearWorld() {
+  if (!world) return;
+  world.group.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+  scene.remove(world.group); walls.length = 0; world = null;
+}
+function build(n) {
+  clearWorld();
+  const LV = LEVELS[n], rows = LV.map, H = rows.length, Wd = Math.max(...rows.map(r => r.length));
+  const grid = rows.map(r => r.padEnd(Wd, '#').split(''));
+  const group = new THREE.Group(); scene.add(group);
+  const cell = (c, r) => ({ x: (c - Wd / 2) * 2 + 1, z: (r - H / 2) * 2 + 1 });
+  scene.background = new THREE.Color(LV.sky); scene.fog.color.set(LV.sky);
+  sun.intensity = LV.night ? 0.25 : 1.1;
+  scene.children.forEach(o => { if (o.isHemisphereLight) o.intensity = LV.night ? 0.32 : 0.6; });
+  const g0 = floor(group, Wd * 2, H * 2, LV.floor, 2);
+  // walls: one instanced mesh for speed; merged rectangles per row for collision
+  const wallCells = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wallCells.push([c, r]); }));
+  const geo = new THREE.BoxGeometry(2, 3, 2);
+  const inst = new THREE.InstancedMesh(geo, mat(LV.wall), wallCells.length);
+  const m4 = new THREE.Matrix4();
+  wallCells.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 1.5, p.z); inst.setMatrixAt(i, m4); });
+  inst.castShadow = inst.receiveShadow = true; group.add(inst);
+  const trim = new THREE.InstancedMesh(new THREE.BoxGeometry(2.02, 0.18, 2.02), mat(LV.trim, { emissive: LV.trim, emissiveIntensity: LV.night ? 0.6 : 0.15 }), wallCells.length);
+  wallCells.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 3.02, p.z); trim.setMatrixAt(i, m4); });
+  group.add(trim);
+  grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const isW = row[c] === '#'; if (isW && s < 0) s = c; if (!isW && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: true }); s = -1; } } });
+  // things
+  const vials = [], hides = [], guards = []; let start = null, cure = null;
+  grid.forEach((row, r) => row.forEach((ch, c) => {
+    const p = cell(c, r);
+    if (ch === 'P') start = p;
+    if (ch === 'V') {
+      const v = new THREE.Group();
+      const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.6, 14), mat(0x4ade80, { emissive: 0x22c55e, emissiveIntensity: 1.2, transparent: true, opacity: 0.9 }));
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 14), mat(0xe5e7eb)); cap.position.y = 0.36;
+      const halo = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.7, 28), new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
+      halo.rotation.x = -Math.PI / 2; halo.position.y = -0.55;
+      v.add(glass, cap, halo); v.position.set(p.x, 0.9, p.z); group.add(v); vials.push({ p, mesh: v, got: false });
+    }
+    if (ch === 'C') {
+      const cg = new THREE.Group();
+      const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1), mat(0x1e293b)); base.position.y = 0.4;
+      const glassC = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.8), mat(0x60a5fa, { emissive: 0x3b82f6, emissiveIntensity: 0.2, transparent: true, opacity: 0.55 })); glassC.position.y = 1.15;
+      const syr = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.6, 10), mat(0x93c5fd, { emissive: 0x60a5fa, emissiveIntensity: 1 })); syr.rotation.z = Math.PI / 2; syr.position.y = 1.15;
+      cg.add(base, glassC, syr); cg.position.set(p.x, 0, p.z); group.add(cg); cure = { p, mesh: cg, glass: glassC };
+    }
+    if (ch === 'H') {
+      let m;
+      if (LV.hide === 'bush') {
+        m = new THREE.Group();
+        [[0, 0.6, 0, 0.9], [0.45, 0.5, 0.2, 0.65], [-0.4, 0.5, -0.15, 0.7]].forEach(b => { const s = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 1), mat(0x166534, { flatShading: true })); s.position.set(b[0], b[1], b[2]); s.castShadow = true; m.add(s); });
+        walls.push({ x0: p.x - 0.8, x1: p.x + 0.8, z0: p.z - 0.8, z1: p.z + 0.8, tall: false });
+      } else {
+        m = new THREE.Group();
+        const bodyL = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.3, 0.9), mat(0x64748b, { metalness: 0.4, roughness: 0.4 })); bodyL.position.y = 1.15; bodyL.castShadow = true;
+        [-0.3, 0.3].forEach(x => { const d = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.1, 0.04), mat(0x94a3b8, { metalness: 0.5, roughness: 0.35 })); d.position.set(x, 1.15, 0.46); m.add(d);
+          for (let k = 0; k < 3; k++) { const s = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.04, 0.02), mat(0x334155)); s.position.set(x, 1.9 - k * 0.1, 0.49); m.add(s); } });
+        m.add(bodyL);
+        walls.push({ x0: p.x - 0.6, x1: p.x + 0.6, z0: p.z - 0.45, z1: p.z + 0.45, tall: true });
+      }
+      m.position.set(p.x, 0, p.z); group.add(m); hides.push({ p, mesh: m });
+    }
+    if (ch === 'G') {
+      const g = makeChar({ shirt: 0xf8fafc, pants: 0x1d4ed8, skin: [0xf2c49b, 0xc68642, 0x8d5524][guards.length % 3], hair: [0x3b2314, 0x111111, 0x7c2d12][guards.length % 3] });
+      const cone = new THREE.Mesh(new THREE.CircleGeometry(LV.sight, 28, -Math.PI / 2 - 0.6, 1.2), new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide }));
+      cone.rotation.x = -Math.PI / 2; cone.position.y = 0.05; group.add(cone);
+      const light = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.3), mat(0x111827)); light.position.set(0.42, 1.0, 0.25); g.add(light);
+      g.position.set(p.x, 0, p.z); group.add(g);
+      guards.push({ mesh: g, cone, pos: { x: p.x, z: p.z }, dir: Math.random() * 6.28, path: [], st: 'patrol', lost: 0, seeing: false, spot: null });
+    }
+  }));
+  // a few lab props so rooms don't look empty
+  grid.forEach((row, r) => row.forEach((ch, c) => {
+    if (ch !== '.' || (c * 7 + r * 13) % 11 !== 0) return;
+    const nb = [grid[r - 1]?.[c], grid[r + 1]?.[c], grid[r]?.[c - 1], grid[r]?.[c + 1]];
+    const wi = nb.indexOf('#'); if (wi < 0 || nb.filter(x => x === '.').length < 3) return;
+    const p = cell(c, r), off = [[0, -0.7], [0, 0.7], [-0.7, 0], [0.7, 0]][wi], along = wi < 2;
+    if (LV.night) { const pole = box(group, p.x, p.z, 0.15, 0.15, 3.2, 0x1f2937, { solid: false }); const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), new THREE.MeshBasicMaterial({ color: 0xfef08a })); lamp.position.set(p.x, 3.3, p.z); group.add(lamp); const pl = new THREE.PointLight(0xfde68a, 6, 9, 1.6); pl.position.set(p.x, 3, p.z); group.add(pl); }
+    else { const dx = p.x + off[0], dz = p.z + off[1]; box(group, dx, dz, along ? 1.4 : 0.5, along ? 0.5 : 1.4, 0.9, 0xe2e8f0, { solid: true }); const fc = [0xf472b6, 0x60a5fa, 0xfacc15][(c + r) % 3]; const flask = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), mat(fc, { emissive: fc, emissiveIntensity: 0.5 })); flask.position.set(dx, 1.06, dz); group.add(flask); }
+  }));
+  // player zombie
+  const pm = makeChar({ skin: 0x86c06c, shirt: 0x0f766e, pants: 0x3f3f46, hair: 0x14532d, glow: 0xbef264 });
+  pm.position.set(start.x, 0, start.z); group.add(pm);
+  world = { LV, grid, Wd, H, cell, group, vials, hides, guards, cure, player: { mesh: pm, pos: { x: start.x, z: start.z }, dir: Math.PI, hidden: null, back: null }, got: 0, alert: 0, t: 0, done: false };
+  camera.position.set(start.x, 12, start.z + 10);
+}
+
+// ---------- grid path finding for guards ----------
+function toCell(p) { const w = world; return { c: Math.round((p.x - 1) / 2 + w.Wd / 2), r: Math.round((p.z - 1) / 2 + w.H / 2) }; }
+const free = (c, r) => { const ch = world.grid[r]?.[c]; return ch && ch !== '#' && ch !== 'H'; };
+function path(from, to) {
+  const a = toCell(from), b = toCell(to), key = (c, r) => r * 1000 + c;
+  if (!free(b.c, b.r)) return [];
+  const prev = new Map([[key(a.c, a.r), null]]), q = [[a.c, a.r]];
+  while (q.length) {
+    const [c, r] = q.shift();
+    if (c === b.c && r === b.r) break;
+    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nc = c + dc, nr = r + dr, k = key(nc, nr); if (!prev.has(k) && free(nc, nr)) { prev.set(k, [c, r]); q.push([nc, nr]); } }
+  }
+  const out = []; let cur = [b.c, b.r];
+  if (!prev.has(key(b.c, b.r))) return [];
+  while (cur) { out.unshift(world.cell(cur[0], cur[1])); cur = prev.get(key(cur[0], cur[1])); }
+  return out.slice(1);
+}
+function randomFloor() {
+  for (let i = 0; i < 200; i++) { const r = 1 + Math.floor(Math.random() * (world.H - 2)), c = 1 + Math.floor(Math.random() * (world.Wd - 2)); if (free(c, r)) return world.cell(c, r); }
+  return world.player.pos;
+}
+
+// ---------- game loop ----------
+function step(dt) {
+  const w = world, P = w.player, LV = w.LV, inp = readInput();
+  w.t += dt;
+  // hide / unhide
+  if (hit('KeyE')) {
+    if (P.hidden) { P.mesh.visible = true; P.pos.x = P.back.x; P.pos.z = P.back.z; P.hidden = null; toast(T('You came out', 'خرجت')); }
+    else {
+      const h = w.hides.find(h => dist(h.p, P.pos) < 2.1);
+      if (h) {
+        P.hidden = h; P.back = { x: P.pos.x, z: P.pos.z }; P.mesh.visible = false; beep(220, 0.15, 'sine');
+        const watcher = w.guards.find(g => g.seeing);
+        if (watcher) { watcher.st = 'pull'; watcher.spot = h; watcher.path = path(watcher.pos, P.back); toast(T('They saw you hide!', 'شافوك وانت بتستخبى!')); }
+        else toast(T('Hidden — they cannot see you', 'مستخبي — مش شايفينك'));
+      } else toast(T('Go next to a locker or bush', 'قرّب من دولاب أو شجرة'), 1200);
+    }
+  }
+  // move
+  let noisy = false;
+  if (!P.hidden) {
+    const sp = inp.run ? 5.2 : 3.2; noisy = inp.run && (inp.x || inp.z);
+    moveCircle(P.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38);
+    const mv = Math.hypot(inp.x, inp.z);
+    if (mv > 0.05) P.dir = Math.atan2(inp.x, inp.z);
+    P.mesh.position.set(P.pos.x, 0, P.pos.z); P.mesh.rotation.y = P.dir;
+    P.mesh.userData.anim(dt, mv * (inp.run ? 1.6 : 1), true);
+  }
+  // vials & cure
+  w.vials.forEach(v => {
+    v.mesh.rotation.y += dt * 2; v.mesh.position.y = 0.9 + Math.sin(w.t * 3) * 0.12;
+    if (!v.got && !P.hidden && dist(v.p, P.pos) < 1.2) { v.got = true; v.mesh.visible = false; w.got++; beep(660, 0.1); beep(990, 0.18, 'triangle'); $('hVials').textContent = w.got + '/3'; toast(w.got < 3 ? T('Vial ' + w.got + ' of 3!', 'أنبوبة ' + w.got + ' من 3!') : T('All vials! The vaccine case is open — go!', 'جمعت الكل! صندوق اللقاح اتفتح — روح له!'), 2200); }
+  });
+  if (w.cure) {
+    w.cure.glass.material.emissiveIntensity = w.got >= 3 ? 0.9 + Math.sin(w.t * 5) * 0.5 : 0.15;
+    if (!P.hidden && dist(w.cure.p, P.pos) < 1.6) { if (w.got >= 3) return win(); if (!w.cureMsg) { w.cureMsg = 1; toast(T('Locked — find the 3 green vials first', 'مقفول — لمّ الـ 3 أنابيب الخضرا الأول'), 1800); } }
+    else w.cureMsg = 0;
+  }
+  // guards
+  let anySee = false;
+  w.guards.forEach(g => {
+    const d = dist(g.pos, P.pos);
+    const ang = Math.atan2(P.pos.x - g.pos.x, P.pos.z - g.pos.z);
+    let da = Math.abs(((ang - g.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+    g.seeing = !P.hidden && ((d < LV.sight && da < 0.6 && canSee(g.pos, P.pos)) || d < 1.6);
+    if (g.seeing) { anySee = true; w.alert = Math.min(1, w.alert + dt * (1.6 - d / LV.sight)); if (w.alert > 0.35 && g.st !== 'pull') { g.st = 'chase'; g.lost = 0; } }
+    if (noisy && d < 7 && g.st === 'patrol') { g.st = 'look'; g.path = path(g.pos, P.pos); }
+    let target = null, sp = LV.speed;
+    if (g.st === 'chase') {
+      sp = LV.speed * 1.65;
+      if (g.seeing) { target = P.pos; g.path = []; g.last = { x: P.pos.x, z: P.pos.z }; }
+      else { g.lost += dt; if (!g.path.length && g.last) g.path = path(g.pos, g.last); if (g.lost > 3.5) { g.st = 'patrol'; g.path = []; } }
+      if (d < 0.95 && !P.hidden) return lose(T('A human caught you!', 'واحد من البشر مسكك!'));
+    }
+    if (g.st === 'pull') { sp = LV.speed * 1.6; if (!g.path.length) g.path = path(g.pos, P.back); if (dist(g.pos, P.back) < 1.3) return lose(T('They pulled you out of your hiding spot!', 'طلّعوك من مكانك!')); }
+    if (g.st === 'look' && !g.path.length) g.st = 'patrol';
+    if (g.st === 'patrol' && !g.path.length) g.path = path(g.pos, randomFloor());
+    if (!target && g.path.length) { target = g.path[0]; if (dist(g.pos, target) < 0.35) { g.path.shift(); target = g.path[0]; } }
+    if (target) {
+      const dx = target.x - g.pos.x, dz = target.z - g.pos.z, m = Math.hypot(dx, dz) || 1;
+      moveCircle(g.pos, dx / m * sp * dt, dz / m * sp * dt, 0.36);
+      const want = Math.atan2(dx, dz); let diff = ((want - g.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI; g.dir += diff * Math.min(1, dt * 8);
+    } else g.dir += dt * 0.8;
+    g.mesh.position.set(g.pos.x, 0, g.pos.z); g.mesh.rotation.y = g.dir; g.mesh.userData.anim(dt, target ? sp / 2.5 : 0, false);
+    g.cone.position.set(g.pos.x, 0.05, g.pos.z); g.cone.rotation.z = g.dir;
+    g.cone.material.color.set(g.st === 'chase' || g.st === 'pull' ? 0xef4444 : g.st === 'look' ? 0xfb923c : 0xfde047);
+    g.cone.material.opacity = g.st === 'chase' ? 0.28 : 0.18;
+  });
+  if (!anySee) w.alert = Math.max(0, w.alert - dt * 0.25);
+  if (state !== 'play') return;
+  $('hAlert').style.width = (w.alert * 100) + '%';
+  const s = Math.floor(w.t); $('hTime').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  const focus = P.hidden ? P.back : P.pos;
+  follow(camera, focus, dt, innerWidth < innerHeight ? 14 : 11, innerWidth < innerHeight ? 9 : 8);
+  sun.position.set(focus.x + 14, 28, focus.z + 10); sun.target.position.set(focus.x, 0, focus.z);
+}
+
+// ---------- screens ----------
+function showMenu() {
+  state = 'menu'; $('hud').hidden = true; $('end').hidden = true; $('menu').hidden = false;
+  const done = store.get('zl_done', 0), best = store.get('zl_best', {});
+  const box = $('levels'); box.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.disabled = i > done;
+    if (i < done) b.className = 'done';
+    const name = document.createElement('b'); name.textContent = (i + 1) + '. ' + (L() === 'en' ? lv.en : lv.ar); b.appendChild(name);
+    b.appendChild(document.createTextNode(i > done ? T('Locked', 'مقفولة') : best[i] ? T('Best ', 'أحسن وقت ') + best[i] + 's' : T('Play', 'العب')));
+    b.onclick = () => start(i); box.appendChild(b);
+  });
+}
+function start(n) {
+  level = n; build(n); state = 'play';
+  $('menu').hidden = true; $('end').hidden = true; $('hud').hidden = false;
+  $('hLevel').textContent = (n + 1) + '. ' + (L() === 'en' ? LEVELS[n].en : LEVELS[n].ar);
+  $('hVials').textContent = '0/3'; $('hAlert').style.width = '0';
+  toast(T('Find the 3 green vials', 'دوّر على الـ 3 أنابيب الخضرا'), 2200);
+}
+function win() {
+  if (state !== 'play') return; state = 'end'; beep(523, 0.15, 'triangle'); setTimeout(() => beep(784, 0.3, 'triangle'), 150);
+  const secs = Math.round(world.t), best = store.get('zl_best', {});
+  if (!best[level] || secs < best[level]) { best[level] = secs; store.set('zl_best', best); }
+  store.set('zl_done', Math.max(store.get('zl_done', 0), level + 1));
+  const last = level === LEVELS.length - 1;
+  $('eTitle').textContent = last ? T('Aser is human again!', 'آسر رجع إنسان تاني!') : T('Vaccine part found!', 'لقيت جزء من اللقاح!');
+  $('eText').textContent = last ? T('You built the full vaccine in ' + secs + ' seconds. The DINO lab is safe. You are a legend!', 'جمّعت اللقاح كله في ' + secs + ' ثانية. معمل DINO بقى في أمان. انت أسطورة!')
+    : T('Time: ' + secs + ' s. The next part is hidden somewhere harder…', 'الوقت: ' + secs + ' ثانية. الجزء الجاي متخبّي في مكان أصعب…');
+  $('eNext').textContent = last ? T('Play again', 'العب تاني') : T('Next level', 'المرحلة الجاية');
+  $('eNext').onclick = () => start(last ? 0 : level + 1);
+  $('hud').hidden = true; $('end').hidden = false;
+}
+function lose(msg) {
+  if (state !== 'play') return; state = 'end'; beep(160, 0.4, 'sawtooth');
+  $('eTitle').textContent = T('Caught!', 'اتمسكت!'); $('eText').textContent = msg + ' ' + T('Stay out of the light and hide early.', 'ابعد عن النور واستخبى بدري.');
+  $('eNext').textContent = T('Try again', 'جرّب تاني'); $('eNext').onclick = () => start(level);
+  $('hud').hidden = true; $('end').hidden = false;
+}
+$('eMenu').onclick = showMenu; $('bBack').onclick = showMenu;
+addEventListener('keydown', e => { if (e.code === 'Escape' && state === 'play') showMenu(); });
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); if (state === 'menu') showMenu(); });
+setLang(L()); showMenu();
+
+// idle scene behind the menu
+build(0);
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (state === 'play' && world) step(dt);
+  else if (world) { const t = now / 4000; camera.position.set(Math.sin(t) * 18, 16, Math.cos(t) * 18); camera.lookAt(0, 0, 0); }
+  renderer.render(scene, camera); endFrame();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

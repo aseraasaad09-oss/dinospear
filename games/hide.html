@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>HIDE & SEEK — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="hud" id="hud" hidden>
+ <div class="bar">
+  <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="chip" id="hMode"></div>
+  <div class="chip" id="hInfo"></div>
+  <div class="chip" id="hTime">0</div>
+ </div>
+ <div class="toast" id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+ <div class="acts">
+  <button class="act" id="bAct" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><span id="actTxt"></span></button>
+  <button class="act alt" id="bRun" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 4a2 2 0 1 0 0 .1M7 21l3-6 3 2v4M10 15l1-5 4 2 3-1M8 10l3-1"/></svg><span data-en="Run" data-ar="اجري"></span></button>
+ </div>
+ <div class="keys" data-en="Move: WASD / arrows · Run: Shift · Search / Hide: E · Menu: Esc" data-ar="الحركة: WASD أو الأسهم · الجري: Shift · دوّر / استخبى: E · القايمة: Esc"></div>
+</div>
+
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+
+<div class="screen" id="menu" style="--c1:#7c2d12">
+ <div class="card">
+  <h1 data-en="HIDE & SEEK" data-ar="الاستغماية"></h1>
+  <p data-en="A house, a big garden, 15 hiding places and 4 friends. Pick your side:" data-ar="بيت وجنينة كبيرة و15 مكان للاستخباء و4 أصحاب. اختار انت هتبقى إيه:"></p>
+  <div class="lv">
+   <button type="button" id="mSeek"><b data-en="I seek" data-ar="أنا اللي بدوّر"></b><span data-en="Find the 4 hidden friends before time runs out. Hiding places shake a little when someone is inside." data-ar="لاقي الـ 4 أصحاب المستخبيين قبل الوقت ما يخلص. مكان الاستخباء بيتهز شوية لو فيه حد جوّه."></span></button>
+   <button type="button" id="mHide"><b data-en="I hide" data-ar="أنا اللي بستخبى"></b><span data-en="You have 15 seconds to hide. Survive 90 seconds without being found. Don't let the seeker see you walking!" data-ar="معاك 15 ثانية تستخبى. اصمد 90 ثانية من غير ما يلاقيك. وماتخليش اللي بيدوّر يشوفك وانت ماشي!"></span></button>
+  </div>
+  <p id="mBest" style="opacity:.75"></p>
+  <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
+ </div>
+</div>
+
+<div class="screen" id="end" hidden style="--c1:#1e3a8a">
+ <div class="card">
+  <h1 id="eTitle"></h1>
+  <p id="eText"></p>
+  <div class="row">
+   <button class="big" id="eAgain" type="button" data-en="Play again" data-ar="العب تاني"></button>
+   <button class="big sec" id="eMenu" type="button" data-en="Change side" data-ar="غيّر الدور"></button>
+  </div>
+ </div>
+</div>
+
+<script type="module">
+import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store } from './engine.js';
+
+// '#' wall, 'H' hiding place in the house (wardrobe / boxes / bed), 'B' bush in the garden, 'T' tree (sofa inside the house), 'S' base, 'P' player start
+const MAP = [
+ '########################',
+ '#H.....#.....H#.......H#',
+ '#......#......#........#',
+ '#..T.......S........T..#',
+ '#......#......#........#',
+ '#H....H#..H...#H......H#',
+ '####.######..#####.#####',
+ '#B..T.....B......T...B.#',
+ '#......................#',
+ '#..B...T.....T....B....#',
+ '#......................#',
+ '#.T....B...P....B...T..#',
+ '########################'];
+const HOUSE_ROWS = 6;
+const FRIENDS = [
+ { en: 'Mona', ar: 'منى', shirt: 0xec4899, hair: 0x111111, skin: 0xc68642 },
+ { en: 'Omar', ar: 'عمر', shirt: 0xf59e0b, hair: 0x3b2314, skin: 0xf2c49b },
+ { en: 'Lina', ar: 'لينا', shirt: 0x8b5cf6, hair: 0x7c2d12, skin: 0xf2c49b },
+ { en: 'Yusuf', ar: 'يوسف', shirt: 0x10b981, hair: 0x111111, skin: 0x8d5524 }];
+
+const W = makeWorld({ sky: 0x2f6b2a, fog: 0x9bd8f5, fogNear: 30, fogFar: 80, ambient: 0.7, sun: 1.25 });
+const { scene, camera, renderer, sun } = W;
+setupJoystick(); bindButton('bAct', 'KeyE'); bindButton('bRun', 'Run');
+const $ = id => document.getElementById(id);
+const Hh = MAP.length, Wd = MAP[0].length, grid = MAP.map(r => r.split(''));
+const cell = (c, r) => ({ x: (c - Wd / 2) * 2 + 1, z: (r - Hh / 2) * 2 + 1 });
+function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1800); }
+
+// ---------- build the house and garden once ----------
+floor(scene, Wd * 2, Hh * 2, 0x4d9a3c, 3);
+const wood = floor(scene, Wd * 2 - 0.2, HOUSE_ROWS * 2, 0xb07a4a, 1.5);
+wood.position.set(0, 0.01, cell(0, 0).z - 1 + HOUSE_ROWS);
+const wallCells = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wallCells.push([c, r]); }));
+const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 2.6, 2), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }), wallCells.length);
+const fence = [], m4 = new THREE.Matrix4();
+wallCells.forEach(([c, r], i) => { const p = cell(c, r); const low = r >= HOUSE_ROWS; m4.compose(new THREE.Vector3(p.x, low ? 0.6 : 1.3, p.z), new THREE.Quaternion(), new THREE.Vector3(1, low ? 1.2 / 2.6 : 1, 1)); inst.setMatrixAt(i, m4); if (low) fence.push(i); });
+inst.castShadow = inst.receiveShadow = true; scene.add(inst);
+fence.forEach(i => inst.setColorAt(i, new THREE.Color(0xd6a46c))); wallCells.forEach((w, i) => { if (!fence.includes(i)) inst.setColorAt(i, new THREE.Color(0xfef3c7)); }); inst.instanceColor.needsUpdate = true;
+grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const isW = row[c] === '#'; if (isW && s < 0) s = c; if (!isW && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: r < HOUSE_ROWS }); s = -1; } } });
+
+const spots = []; let base = null, startP = null;
+grid.forEach((row, r) => row.forEach((ch, c) => {
+  const p = cell(c, r);
+  if (ch === 'S') base = p;
+  if (ch === 'P') startP = p;
+  if (ch === 'T') {
+    if (r < HOUSE_ROWS) { box(scene, p.x, p.z, 1.8, 0.8, 0.5, 0x2563eb); box(scene, p.x, p.z - 0.35, 1.8, 0.2, 1.0, 0x1d4ed8, { solid: false }); }
+    else {
+      box(scene, p.x, p.z, 0.4, 0.4, 1.4, 0x7c4a1e);
+      const top = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2.6, 9), mat(0x15803d, { flatShading: true })); top.position.set(p.x, 2.6, p.z); top.castShadow = true; scene.add(top);
+    }
+  }
+  if (ch === 'H' || ch === 'B') {
+    const g = new THREE.Group(); let kind;
+    if (ch === 'B') {
+      kind = 'bush';
+      [[0, 0.6, 0, 0.9], [0.5, 0.5, 0.2, 0.65], [-0.45, 0.5, -0.15, 0.7]].forEach(b => { const s = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 1), mat(0x22863a, { flatShading: true })); s.position.set(b[0], b[1], b[2]); s.castShadow = true; g.add(s); });
+    } else {
+      kind = ['wardrobe', 'boxes', 'bed'][spots.length % 3];
+      if (kind === 'wardrobe') { const b = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 0.9), mat(0x92400e)); b.position.y = 1.1; b.castShadow = true; g.add(b); [-0.35, 0.35].forEach(x => { const k = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.06), mat(0xfacc15)); k.position.set(x * 0.3, 1.2, 0.47); g.add(k); }); }
+      if (kind === 'boxes') { [[0, 0.4, 0, 1.1], [0.3, 1.1, 0.1, 0.7], [-0.35, 0.3, 0.3, 0.6]].forEach(b => { const s = new THREE.Mesh(new THREE.BoxGeometry(b[3], b[3] * 0.8, b[3]), mat(0xc8a06a)); s.position.set(b[0], b[1], b[2]); s.rotation.y = b[0]; s.castShadow = true; g.add(s); }); }
+      if (kind === 'bed') { const f = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.55, 1.9), mat(0x1e40af)); f.position.y = 0.45; const pl = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.15, 0.45), mat(0xf8fafc)); pl.position.set(0, 0.8, -0.6); const leg = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.18, 1.9), mat(0x78350f)); leg.position.y = 0.09; g.add(f, pl, leg); f.castShadow = true; }
+    }
+    g.position.set(p.x, 0, p.z); scene.add(g);
+    walls.push({ x0: p.x - 0.7, x1: p.x + 0.7, z0: p.z - 0.6, z1: p.z + 0.6, tall: kind === 'wardrobe' });
+    spots.push({ p, mesh: g, kind, who: null, wob: 0 });
+  }
+}));
+// garden flowers so the grass is not empty
+for (let i = 0; i < 70; i++) {
+  const c = 1 + Math.floor(Math.random() * (Wd - 2)), r = HOUSE_ROWS + 1 + Math.floor(Math.random() * (Hh - HOUSE_ROWS - 2));
+  if (grid[r][c] !== '.') continue;
+  const p = cell(c, r), f = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 5), new THREE.MeshBasicMaterial({ color: [0xfde047, 0xf472b6, 0xffffff, 0xfb923c][i % 4] }));
+  f.position.set(p.x + Math.random() * 1.6 - 0.8, 0.1, p.z + Math.random() * 1.6 - 0.8); scene.add(f);
+}
+
+// ---------- path finding (spots and walls block) ----------
+const free = (c, r) => { const ch = grid[r]?.[c]; return ch && ch !== '#' && ch !== 'H' && ch !== 'B' && ch !== 'T'; };
+const toCell = p => ({ c: Math.round((p.x - 1) / 2 + Wd / 2), r: Math.round((p.z - 1) / 2 + Hh / 2) });
+function nearFree(p) { const a = toCell(p); if (free(a.c, a.r)) return a; for (const [dc, dr] of [[0, 1], [1, 0], [0, -1], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]]) if (free(a.c + dc, a.r + dr)) return { c: a.c + dc, r: a.r + dr }; return a; }
+function path(from, to) {
+  const a = nearFree(from), b = nearFree(to), key = (c, r) => r * 1000 + c;
+  const prev = new Map([[key(a.c, a.r), null]]), q = [[a.c, a.r]];
+  while (q.length) { const [c, r] = q.shift(); if (c === b.c && r === b.r) break; for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nc = c + dc, nr = r + dr, k = key(nc, nr); if (!prev.has(k) && free(nc, nr)) { prev.set(k, [c, r]); q.push([nc, nr]); } } }
+  if (!prev.has(key(b.c, b.r))) return [];
+  const out = []; let cur = [b.c, b.r]; while (cur) { out.unshift(cell(cur[0], cur[1])); cur = prev.get(key(cur[0], cur[1])); }
+  return out.slice(1);
+}
+function walkTo(a, dt, sp) {
+  if (!a.path.length) return false;
+  const t = a.path[0], dx = t.x - a.pos.x, dz = t.z - a.pos.z, m = Math.hypot(dx, dz);
+  if (m < 0.3) { a.path.shift(); return true; }
+  moveCircle(a.pos, dx / m * sp * dt, dz / m * sp * dt, 0.35);
+  const want = Math.atan2(dx, dz); a.dir += (((want - a.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 10);
+  return true;
+}
+
+// ---------- characters ----------
+const player = { mesh: makeChar({ shirt: 0x2563eb, hair: 0x3b2314 }), pos: { x: 0, z: 0 }, dir: Math.PI, hidden: null };
+scene.add(player.mesh);
+const friends = FRIENDS.map(f => { const m = makeChar(f); scene.add(m); return { f, mesh: m, pos: { x: 0, z: 0 }, dir: 0, path: [], spot: null, found: false }; });
+const seeker = { mesh: makeChar({ shirt: 0xdc2626, hair: 0x111111, skin: 0xc68642 }), pos: { x: 0, z: 0 }, dir: 0, path: [], target: null, check: 0, checked: new Set() };
+const band = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.54), mat(0x111827)); band.position.y = 0.04; seeker.mesh.userData.head.add(band);
+scene.add(seeker.mesh);
+const sCone = new THREE.Mesh(new THREE.CircleGeometry(10, 28, -Math.PI / 2 - 0.55, 1.1), new THREE.MeshBasicMaterial({ color: 0xfca5a5, transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide }));
+sCone.rotation.x = -Math.PI / 2; sCone.position.y = 0.05; scene.add(sCone);
+
+// ---------- round state ----------
+let mode = null, state = 'menu', t = 0, phase = '', foundN = 0, hintT = 0;
+function place(a, p) { a.pos.x = p.x; a.pos.z = p.z; a.mesh.position.set(p.x, 0, p.z); }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function startRound(m) {
+  mode = m; state = 'play'; t = 0; foundN = 0; hintT = 0;
+  spots.forEach(s => { s.who = null; s.wob = 0; s.mesh.rotation.z = 0; });
+  player.hidden = null; player.mesh.visible = true; place(player, startP);
+  const order = shuffle(spots.slice());
+  friends.forEach((f, i) => { f.found = false; f.spot = order[i]; f.mesh.visible = true; place(f, mode === 'seek' ? order[i].p : { x: base.x + (i - 1.5) * 1.2, z: base.z + 1.6 }); f.path = []; });
+  if (mode === 'seek') {
+    friends.forEach(f => { f.spot.who = f; f.mesh.visible = false; });
+    seeker.mesh.visible = false; sCone.visible = false; place(player, base);
+    phase = 'search'; t = 120;
+    toast(T('Find all 4 friends! Watch for shaking hiding places', 'لاقي الـ 4 أصحاب! خلّي بالك من الأماكن اللي بتتهز'), 2600);
+  } else {
+    seeker.mesh.visible = true; sCone.visible = false; place(seeker, base); seeker.path = []; seeker.target = null; seeker.checked = new Set(); band.visible = true;
+    friends.forEach(f => { f.path = path(f.pos, f.spot.p); });
+    phase = 'count'; t = 15;
+    toast(T('Run and hide! The seeker is counting to 15', 'اجري واستخبى! اللي بيدوّر بيعد لحد 15'), 2600);
+  }
+  $('menu').hidden = true; $('end').hidden = true; $('hud').hidden = false;
+  $('hMode').textContent = mode === 'seek' ? T('You seek', 'انت بتدوّر') : T('You hide', 'انت بتستخبى');
+  $('actTxt').textContent = mode === 'seek' ? T('Search', 'دوّر') : T('Hide', 'استخبى');
+  info();
+}
+function info() { $('hInfo').textContent = mode === 'seek' ? T('Found ' + foundN + '/4', 'لقيت ' + foundN + '/4') : (phase === 'count' ? T('Hide now!', 'استخبى دلوقتي!') : T('Friends found: ' + foundN + '/3', 'أصحاب اتلقوا: ' + foundN + '/3')); }
+
+function step(dt) {
+  const inp = readInput();
+  // player movement
+  if (!player.hidden) {
+    const sp = inp.run ? 5.4 : 3.4, mv = Math.hypot(inp.x, inp.z);
+    moveCircle(player.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38);
+    if (mv > 0.05) player.dir = Math.atan2(inp.x, inp.z);
+    player.mesh.position.set(player.pos.x, 0, player.pos.z); player.mesh.rotation.y = player.dir; player.mesh.userData.anim(dt, mv * (inp.run ? 1.6 : 1));
+  }
+  const near = spots.filter(s => dist(s.p, player.pos) < 2.2).sort((a, b) => dist(a.p, player.pos) - dist(b.p, player.pos))[0];
+  $('bAct').classList.toggle('off', !near && !player.hidden);
+  t -= dt; $('hTime').textContent = Math.max(0, Math.ceil(t));
+  spots.forEach(s => { s.wob = Math.max(0, s.wob - dt); s.mesh.rotation.z = Math.sin(s.wob * 30) * 0.06 * s.wob; });
+
+  if (mode === 'seek') {
+    if (hit('KeyE') && near) {
+      if (near.who && !near.who.found) {
+        const f = near.who; f.found = true; foundN++; near.who = null; f.mesh.visible = true;
+        place(f, { x: near.p.x + 1.3, z: near.p.z + 1.3 }); f.path = path(f.pos, base);
+        beep(700, 0.1, 'triangle'); beep(1050, 0.15, 'triangle');
+        toast(T('Found ' + f.f.en + '!', 'لقيت ' + f.f.ar + '!')); info();
+        if (foundN === 4) return finish(true);
+      } else { near.wob = 0.4; beep(200, 0.08); toast(T('Nobody here', 'مفيش حد هنا'), 900); }
+    }
+    hintT -= dt;
+    if (hintT <= 0) { hintT = 3 + Math.random() * 2; const cand = spots.filter(s => s.who && dist(s.p, player.pos) < 9); if (cand.length) { const s = cand[Math.floor(Math.random() * cand.length)]; s.wob = 0.8; beep(880 + Math.random() * 200, 0.05, 'sine', 0.03); } }
+    friends.forEach(f => { if (f.found) { const moving = walkTo(f, dt, 3); f.mesh.position.set(f.pos.x, 0, f.pos.z); f.mesh.rotation.y = f.dir; f.mesh.userData.anim(dt, moving ? 1 : 0); } });
+    if (t <= 0) return finish(false);
+  } else {
+    // hider mode
+    if (hit('KeyE')) {
+      if (player.hidden) { player.mesh.visible = true; player.hidden.who = null; place(player, player.back); player.hidden = null; toast(T('You left your spot!', 'خرجت من مكانك!'), 1000); }
+      else if (near && !near.who) { player.back = { x: player.pos.x, z: player.pos.z }; player.hidden = near; near.who = player; player.mesh.visible = false; beep(300, 0.12, 'sine'); toast(T('Hidden. Stay quiet…', 'استخبيت. اسكت خالص…')); }
+      else if (near) toast(T('Someone is already there!', 'فيه حد هنا أصلاً!'), 1000);
+    }
+    friends.forEach(f => {
+      if (f.found) { walkTo(f, dt, 3); }
+      else if (f.path.length) { walkTo(f, dt, 4.2); if (!f.path.length) { if (f.spot.who) { const alt = spots.find(s => !s.who && s !== player.hidden); if (alt) { f.spot = alt; f.path = path(f.pos, alt.p); } } else { f.spot.who = f; f.mesh.visible = false; } } }
+      f.mesh.position.set(f.pos.x, 0, f.pos.z); f.mesh.rotation.y = f.dir; f.mesh.userData.anim(dt, f.path.length ? 1.3 : 0);
+    });
+    if (phase === 'count') {
+      seeker.mesh.rotation.y = Math.PI; seeker.mesh.userData.anim(dt, 0);
+      if (Math.ceil(t) !== Math.ceil(t + dt) && t > 0) beep(440, 0.05, 'sine', 0.025);
+      if (t <= 0) { phase = 'search'; t = 90; band.visible = false; sCone.visible = true; toast(T('Ready or not, here I come!', 'جاهزين ولا لأ، أنا جاي!'), 2000); info(); }
+    } else {
+      // seeker AI: walk to the next unchecked spot (closest first, a bit random), look inside
+      if (seeker.check > 0) {
+        seeker.check -= dt; seeker.target.wob = 0.3;
+        if (seeker.check <= 0) {
+          const s = seeker.target, who = s.who; seeker.checked.add(s);
+          if (who === player) return finish(false, T('The seeker opened your hiding place!', 'اللي بيدوّر فتح مكانك!'));
+          if (who) { who.found = true; foundN++; s.who = null; who.mesh.visible = true; place(who, { x: s.p.x + 1.2, z: s.p.z + 1.2 }); who.path = path(who.pos, base); beep(250, 0.2, 'square', 0.03); toast(T(who.f.en + ' was found!', who.f.ar + ' اتلقى!'), 1400); info(); }
+          seeker.target = null;
+        }
+      } else {
+        if (!seeker.target) {
+          let left = spots.filter(s => !seeker.checked.has(s));
+          if (!left.length) { seeker.checked.clear(); left = spots.slice(); }
+          left.sort((a, b) => dist(a.p, seeker.pos) + Math.random() * 10 - dist(b.p, seeker.pos) - Math.random() * 10);
+          seeker.target = left[0]; seeker.path = path(seeker.pos, seeker.target.p);
+        }
+        const moving = walkTo(seeker, dt, 3.1);
+        if (!moving || dist(seeker.pos, seeker.target.p) < 1.9) { seeker.path = []; seeker.check = 1.2; }
+        seeker.mesh.userData.anim(dt, moving ? 1.2 : 0);
+      }
+      seeker.mesh.position.set(seeker.pos.x, 0, seeker.pos.z); seeker.mesh.rotation.y = seeker.dir;
+      sCone.position.set(seeker.pos.x, 0.05, seeker.pos.z); sCone.rotation.z = seeker.dir;
+      // seeing the player out in the open = caught
+      if (!player.hidden) {
+        const d = dist(seeker.pos, player.pos), ang = Math.atan2(player.pos.x - seeker.pos.x, player.pos.z - seeker.pos.z);
+        const da = Math.abs(((ang - seeker.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+        if ((d < 10 && da < 0.55 && canSee(seeker.pos, player.pos)) || d < 1.3) return finish(false, T('The seeker saw you walking!', 'اللي بيدوّر شافك وانت ماشي!'));
+      }
+      if (t <= 0) return finish(true);
+    }
+  }
+  const focus = player.hidden ? player.back : player.pos;
+  follow(camera, focus, dt, innerWidth < innerHeight ? 15 : 12, innerWidth < innerHeight ? 9 : 8);
+  sun.position.set(focus.x + 14, 28, focus.z + 10); sun.target.position.set(focus.x, 0, focus.z);
+}
+
+function finish(won, why) {
+  if (state !== 'play') return; state = 'end';
+  const key = mode === 'seek' ? 'hs_seek_wins' : 'hs_hide_wins';
+  if (won) { store.set(key, store.get(key, 0) + 1); beep(523, 0.15, 'triangle'); setTimeout(() => beep(784, 0.3, 'triangle'), 150); } else beep(160, 0.4, 'sawtooth');
+  $('eTitle').textContent = won ? T('You win!', 'كسبت!') : T('Round over', 'الجولة خلصت');
+  $('eText').textContent = mode === 'seek'
+    ? (won ? T('You found everyone with ' + Math.ceil(t) + ' seconds left!', 'لقيت الكل وفاضل ' + Math.ceil(t) + ' ثانية!') : T('Time is up — you found ' + foundN + ' of 4.', 'الوقت خلص — لقيت ' + foundN + ' من 4.'))
+    : (won ? T('Nobody found you for 90 seconds. Master hider!', 'محدش لقاك 90 ثانية. انت بطل الاستخباء!') : (why || '') + ' ' + T('Try a different spot next time.', 'جرّب مكان تاني المرة الجاية.'));
+  $('hud').hidden = true; $('end').hidden = false;
+}
+function showMenu() {
+  state = 'menu'; $('hud').hidden = true; $('end').hidden = true; $('menu').hidden = false;
+  $('mBest').textContent = T('Wins — seeking: ' + store.get('hs_seek_wins', 0) + ' · hiding: ' + store.get('hs_hide_wins', 0), 'مرات الفوز — بتدوّر: ' + store.get('hs_seek_wins', 0) + ' · بتستخبى: ' + store.get('hs_hide_wins', 0));
+}
+$('mSeek').onclick = () => startRound('seek'); $('mHide').onclick = () => startRound('hide');
+$('eAgain').onclick = () => startRound(mode); $('eMenu').onclick = showMenu; $('bBack').onclick = showMenu;
+addEventListener('keydown', e => { if (e.code === 'Escape' && state === 'play') showMenu(); });
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); showMenu(); });
+setLang(L()); showMenu();
+place(player, startP); place(seeker, base); friends.forEach((f, i) => place(f, { x: base.x + (i - 1.5) * 1.3, z: base.z + 2 }));
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (state === 'play') step(dt);
+  else { const a = now / 5000; camera.position.set(Math.sin(a) * 20, 18, Math.cos(a) * 20); camera.lookAt(0, 0, 0); }
+  renderer.render(scene, camera); endFrame();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
