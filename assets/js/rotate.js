@@ -1,4 +1,4 @@
-// DINOSPEAR rotate V02 — on phones, every game asks once: turn the screen sideways, or keep it as it is
+// DINOSPEAR rotate V03 — on phones, every game asks once: turn the screen sideways, or keep it as it is
 (function () {
   var touch = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var me = document.currentScript, noAsk = me && me.hasAttribute('data-noask'), inFrame = window.top !== window;
@@ -9,7 +9,11 @@
   try { en = (localStorage.getItem('aser_lang') || localStorage.getItem('ds_lang') || (en ? 'en' : 'ar')) === 'en'; } catch (e) {}
   var T = function (a, e) { return en ? e : a; };
   var ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  var portrait = function () { return innerHeight > innerWidth; };
+  var dW = Object.getOwnPropertyDescriptor(window, 'innerWidth') || Object.getOwnPropertyDescriptor(Window.prototype, 'innerWidth');
+  var dH = Object.getOwnPropertyDescriptor(window, 'innerHeight') || Object.getOwnPropertyDescriptor(Window.prototype, 'innerHeight');
+  var RW = function () { return dW && dW.get ? dW.get.call(window) : document.documentElement.clientWidth; };
+  var RH = function () { return dH && dH.get ? dH.get.call(window) : document.documentElement.clientHeight; };
+  var portrait = function () { return RH() > RW(); };
   var get = function () { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } };
   var set = function (v) { try { sessionStorage.setItem(KEY, v); } catch (e) {} };
 
@@ -27,7 +31,54 @@
       return false;
     });
   }
-  function hint() { // iPhone can't turn the screen by itself: show a small "turn your phone" card until it is sideways
+
+  // V03: when the phone will not turn by itself (iPhone, auto-rotate off, inside the app) we turn the PAGE sideways:
+  // the whole game is drawn rotated, and touches/sizes are translated so joysticks, buttons and the camera still work.
+  var softOn = false, patched = false;
+  function patchOnce() {
+    if (patched) return; patched = true;
+    var on = function () { return softOn && portrait(); };
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, get: function () { return on() ? RH() : RW(); } });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, get: function () { return on() ? RW() : RH(); } });
+    } catch (e) {}
+    [[window.MouseEvent, 'clientX', 'clientY'], [window.Touch, 'clientX', 'clientY'], [window.MouseEvent, 'pageX', 'pageY'], [window.Touch, 'pageX', 'pageY']].forEach(function (a) {
+      var P = a[0] && a[0].prototype; if (!P) return;
+      var gx = Object.getOwnPropertyDescriptor(P, a[1]), gy = Object.getOwnPropertyDescriptor(P, a[2]); if (!gx || !gy || !gx.get) return;
+      Object.defineProperty(P, a[1], { configurable: true, get: function () { return on() ? gy.get.call(this) : gx.get.call(this); } });
+      Object.defineProperty(P, a[2], { configurable: true, get: function () { return on() ? RW() - gx.get.call(this) : gy.get.call(this); } });
+    });
+    var mx = Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'movementX'), my = Object.getOwnPropertyDescriptor(MouseEvent.prototype, 'movementY');
+    if (mx && my && mx.get) {
+      Object.defineProperty(MouseEvent.prototype, 'movementX', { configurable: true, get: function () { return on() ? my.get.call(this) : mx.get.call(this); } });
+      Object.defineProperty(MouseEvent.prototype, 'movementY', { configurable: true, get: function () { return on() ? -mx.get.call(this) : my.get.call(this); } });
+    }
+    var gb = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function () {
+      var r = gb.call(this); if (!on()) return r;
+      var W = RW(), L = r.top, T = W - r.right, w = r.height, h = r.width;
+      return { left: L, top: T, right: L + w, bottom: T + h, width: w, height: h, x: L, y: T, toJSON: function () { return this; } };
+    };
+  }
+  function softApply() {
+    var b = document.body; if (!b) return;
+    var want = softOn && portrait();
+    if (want) {
+      var W = RW(), H = RH();
+      b.style.cssText += ';position:fixed!important;top:0!important;left:0!important;margin:0!important;width:' + H + 'px!important;height:' + W + 'px!important;transform-origin:0 0!important;transform:translateX(' + W + 'px) rotate(90deg)!important;overflow:hidden!important';
+      document.documentElement.style.overflow = 'hidden';
+    } else { ['position', 'top', 'left', 'margin', 'width', 'height', 'transform-origin', 'transform', 'overflow'].forEach(function (k) { b.style.removeProperty(k); }); }
+    dispatchEvent(new Event('resize'));
+  }
+  function soft(v) {
+    patchOnce(); softOn = v !== false; softApply();
+    try { sessionStorage.setItem('ds_soft' + location.pathname, softOn ? '1' : ''); } catch (e) {}
+  }
+  addEventListener('orientationchange', function () { setTimeout(function () { if (softOn) softApply(); }, 300); });
+  var lastP = null; addEventListener('resize', function () { var p = portrait(); if (softOn && p !== lastP) { lastP = p; softApply(); } });
+  window.DS_softLand = soft;
+  function hint() { soft(true); }
+  function hintOld() {
     var h = document.getElementById('dsTurn');
     if (!h) {
       h = document.createElement('div'); h.id = 'dsTurn';
@@ -88,12 +139,12 @@
     b.addEventListener('pointerup', function () {
       if (!drag) return; var moved = drag.moved; drag = null;
       if (moved) { try { localStorage.setItem('ds_rot_pos', JSON.stringify(pos)); } catch (e) {} return; }
-      if (!portrait() || document.fullscreenElement || document.webkitFullscreenElement) { unlock(); set('keep'); }
+      if (softOn) { soft(false); set('keep'); } else if (!portrait() || document.fullscreenElement || document.webkitFullscreenElement) { unlock(); set('keep'); }
       else { set('land'); lockLand().then(function (ok) { if (!ok && portrait()) hint(); }); }
     });
     document.body.appendChild(b);
   }
   window.DS_rotBtn = rotBtn;
-  function boot() { rotBtn(); if (!noAsk) setTimeout(ask, 400); }
+  function boot() { rotBtn(); var sv = ''; try { sv = sessionStorage.getItem('ds_soft' + location.pathname); } catch (e) {} if (sv && portrait()) { soft(true); return; } if (!noAsk) setTimeout(ask, 400); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

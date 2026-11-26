@@ -190,32 +190,66 @@
   setInterval(function () { var m = 'day'; try { m = localStorage.getItem('ds_theme'); } catch (e) {} if (m === 'auto') applyTheme(); }, 60000);
   applyTheme();
 
-  // ---------- public chat ----------
-  var pcLast = 0, pcTimer = null, pcBusy = false;
+  // ---------- public chat V02: likes ❤️, replies under a message (like TikTok), edit ✏️ and remove your own ----------
+  var pcTimer = null, pcBusy = false, pcSig = '', pcOpen = {}, pcReply = null, pcEdit = null, pcV2 = true;
+  var tt = function (e, a) { return DSA.t(e, a); };
+  function pcBtn(txt, cls, fn) { var b = document.createElement('button'); b.type = 'button'; b.className = 'pca ' + (cls || ''); b.textContent = txt; b.onclick = fn; return b; }
+  function pcMsg(m, kids) {
+    var d = document.createElement('div'); d.className = 'msg' + (m.mine ? ' me' : '') + (m.parent_id ? ' rep' : ''); d.dataset.id = m.id;
+    var b = document.createElement('b'); b.textContent = m.username + (m.is_admin ? ' ★ ADMIN' : ''); if (m.is_admin) b.className = 'adm';
+    var p = document.createElement('span'); p.textContent = m.body; p.dir = 'auto';
+    d.appendChild(b); d.appendChild(p);
+    if (m.edited) { var e = document.createElement('i'); e.className = 'pce'; e.textContent = tt(' (edited)', ' (اتعدّلت)'); d.appendChild(e); }
+    var bar = document.createElement('div'); bar.className = 'pcbar';
+    bar.appendChild(pcBtn((m.liked ? '❤️ ' : '🤍 ') + (m.likes || ''), m.liked ? 'on' : '', function () { sb.rpc('public_like', { p_id: m.id }).then(function () { pcPoll(true); }); }));
+    bar.appendChild(pcBtn('💬 ' + tt('Reply', 'رد'), '', function () { pcReply = { id: m.parent_id || m.id, name: m.username }; pcEdit = null; pcOpen[m.parent_id || m.id] = true; pcBar(); $('pcIn').focus(); }));
+    if (m.mine) bar.appendChild(pcBtn('✏️ ' + tt('Edit', 'عدّل'), '', function () { pcEdit = { id: m.id }; pcReply = null; $('pcIn').value = m.body; pcBar(); $('pcIn').focus(); }));
+    if (m.mine || pcIsAdmin) bar.appendChild(pcBtn('🗑', '', function () { if (confirmBox()) sb.rpc('public_hide', { p_id: m.id }).then(function () { pcPoll(true); }); }));
+    d.appendChild(bar);
+    if (kids && kids.length) {
+      var w = document.createElement('div'); w.className = 'pckids';
+      if (!pcOpen[m.id]) w.appendChild(pcBtn('── ' + tt('View ', 'شوف ') + kids.length + tt(' replies', ' ردود') + ' ⌄', 'more', function () { pcOpen[m.id] = true; pcSig = ''; pcPoll(true); }));
+      else { kids.forEach(function (k) { w.appendChild(pcMsg(k)); }); w.appendChild(pcBtn(tt('Hide replies', 'اخفي الردود') + ' ⌃', 'more', function () { pcOpen[m.id] = false; pcSig = ''; pcPoll(true); })); }
+      d.appendChild(w);
+    }
+    return d;
+  }
+  function confirmBox() { return window.confirm(tt('Remove this message?', 'تشيل الرسالة دي؟')); }
+  var pcIsAdmin = false;
+  function pcBar() {
+    var bx = document.getElementById('pcCtx');
+    if (!bx) { bx = document.createElement('div'); bx.id = 'pcCtx'; $('pcForm').parentNode.insertBefore(bx, $('pcForm')); }
+    bx.innerHTML = ''; bx.hidden = !pcReply && !pcEdit;
+    if (pcReply || pcEdit) {
+      var s = document.createElement('span'); s.textContent = pcEdit ? tt('✏️ Editing your message', '✏️ بتعدّل رسالتك') : tt('💬 Replying to ', '💬 بترد على ') + pcReply.name; bx.appendChild(s);
+      bx.appendChild(pcBtn('✕', '', function () { if (pcEdit) $('pcIn').value = ''; pcReply = pcEdit = null; pcBar(); }));
+    }
+  }
   function pcRender(rows) {
-    var feed = $('pcFeed'), atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80;
-    rows.forEach(function (m) {
-      pcLast = Math.max(pcLast, m.id);
-      var d = document.createElement('div'); d.className = 'msg' + (m.mine ? ' me' : '');
-      var b = document.createElement('b'); b.textContent = m.username + (m.is_admin ? ' ★ ADMIN' : ''); if (m.is_admin) b.className = 'adm';
-      var p = document.createElement('span'); p.textContent = m.body; p.dir = 'auto';
-      d.appendChild(b); d.appendChild(p); feed.appendChild(d);
-    });
-    while (feed.children.length > 200) feed.removeChild(feed.firstChild);
-    if (atBottom || rows.some(function (m) { return m.mine; })) feed.scrollTop = feed.scrollHeight;
+    var sig = JSON.stringify(rows) + JSON.stringify(pcOpen); if (sig === pcSig) return; pcSig = sig;
+    var feed = $('pcFeed'), atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 80, keep = feed.scrollTop, first = !feed.children.length;
+    var kids = {}; rows.forEach(function (m) { if (m.parent_id) (kids[m.parent_id] = kids[m.parent_id] || []).push(m); });
+    feed.innerHTML = '';
+    rows.forEach(function (m) { if (!m.parent_id) feed.appendChild(pcMsg(m, kids[m.id])); });
+    if (first || atBottom) feed.scrollTop = feed.scrollHeight; else feed.scrollTop = keep;
+    if (window.DS_translateScan) try { window.DS_translateScan(); } catch (e) {}
   }
-  function pcPoll() {
-    if (!sb || pcBusy) return; pcBusy = true;
-    sb.rpc('public_feed', { p_after: pcLast }).then(function (r) { pcBusy = false; if (!r.error && r.data) pcRender(r.data); }, function () { pcBusy = false; });
+  function pcPoll(force) {
+    if (!sb || (pcBusy && !force)) return; pcBusy = true;
+    if (pcV2) sb.rpc('public_feed2').then(function (r) { pcBusy = false; if (r.error && /public_feed2|function/.test(r.error.message || '')) { pcV2 = false; return pcPoll(true); } if (!r.error && r.data) pcRender(r.data); }, function () { pcBusy = false; });
+    else sb.rpc('public_feed', { p_after: 0 }).then(function (r) { pcBusy = false; if (!r.error && r.data) pcRender(r.data.map(function (m) { m.likes = 0; return m; })); }, function () { pcBusy = false; });
   }
-  function pcStart() { if (pcTimer) return; pcPoll(); pcTimer = setInterval(pcPoll, 2500); }
+  function pcStart() { if (pcTimer) return; sb && sb.rpc('is_admin').then(function (r) { pcIsAdmin = !!r.data; }); pcPoll(true); pcTimer = setInterval(pcPoll, 3000); }
   function pcStop() { clearInterval(pcTimer); pcTimer = null; }
   $('pcForm').addEventListener('submit', function (e) {
     e.preventDefault(); var v = $('pcIn').value.replace(/[<>]/g, '').trim(); if (!v || !sb) return;
     $('pcIn').value = '';
-    sb.rpc('public_send', { p_body: v }).then(function (r) {
+    var call = pcEdit ? sb.rpc('public_edit', { p_id: pcEdit.id, p_body: v }) : pcV2 ? sb.rpc('public_send2', { p_body: v, p_parent: pcReply ? pcReply.id : null }) : sb.rpc('public_send', { p_body: v });
+    var wasReply = pcReply; pcReply = pcEdit = null; pcBar();
+    call.then(function (r) {
       if (r.error) { var m = r.error.message || ''; alertMsg(/BANNED/.test(m) ? DSA.t('You are banned right now.', 'انت متبند دلوقتي.') : /RATE/.test(m) ? DSA.t('Slow down a little.', 'استنى شوية وابعت تاني.') : m); return; }
-      pcPoll();
+      if (wasReply) pcOpen[wasReply.id] = true;
+      pcPoll(true);
     });
   });
   function alertMsg(m) { var n = document.createElement('div'); n.className = 'msg'; n.style.background = '#fee2e2'; n.style.color = '#991b1b'; n.textContent = m; $('pcFeed').appendChild(n); $('pcFeed').scrollTop = 1e9; }
@@ -258,7 +292,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V39';
+  var APP_V = 'V40';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];
