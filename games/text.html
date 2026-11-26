@@ -34,7 +34,7 @@ h2{font-size:19px;margin:22px 0 10px}
 .gc .acts2 button{border:0;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer;background:rgba(255,255,255,.1);color:#fff}
 .gc .acts2 button.p{background:#22c55e;color:#052e16}
 .search{display:flex;gap:8px}.search input{flex:1}
-input[type=text],textarea{width:100%;background:#0f172a;color:#fff;border:2px solid #334155;border-radius:14px;padding:12px 14px;font:16px/1.6 inherit}
+input[type=text],textarea{width:100%;background:#0f172a;color:#fff;border:2px solid #334155;border-radius:14px;padding:12px 14px;font-size:16px;line-height:1.6;font-family:inherit}
 textarea{min-height:240px;resize:vertical}
 input:focus,textarea:focus{outline:none;border-color:#22c55e}
 .cnt{color:#94a3b8;font-size:13px;text-align:end}
@@ -101,6 +101,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
  <div style="height:10px"></div>
  <textarea id="wStory" maxlength="6000"></textarea>
  <div class="cnt" id="wCnt"></div>
+ <div id="wBad" hidden style="margin-top:10px;background:rgba(239,68,68,.12);border:2px solid #ef4444;border-radius:14px;padding:12px 14px"><div id="wBadTxt" style="line-height:1.8;white-space:pre-wrap;max-height:180px;overflow:auto"></div><p style="color:#f87171;font-weight:900;margin:8px 0 0">الكلام اللي تحته خط أحمر مش مسموح — لو كتبته ممكن تتبند.</p><p style="color:#f87171;font-weight:900;margin:2px 0 0" dir="ltr">This is not allowed — you could be banned.</p></div>
  <div class="row" style="justify-content:flex-start"><button class="big" id="wNext" type="button" data-en="Next: questions" data-ar="التالي: الأسئلة"></button></div>
 </section>
 
@@ -225,9 +226,27 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     list.forEach(function (g) { m.appendChild(cardFor(g, true)); });
     search();
   }
-  function openWrite() { show('pWrite'); $('wTitle').value = draft.title; $('wAbout').value = draft.ans.about || ''; $('wAbout').placeholder = T('What is your game about? (one line)', 'لعبتك عن إيه؟ (سطر واحد)'); $('wStory').value = draft.story; $('wTitle').placeholder = T('Game name (2–40 letters)', 'اسم اللعبة (من 2 لـ 40 حرف)'); $('wStory').placeholder = T('Once upon a time…', 'في يوم من الأيام…'); cnt(); }
+  function openWrite() { setTimeout(checkNow, 50); show('pWrite'); $('wTitle').value = draft.title; $('wAbout').value = draft.ans.about || ''; $('wAbout').placeholder = T('What is your game about? (one line)', 'لعبتك عن إيه؟ (سطر واحد)'); $('wStory').value = draft.story; $('wTitle').placeholder = T('Game name (2–40 letters)', 'اسم اللعبة (من 2 لـ 40 حرف)'); $('wStory').placeholder = T('Once upon a time…', 'في يوم من الأيام…'); cnt(); }
   function cnt() { $('wCnt').textContent = $('wStory').value.length + ' / 6000'; }
-  $('wStory').oninput = cnt;
+  $('wStory').oninput = function () { cnt(); checkSoon(); }; $('wTitle').oninput = checkSoon; $('wAbout').oninput = checkSoon;
+  // bad words / harassment: red underline + a warning (checked on the server list, a small list when offline)
+  var LOCAL_BAD = ['fuck', 'fucking', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'porn', 'nude', 'nudes', 'sex', 'sexy', 'rape', 'whore', 'slut', 'كس', 'كسمك', 'شرموط', 'شرموطة', 'متناك', 'منيوك', 'خول', 'عرص', 'معرص', 'زب', 'طيز', 'نيك', 'سكس', 'جنس', 'عريان', 'عريانة'];
+  var badList = [], chkT = 0;
+  function esc(w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function findLocal(t) { return LOCAL_BAD.filter(function (w) { return new RegExp('(^|[^\\p{L}\\p{N}_])' + esc(w) + '(?=$|[^\\p{L}\\p{N}_])', 'iu').test(t); }); }
+  function allText() { return $('wTitle').value + '\n' + $('wAbout').value + '\n' + $('wStory').value; }
+  function checkSoon() { clearTimeout(chkT); chkT = setTimeout(checkNow, 450); }
+  function checkNow() {
+    var t = allText();
+    if (sb && navigator.onLine) sb.rpc('text_check', { p_text: t }).then(function (r) { badList = r.error ? findLocal(t) : (r.data || []).map(function (x) { return typeof x === 'string' ? x : x.text_check; }); showBad(); }, function () { badList = findLocal(t); showBad(); });
+    else { badList = findLocal(t); showBad(); }
+  }
+  function showBad() {
+    var box = $('wBad'), out = $('wBadTxt'); box.hidden = !badList.length; $('wNext').disabled = !!badList.length; $('wNext').style.opacity = badList.length ? '.4' : '';
+    out.innerHTML = ''; if (!badList.length) return;
+    var re = new RegExp('(' + badList.map(esc).join('|') + ')', 'giu'), parts = allText().split(re);
+    parts.forEach(function (part, i) { if (i % 2) { var u = document.createElement('span'); u.textContent = part; u.style.cssText = 'color:#f87171;text-decoration:underline wavy #ef4444;text-decoration-thickness:2px;font-weight:900'; out.appendChild(u); } else out.appendChild(document.createTextNode(part)); });
+  }
   $('bNew').onclick = function () { draft = newDraft(); openWrite(); };
   $('bSample').onclick = function () {
     draft = newDraft();
@@ -240,6 +259,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   $('wNext').onclick = function () {
     draft.title = $('wTitle').value.trim().slice(0, 40); draft.ans.about = $('wAbout').value.trim().slice(0, 90); draft.story = $('wStory').value.trim().slice(0, 6000);
     if (draft.title.length < 2) { $('wTitle').focus(); return alertMsg(T('Give your game a name', 'سمّي لعبتك')); }
+    if (badList.length) { checkNow(); return alertMsg(T('Remove the words underlined in red first', 'شيل الكلام اللي تحته خط أحمر الأول')); }
     if (draft.story.length < 20) { $('wStory').focus(); return alertMsg(T('Write a bit more of the story (20 letters at least)', 'اكتب القصة أكتر شوية (20 حرف على الأقل)')); }
     show('pAsk'); renderQs();
   };
@@ -260,7 +280,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
       var row = { title: g.title, story: g.story, spec: { ans: g.ans, spec: g.spec }, author: (u.user_metadata && u.user_metadata.username) || author(), published: true };
       var q = g.remote ? sb.from('text_games').update(row).eq('id', g.remote).select('id,version').single() : sb.from('text_games').insert(row).select('id,version').single();
       q.then(function (r) {
-        if (r.error) { if (!silent) alertMsg(/relation|does not exist|schema cache/i.test(r.error.message) ? T('Publishing opens soon — the admin is switching it on', 'النشر هيتفتح قريب — الأدمن بيشغّله') : T('Could not publish: ', 'ما اتنشرتش: ') + r.error.message); return; }
+        if (r.error) { if (/BAD_WORDS/.test(r.error.message)) { alertMsg(T('Not allowed: your game has bad words — you could be banned.', 'ممنوع: لعبتك فيها كلام مش مسموح — ممكن تتبند.')); return; } if (!silent) alertMsg(/relation|does not exist|schema cache/i.test(r.error.message) ? T('Publishing opens soon — the admin is switching it on', 'النشر هيتفتح قريب — الأدمن بيشغّله') : T('Could not publish: ', 'ما اتنشرتش: ') + r.error.message); return; }
         g.remote = r.data.id; g.v = r.data.version; saveMine(g); if (btn) btn.textContent = T('Published ✓', 'منشورة ✓'); if (!silent) alertMsg(T('Published! Others can find it in search', 'اتنشرت! الناس تقدر تلاقيها في البحث')); home();
       });
     });

@@ -1,10 +1,12 @@
 {
-  "v": "V19",
+  "v": "V20",
   "date": "2026-11-26",
   "ar": [
-    "لعبة القاتل والشريف اسمها بقى KILLER KILLER WARS"
+    "THE TEXT: الشتايم والتحرش بيتعلّم عليهم بخط أحمر ورسالة إنك ممكن تتبند، ومش بيتحفظوا",
+    "الرسايل بتتترجم لوحدها: اللي كاتب عربي واللي بيقرا إنجليزي بيشوفها إنجليزي (والعكس)، وفيه زرار يورّي الأصل"
   ],
   "en": [
-    "The murderer and sheriff game is now called KILLER KILLER WARS"
+    "THE TEXT: bad words and harassment get a red underline and a ban warning, and can't be saved",
+    "Messages translate by themselves: Arabic messages show in English for English players (and the other way), with an Original button"
   ]
 }
