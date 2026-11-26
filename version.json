@@ -1,14 +1,12 @@
 {
-  "v": "V14",
+  "v": "V15",
   "date": "2026-11-26",
   "ar": [
-    "لعبة جديدة: MOTOR BIKE — 8 مراحل وشقلبات وويلي",
-    "واجهة أوفلاين جديدة فيها كل الألعاب اللي بتشتغل من غير نت وتقدمك المحفوظ",
-    "المدينة 3D: مسافة الرؤية بالشنكات والضباب بيزيد شنك ورا شنك"
+    "لعبة جديدة: THE TEXT — اكتب قصتك وجاوب على كام سؤال وتتحوّل للعبة",
+    "ألعابك بتتحفظ وتقدر تحدّثها، والنشر والبحث بيتفتحوا قريب"
   ],
   "en": [
-    "New game: MOTOR BIKE — 8 levels, flips and wheelies",
-    "New offline home with every game that works without internet and your saved progress",
-    "3D town: view distance in chunks, fog grows chunk by chunk"
+    "New game: THE TEXT — write your story, answer a few questions, get a game",
+    "Your games are saved and can be updated; publishing and search open soon"
   ]
 }

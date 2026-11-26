@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>THE TEXT — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script src="../assets/js/rotate.js" data-noask defer></script>
+<style>
+/* THE TEXT V01 — write a story, answer a few questions, get your own game */
+body{touch-action:manipulation;overflow:auto}
+html,body{height:auto;min-height:100%}
+html{overflow:auto}
+input,textarea{user-select:text;-webkit-user-select:text}
+.page{max-width:980px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) max(4vw,14px) 60px}
+.page[hidden]{display:none}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.top h1{margin:0;font-size:clamp(26px,5vw,40px);letter-spacing:1px}
+.top .sp{flex:1}
+.tbtn{border:0;border-radius:12px;padding:10px 14px;font-weight:800;background:rgba(255,255,255,.1);color:#fff;cursor:pointer;min-height:44px}
+.lead{color:#cbd5e1;font-size:16px;line-height:1.7;margin:0 0 14px}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:center;margin-bottom:18px}
+.hero svg{width:100%;height:auto;border-radius:22px}
+@media(max-width:720px){.hero{grid-template-columns:1fr}.hero svg{order:-1}}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.big{cursor:pointer}
+h2{font-size:19px;margin:22px 0 10px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.gc{background:#121a33;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.gc b{font-size:17px}.gc small{color:#94a3b8}
+.gc .acts2{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.gc .acts2 button{border:0;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer;background:rgba(255,255,255,.1);color:#fff}
+.gc .acts2 button.p{background:#22c55e;color:#052e16}
+.search{display:flex;gap:8px}.search input{flex:1}
+input[type=text],textarea{width:100%;background:#0f172a;color:#fff;border:2px solid #334155;border-radius:14px;padding:12px 14px;font:16px/1.6 inherit}
+textarea{min-height:240px;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:#22c55e}
+.cnt{color:#94a3b8;font-size:13px;text-align:end}
+.q{background:#121a33;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;margin-bottom:12px}
+.q h3{margin:0 0 10px;font-size:17px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opts button{border:2px solid #334155;background:#0f172a;color:#fff;border-radius:14px;padding:10px 14px;font-weight:800;cursor:pointer;min-height:46px;display:flex;align-items:center;gap:8px}
+.opts button.on{border-color:#22c55e;background:#14532d}
+.opts .sw{width:22px;height:22px;border-radius:50%;display:inline-block}
+.note{background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.4);color:#fde68a;border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.6}
+.chap{background:#0f172a;border-radius:14px;padding:10px 14px;margin:6px 0;font-size:14px;line-height:1.6}
+.chap b{color:#86efac}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.chips span{background:rgba(255,255,255,.08);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}
+#play{position:fixed;inset:0;background:#000;z-index:30}
+#play[hidden]{display:none}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#cut{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.92);z-index:3;padding:20px}
+#cut[hidden]{display:none}
+#cut .box{max-width:620px;text-align:center}
+#cut .ch{color:#86efac;font-weight:900;letter-spacing:1px}
+#cut p{font-size:clamp(17px,2.6vw,22px);line-height:1.8;font-weight:700}
+#phud{position:absolute;top:max(10px,env(safe-area-inset-top));inset-inline:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+.pad2{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));z-index:2;display:flex;gap:12px;align-items:flex-end}
+.pad2.l{left:max(16px,env(safe-area-inset-left))}.pad2.r{right:max(16px,env(safe-area-inset-right))}
+#joy2{width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.22);position:relative;touch-action:none}
+#knob2{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,255,255,.55)}
+.ab{width:78px;height:78px;border-radius:50%;border:0;color:#fff;font-weight:900;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.35);touch-action:none}
+.ab.a{background:rgba(239,68,68,.9)}.ab.j{background:rgba(59,130,246,.9)}
+@media (pointer:fine){.pad2{display:none}}
+</style>
+</head>
+<body>
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+
+<!-- HOME -->
+<section class="page" id="pHome">
+ <div class="top"><h1>THE TEXT</h1><span class="sp"></span><a class="tbtn" href="../demo/index.html" style="text-decoration:none" data-en="All games" data-ar="كل الألعاب"></a></div>
+ <div class="hero">
+  <div>
+   <p class="lead" data-en="Write a story in Arabic or English. Answer a few questions: how your hero looks, how they attack, the controls, the world. Then THE TEXT turns your story into a game you can play, update and share." data-ar="اكتب قصة بالعربي أو بالإنجليزي، وجاوب على كام سؤال: شكل البطل، بيضرب إزاي، التحكم، والعالم. وبعدها THE TEXT بيحوّل قصتك للعبة تلعبها وتحدّثها وتنشرها."></p>
+   <div class="cta"><button class="big" id="bNew" type="button" data-en="Write a new story" data-ar="اكتب قصة جديدة"></button><button class="big sec" id="bSample" type="button" data-en="Try an example" data-ar="جرّب مثال"></button></div>
+  </div>
+  <svg viewBox="0 0 320 190" aria-hidden="true"><rect width="320" height="190" fill="#1e1b4b"/>
+   <rect x="20" y="24" width="120" height="142" rx="10" fill="#f8fafc"/><g fill="#94a3b8"><rect x="34" y="42" width="90" height="6" rx="3"/><rect x="34" y="58" width="76" height="6" rx="3"/><rect x="34" y="74" width="86" height="6" rx="3"/><rect x="34" y="90" width="60" height="6" rx="3"/></g>
+   <path d="M150 96 h28" stroke="#22c55e" stroke-width="6" stroke-linecap="round"/><path d="M172 84 l12 12 -12 12" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+   <rect x="196" y="24" width="106" height="142" rx="12" fill="#0f172a" stroke="#334155" stroke-width="3"/>
+   <rect x="196" y="120" width="106" height="46" rx="0" fill="#166534"/><circle cx="228" cy="108" r="12" fill="#22c55e"/><rect x="258" y="98" width="20" height="20" fill="#ef4444"/><polygon points="290,118 280,100 300,100" fill="#facc15" transform="rotate(180 290 109)"/><circle cx="276" cy="50" r="10" fill="#fde68a"/>
+  </svg>
+ </div>
+ <h2 data-en="My games" data-ar="ألعابي"></h2>
+ <div class="list" id="mine"></div>
+ <h2 data-en="Search players' games" data-ar="دوّر على ألعاب اللاعيبة"></h2>
+ <div class="search"><input type="text" id="sQ" maxlength="40"><button class="tbtn" id="sGo" type="button" data-en="Search" data-ar="دوّر"></button></div>
+ <div class="list" id="found" style="margin-top:10px"></div>
+</section>
+
+<!-- WRITE -->
+<section class="page" id="pWrite" hidden>
+ <div class="top"><button class="tbtn" id="wBack" type="button" data-en="Back" data-ar="رجوع"></button><h1 data-en="Your story" data-ar="قصتك"></h1></div>
+ <p class="lead" data-en="Give your game a name, then write the story. Each paragraph becomes a chapter (up to 6). Words like fire, water, key, monster, treasure, night, forest or space change the levels." data-ar="سمّي لعبتك واكتب القصة. كل فقرة بتبقى فصل (لحد 6 فصول). كلمات زي نار، مية، مفتاح، وحش، كنز، ليل، غابة أو فضاء بتغيّر المراحل."></p>
+ <input type="text" id="wTitle" maxlength="40">
+ <div style="height:10px"></div>
+ <textarea id="wStory" maxlength="6000"></textarea>
+ <div class="cnt" id="wCnt"></div>
+ <div class="row" style="justify-content:flex-start"><button class="big" id="wNext" type="button" data-en="Next: questions" data-ar="التالي: الأسئلة"></button></div>
+</section>
+
+<!-- QUESTIONS -->
+<section class="page" id="pAsk" hidden>
+ <div class="top"><button class="tbtn" id="aBack" type="button" data-en="Back" data-ar="رجوع"></button><h1 data-en="A few questions" data-ar="كام سؤال"></h1></div>
+ <div id="qs"></div>
+ <h2 data-en="How THE TEXT read your story" data-ar="THE TEXT فهم قصتك كده"></h2>
+ <div id="preview"></div>
+ <div class="note" data-en="The story reader runs on your phone and reads names, places and key words. A full AI writer can be switched on later by the admin." data-ar="قارئ القصة بيشتغل على جهازك وبيفهم الأسماء والأماكن والكلمات المهمة. كاتب AI كامل ممكن الأدمن يشغّله بعدين."></div>
+ <div class="row" style="justify-content:flex-start"><button class="big" id="aMake" type="button" data-en="Make my game" data-ar="اعمل لعبتي"></button></div>
+</section>
+
+<!-- PLAY -->
+<div id="play" hidden>
+ <canvas id="cv"></canvas>
+ <div id="phud"><button class="chip btn" id="pExit" type="button" data-en="Exit" data-ar="خروج"></button><div class="chip" id="pCh"></div><div class="chip" id="pHp"></div><div class="chip" id="pGoal"></div></div>
+ <div class="toast" id="toast" style="position:absolute;z-index:4"></div>
+ <div class="pad2 l" id="padL2"><div id="joy2"><div id="knob2"></div></div></div>
+ <div class="pad2 r" id="padR2"><button class="ab j" id="bJump" type="button"></button><button class="ab a" id="bAct" type="button"></button></div>
+ <div id="cut" hidden><div class="box"><div class="ch" id="cutCh"></div><p id="cutTx"></p><button class="big" id="cutGo" type="button"></button></div></div>
+</div>
+
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var lang = 'ar'; try { lang = localStorage.getItem('aser_lang') === 'en' ? 'en' : 'ar'; } catch (e) {}
+  var T = function (en, ar) { return lang === 'en' ? en : ar; };
+  var store = { get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  var sb = null; try { if (window.supabase && window.ASER_KEY) sb = window.supabase.createClient('https://djpgranztcqxyfehynux.supabase.co', window.ASER_KEY, { auth: { persistSession: true, autoRefreshToken: true } }); } catch (e) {}
+
+  // ---------- reading the story (runs on the device, no AI service) ----------
+  var WORDS = {
+    fire: /(نار|حريق|بركان|لهب|fire|lava|volcano|flame)/i, water: /(مي[هة]|مياه|بحر|نهر|مطر|water|sea|river|rain|ocean)/i,
+    key: /(مفتاح|باب|key|door|lock)/i, boss: /(وحش|تنين|شرير|عملاق|زعيم|monster|dragon|villain|giant|boss)/i,
+    treasure: /(كنز|دهب|ذهب|جواهر|عملات|treasure|gold|coin|jewel)/i, night: /(ليل|ظلام|نجوم|night|dark|moon)/i,
+    forest: /(غاب[ةه]|شجر|forest|tree|jungle)/i, space: /(فضاء|صاروخ|كوكب|مريخ|space|rocket|planet|mars)/i,
+    ice: /(تلج|ثلج|جليد|snow|ice|frozen)/i, city: /(مدين[ةه]|شارع|مبنى|city|street|building)/i
+  };
+  var LBL = { fire: ['Lava', 'حمم'], water: ['Water', 'مية'], key: ['Key & door', 'مفتاح وباب'], boss: ['Boss', 'زعيم'], treasure: ['Treasure', 'كنز'], night: ['Night', 'ليل'], forest: ['Forest', 'غابة'], space: ['Space', 'فضاء'], ice: ['Ice', 'تلج'], city: ['City', 'مدينة'] };
+  function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function readStory(story, title) {
+    var paras = story.split(/\n\s*\n/).map(function (p) { return p.trim(); }).filter(Boolean);
+    if (paras.length < 2) { var sent = story.split(/(?<=[.!?؟。])\s+/).map(function (s) { return s.trim(); }).filter(Boolean); var n = Math.min(6, Math.max(1, Math.ceil(sent.length / 2))); paras = []; for (var c = 0; c < n; c++) paras.push(sent.slice(Math.floor(c * sent.length / n), Math.floor((c + 1) * sent.length / n)).join(' ')); }
+    if (paras.length > 6) { var m = []; for (var k = 0; k < 6; k++) m.push(paras.slice(Math.floor(k * paras.length / 6), Math.floor((k + 1) * paras.length / 6)).join(' ')); paras = m; }
+    var chapters = paras.map(function (p, i) { var f = Object.keys(WORDS).filter(function (w) { return WORDS[w].test(p) && (w !== 'boss' || i === paras.length - 1); }); if (i === paras.length - 1 && f.indexOf('boss') < 0 && WORDS.boss.test(story)) f.push('boss'); return { text: p, seed: hash(p + i), feats: f }; });
+    var hero = '', villain = '';
+    var ar = story.match(/(?:اسمه|اسمها|البطل|بطل اسمه)\s+([؀-ۿ]{2,14})/); if (ar) hero = ar[1];
+    if (!hero) { var cnt = {}; (story.match(/(?:^|[^.!?]\s)([A-Z][a-z]{2,12})/g) || []).forEach(function (w) { w = w.trim().replace(/^[^A-Z]*/, ''); if (!/^(The|And|But|When|Then|One|They|She|He|It|In|On|At|A)$/.test(w)) cnt[w] = (cnt[w] || 0) + 1; }); var best = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; }); hero = best[0] || ''; villain = best[1] || ''; }
+    var vm = story.match(/(?:الوحش|التنين|الشرير|العملاق)\s*([؀-ۿ]{2,14})?/); if (vm) villain = vm[0].trim();
+    if (!hero) hero = title || T('Hero', 'البطل'); if (!villain) villain = T('The shadow', 'الضل');
+    return { chapters: chapters, hero: hero, villain: villain };
+  }
+
+  // ---------- questions ----------
+  var Q = [
+    { k: 'type', en: 'What kind of game?', ar: 'نوع اللعبة إيه؟', o: [['adv', 'Adventure (seen from above)', 'مغامرة (من فوق)'], ['plat', 'Platform (side, jumping)', 'منصات (من الجنب وبتنط)'], ['sneak', 'Sneak & escape', 'تسلل وهروب']] },
+    { k: 'shape', en: 'Your hero is a…', ar: 'البطل بتاعك شكله…', o: [['circle', 'Circle', 'دايرة'], ['square', 'Square', 'مربع'], ['triangle', 'Triangle', 'مثلث']] },
+    { k: 'color', en: 'Hero colour', ar: 'لون البطل', c: ['#22c55e', '#3b82f6', '#f97316', '#ec4899', '#facc15', '#a855f7', '#f8fafc'] },
+    { k: 'attack', en: 'How does your hero attack?', ar: 'البطل بيضرب إزاي؟', o: [['sword', 'Sword swing', 'ضربة سيف'], ['shoot', 'Shoots', 'بيضرب نار'], ['stomp', 'Jumps on enemies', 'بينط على الأعداء'], ['none', 'No attack, only hide', 'من غير ضرب، بيستخبى بس']] },
+    { k: 'enemy', en: 'Enemies look like…', ar: 'الأعداء شكلهم…', o: [['square', 'Squares', 'مربعات'], ['triangle', 'Triangles', 'مثلثات'], ['circle', 'Circles', 'دواير']] },
+    { k: 'level', en: 'How hard?', ar: 'صعوبتها قد إيه؟', o: [['1', 'Easy', 'سهلة'], ['2', 'Normal', 'عادية'], ['3', 'Hard', 'صعبة']] },
+    { k: 'goal', en: 'To finish a chapter you…', ar: 'علشان تخلّص الفصل…', o: [['stars', 'Collect all stars', 'تلمّ كل النجوم'], ['exit', 'Reach the exit door', 'توصل لباب الخروج'], ['clear', 'Beat all enemies', 'تهزم كل الأعداء']] },
+    { k: 'hand', en: 'Controls on the phone', ar: 'التحكم على الموبايل', o: [['r', 'Joystick left, buttons right', 'الجويستيك شمال والزراير يمين'], ['l', 'Joystick right, buttons left', 'الجويستيك يمين والزراير شمال']] }
+  ];
+  var draft = null;
+  function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'square', level: '2', goal: 'stars', hand: 'r' }, v: 1, remote: null }; }
+  function renderQs() {
+    var box = $('qs'); box.innerHTML = '';
+    Q.forEach(function (q) {
+      var d = document.createElement('div'); d.className = 'q'; var h = document.createElement('h3'); h.textContent = T(q.en, q.ar); d.appendChild(h);
+      var o = document.createElement('div'); o.className = 'opts';
+      (q.c || q.o).forEach(function (op) {
+        var b = document.createElement('button'); b.type = 'button'; var val = q.c ? op : op[0];
+        if (q.c) { var s = document.createElement('span'); s.className = 'sw'; s.style.background = op; b.appendChild(s); b.setAttribute('aria-label', op); }
+        else b.textContent = T(op[1], op[2]);
+        b.classList.toggle('on', draft.ans[q.k] === val);
+        b.onclick = function () { draft.ans[q.k] = val; renderQs(); };
+        o.appendChild(b);
+      });
+      d.appendChild(o); box.appendChild(d);
+    });
+    var r = readStory(draft.story, draft.title), pv = $('preview'); pv.innerHTML = '';
+    var who = document.createElement('div'); who.className = 'chap'; who.textContent = T('Hero: ', 'البطل: ') + r.hero + ' · ' + T('Enemy: ', 'العدو: ') + r.villain; pv.appendChild(who);
+    r.chapters.forEach(function (c, i) {
+      var d = document.createElement('div'); d.className = 'chap'; var b = document.createElement('b'); b.textContent = T('Chapter ', 'الفصل ') + (i + 1) + ': '; d.appendChild(b);
+      d.appendChild(document.createTextNode(c.text.slice(0, 140) + (c.text.length > 140 ? '…' : '')));
+      if (c.feats.length) { var ch = document.createElement('div'); ch.className = 'chips'; c.feats.forEach(function (f) { var s = document.createElement('span'); s.textContent = T(LBL[f][0], LBL[f][1]); ch.appendChild(s); }); d.appendChild(ch); }
+      pv.appendChild(d);
+    });
+  }
+
+  // ---------- pages ----------
+  function show(id) { ['pHome', 'pWrite', 'pAsk'].forEach(function (p) { $(p).hidden = p !== id; }); scrollTo(0, 0); }
+  function mine() { return store.get('tt_games', []); }
+  function saveMine(g) { var a = mine().filter(function (x) { return x.id !== g.id; }); a.unshift(g); store.set('tt_games', a.slice(0, 30)); }
+  function cardFor(g, own) {
+    var d = document.createElement('div'); d.className = 'gc';
+    var b = document.createElement('b'); b.textContent = g.title; d.appendChild(b);
+    var s = document.createElement('small'); s.textContent = 'V' + String(g.v || g.version || 1).padStart(2, '0') + (g.author ? ' · ' + g.author : '') + (g.plays != null ? ' · ' + T('plays ', 'مرات لعب ') + g.plays : ''); d.appendChild(s);
+    var a = document.createElement('div'); a.className = 'acts2';
+    var p = document.createElement('button'); p.className = 'p'; p.type = 'button'; p.textContent = T('Play', 'العب'); p.onclick = function () { play(g); if (g.remote && sb) sb.rpc('text_game_play', { p_id: g.remote }).then(function () {}, function () {}); }; a.appendChild(p);
+    if (own) {
+      var e = document.createElement('button'); e.type = 'button'; e.textContent = T('Update', 'حدّث'); e.onclick = function () { draft = JSON.parse(JSON.stringify(g)); openWrite(); }; a.appendChild(e);
+      var pub = document.createElement('button'); pub.type = 'button'; pub.textContent = g.remote ? T('Published ✓', 'منشورة ✓') : T('Publish', 'انشر'); pub.onclick = function () { publish(g, pub); }; a.appendChild(pub);
+    }
+    d.appendChild(a); return d;
+  }
+  function home() {
+    show('pHome'); var m = $('mine'); m.innerHTML = '';
+    var list = mine(); if (!list.length) { var e = document.createElement('p'); e.className = 'lead'; e.textContent = T('No games yet — write your first story!', 'لسه مفيش ألعاب — اكتب أول قصة!'); m.appendChild(e); }
+    list.forEach(function (g) { m.appendChild(cardFor(g, true)); });
+    search();
+  }
+  function openWrite() { show('pWrite'); $('wTitle').value = draft.title; $('wStory').value = draft.story; $('wTitle').placeholder = T('Game name (2–40 letters)', 'اسم اللعبة (من 2 لـ 40 حرف)'); $('wStory').placeholder = T('Once upon a time…', 'في يوم من الأيام…'); cnt(); }
+  function cnt() { $('wCnt').textContent = $('wStory').value.length + ' / 6000'; }
+  $('wStory').oninput = cnt;
+  $('bNew').onclick = function () { draft = newDraft(); openWrite(); };
+  $('bSample').onclick = function () {
+    draft = newDraft();
+    draft.title = T('The Dino Key', 'مفتاح الداينو');
+    draft.story = T('A little dino named Rex lived in a green forest. One night a shadow monster stole the golden key of the forest.\n\nRex followed the footprints to the river. The water was deep and cold, but he found stars shining on the stones.\n\nAt the volcano the lava was everywhere. Rex jumped from rock to rock and found the door of the monster cave.\n\nInside, the shadow monster was waiting. Rex was brave, beat the monster and brought the key back home.',
+      'كان فيه داينو صغير اسمه ريكس عايش في غابة خضرا. وفي ليلة، وحش الضل سرق المفتاح الدهبي بتاع الغابة.\n\nريكس مشي ورا آثار الرجلين لحد النهر. المية كانت عميقة وساقعة، بس لقى نجوم بتنوّر على الصخر.\n\nعند البركان كانت الحمم في كل حتة. ريكس نط من صخرة لصخرة ولقى باب كهف الوحش.\n\nجوه الكهف كان وحش الضل مستنيه. ريكس كان شجاع، هزم الوحش ورجّع المفتاح للبيت.');
+    openWrite();
+  };
+  $('wBack').onclick = home; $('aBack').onclick = openWrite;
+  $('wNext').onclick = function () {
+    draft.title = $('wTitle').value.trim().slice(0, 40); draft.story = $('wStory').value.trim().slice(0, 6000);
+    if (draft.title.length < 2) { $('wTitle').focus(); return alertMsg(T('Give your game a name', 'سمّي لعبتك')); }
+    if (draft.story.length < 20) { $('wStory').focus(); return alertMsg(T('Write a bit more of the story (20 letters at least)', 'اكتب القصة أكتر شوية (20 حرف على الأقل)')); }
+    show('pAsk'); renderQs();
+  };
+  function alertMsg(m) { var t = document.createElement('div'); t.className = 'note'; t.textContent = m; t.style.cssText += ';position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:50;background:#422006'; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2200); }
+  $('aMake').onclick = function () {
+    var r = readStory(draft.story, draft.title);
+    var old = mine().find(function (x) { return x.id === draft.id; });
+    draft.v = old ? (old.v || 1) + 1 : 1; draft.spec = r; saveMine(draft);
+    if (draft.remote) publish(draft, null, true);
+    play(draft);
+  };
+  function author() { try { return (localStorage.getItem('ds_name') || '').slice(0, 24); } catch (e) { return ''; } }
+  function publish(g, btn, silent) {
+    if (!sb) return alertMsg(T('Publishing needs internet', 'النشر محتاج نت'));
+    sb.auth.getSession().then(function (s) {
+      var u = s.data && s.data.session && s.data.session.user;
+      if (!u) return alertMsg(T('Sign in on the main page first to publish', 'سجّل دخول من الصفحة الرئيسية الأول علشان تنشر'));
+      var row = { title: g.title, story: g.story, spec: { ans: g.ans, spec: g.spec }, author: (u.user_metadata && u.user_metadata.username) || author(), published: true };
+      var q = g.remote ? sb.from('text_games').update(row).eq('id', g.remote).select('id,version').single() : sb.from('text_games').insert(row).select('id,version').single();
+      q.then(function (r) {
+        if (r.error) { if (!silent) alertMsg(/relation|does not exist|schema cache/i.test(r.error.message) ? T('Publishing opens soon — the admin is switching it on', 'النشر هيتفتح قريب — الأدمن بيشغّله') : T('Could not publish: ', 'ما اتنشرتش: ') + r.error.message); return; }
+        g.remote = r.data.id; g.v = r.data.version; saveMine(g); if (btn) btn.textContent = T('Published ✓', 'منشورة ✓'); if (!silent) alertMsg(T('Published! Others can find it in search', 'اتنشرت! الناس تقدر تلاقيها في البحث')); home();
+      });
+    });
+  }
+  function search() {
+    var box = $('found'); box.innerHTML = ''; if (!sb) return;
+    var q = $('sQ').value.trim(), req = sb.from('text_games').select('id,title,story,spec,author,version,plays').eq('published', true).eq('hidden', false).order('plays', { ascending: false }).limit(24);
+    if (q) req = req.ilike('title', '%' + q.replace(/[%_]/g, '') + '%');
+    req.then(function (r) {
+      if (r.error) { var p = document.createElement('p'); p.className = 'lead'; p.textContent = T('Search opens soon.', 'البحث هيتفتح قريب.'); box.appendChild(p); return; }
+      if (!r.data.length) { var p2 = document.createElement('p'); p2.className = 'lead'; p2.textContent = T('No games found.', 'مفيش ألعاب.'); box.appendChild(p2); return; }
+      r.data.forEach(function (row) { var g = { id: row.id, remote: row.id, title: row.title, story: row.story, author: row.author, v: row.version, plays: row.plays, ans: (row.spec && row.spec.ans) || {}, spec: (row.spec && row.spec.spec) || readStory(row.story, row.title) }; box.appendChild(cardFor(g, false)); });
+    });
+  }
+  $('sGo').onclick = search; $('sQ').placeholder = T('Game name…', 'اسم اللعبة…');
+
+  // ---------- the game engine (shapes, two styles) ----------
+  var cv = $('cv'), cx = cv.getContext('2d'), G = null, raf = 0, keys = {}, joy = { x: 0, y: 0, on: false }, btn = {};
+  addEventListener('keydown', function (e) { keys[e.code] = true; if (G && /Arrow|Space/.test(e.code)) e.preventDefault(); });
+  addEventListener('keyup', function (e) { keys[e.code] = false; });
+  (function () { var b = $('joy2'), k = $('knob2'), R = 46; function set(e) { var r = b.getBoundingClientRect(), dx = e.clientX - r.left - r.width / 2, dy = e.clientY - r.top - r.height / 2, m = Math.hypot(dx, dy); if (m > R) { dx *= R / m; dy *= R / m; } k.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; joy.x = dx / R; joy.y = dy / R; }
+    b.addEventListener('pointerdown', function (e) { joy.on = true; b.setPointerCapture(e.pointerId); set(e); }); b.addEventListener('pointermove', function (e) { if (joy.on) set(e); });
+    function end() { joy.on = false; joy.x = joy.y = 0; k.style.transform = ''; } b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end); })();
+  [['bAct', 'act'], ['bJump', 'jump']].forEach(function (p) { var b = $(p[0]); b.addEventListener('pointerdown', function (e) { e.preventDefault(); btn[p[1]] = 2; }); b.addEventListener('pointerup', function () { btn[p[1]] = 0; }); b.addEventListener('pointercancel', function () { btn[p[1]] = 0; }); });
+  function fit() { var r = Math.min(devicePixelRatio || 1, 2); cv.width = innerWidth * r; cv.height = innerHeight * r; cx.setTransform(r, 0, 0, r, 0, 0); }
+  addEventListener('resize', function () { if (G) fit(); });
+  var MOOD = { night: ['#0b1026', '#1e1b4b', '#6366f1'], space: ['#020617', '#0f172a', '#64748b'], forest: ['#14532d', '#166534', '#84cc16'], fire: ['#431407', '#7c2d12', '#a8a29e'], ice: ['#e0f2fe', '#bae6fd', '#475569'], water: ['#0c4a6e', '#075985', '#38bdf8'], city: ['#1f2937', '#374151', '#9ca3af'], def: ['#1e3a8a', '#1d4ed8', '#60a5fa'] };
+  function moodOf(feats) { for (var i = 0; i < feats.length; i++) if (MOOD[feats[i]]) return MOOD[feats[i]]; return MOOD.def; }
+  function rng(seed) { var s = seed || 1; return function () { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
+  function shape(sh, x, y, r, col, rot) {
+    cx.save(); cx.translate(x, y); if (rot) cx.rotate(rot);
+    cx.fillStyle = 'rgba(0,0,0,.25)'; cx.beginPath(); cx.ellipse(0, r * 0.95, r * 0.9, r * 0.3, 0, 0, 7); cx.fill();
+    var g = cx.createLinearGradient(0, -r, 0, r); g.addColorStop(0, '#ffffff55'); g.addColorStop(0.25, col); g.addColorStop(1, col); cx.fillStyle = g;
+    cx.beginPath(); if (sh === 'circle') cx.arc(0, 0, r, 0, 7); else if (sh === 'square') { if (cx.roundRect) cx.roundRect(-r, -r, r * 2, r * 2, r * 0.3); else cx.rect(-r, -r, r * 2, r * 2); } else { cx.moveTo(0, -r * 1.1); cx.lineTo(r, r * 0.8); cx.lineTo(-r, r * 0.8); cx.closePath(); }
+    cx.fill(); cx.lineWidth = 2; cx.strokeStyle = 'rgba(0,0,0,.25)'; cx.stroke();
+    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(-r * 0.3, -r * 0.15, r * 0.2, 0, 7); cx.arc(r * 0.3, -r * 0.15, r * 0.2, 0, 7); cx.fill();
+    cx.fillStyle = '#0f172a'; cx.beginPath(); cx.arc(-r * 0.27, -r * 0.12, r * 0.1, 0, 7); cx.arc(r * 0.33, -r * 0.12, r * 0.1, 0, 7); cx.fill();
+    cx.restore();
+  }
+  var TS = 40;
+  function makeLevel(ch, ans, idx, total) {
+    var R = rng(ch.seed), f = ch.feats, lvl = +ans.level + Math.floor(idx * 2 / Math.max(1, total)), plat = ans.type === 'plat';
+    var W = plat ? 70 + idx * 8 : 26, H = plat ? 14 : 18, m = [];
+    for (var y = 0; y < H; y++) { m.push([]); for (var x = 0; x < W; x++) m[y].push(plat ? 0 : 1); }
+    var L = { W: W, H: H, m: m, stars: [], enemies: [], keyAt: null, door: null, exit: null, start: null, boss: null, plat: plat, mood: moodOf(f), feats: f };
+    if (plat) {
+      var gy = H - 3; for (x = 0; x < W; x++) { if (x > 6 && x < W - 8 && R() < 0.08 + lvl * 0.02) { var gap = 2 + (R() * lvl | 0); for (var k = 0; k < gap && x < W - 8; k++, x++) { } } if (x < W) { for (y = gy; y < H; y++) m[y][x] = 1; if (f.indexOf('fire') >= 0 && R() < 0.06 && x > 8 && x < W - 8) m[gy][x] = 3; } if (R() < 0.12) gy = Math.max(6, Math.min(H - 2, gy + (R() < 0.5 ? -1 : 1))); }
+      for (x = 8; x < W - 8; x += 5 + (R() * 4 | 0)) { var py = 4 + (R() * 5 | 0), pl = 2 + (R() * 3 | 0); for (k = 0; k < pl; k++) if (x + k < W) m[py][x + k] = 1; L.stars.push({ x: (x + 1) * TS, y: (py - 1) * TS + TS / 2 }); }
+      L.start = { x: 2 * TS, y: 2 * TS };
+      for (k = 0; k < 3 + lvl * 2; k++) { var ex = (10 + R() * (W - 18)) | 0; L.enemies.push({ x: ex * TS, y: 2 * TS, vx: (R() < 0.5 ? -1 : 1) * (40 + lvl * 15), vy: 0, r: 14, hp: 1, alive: true }); }
+      L.exit = { x: (W - 3) * TS, y: 2 * TS };
+    } else {
+      var cx0 = W >> 1, cy0 = H >> 1, px = cx0, py2 = cy0, steps = W * H * 2;
+      for (var s = 0; s < steps; s++) { m[py2][px] = 0; if (R() < 0.4) { m[py2][Math.min(W - 2, px + 1)] = 0; } var d = R() * 4 | 0; px = Math.max(1, Math.min(W - 2, px + [1, -1, 0, 0][d])); py2 = Math.max(1, Math.min(H - 2, py2 + [0, 0, 1, -1][d])); }
+      var free = []; for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++) if (!m[y][x]) free.push([x, y]);
+      var pick = function () { var i = (R() * free.length) | 0; return free.splice(i, 1)[0]; };
+      var st = pick(); L.start = { x: st[0] * TS + TS / 2, y: st[1] * TS + TS / 2 };
+      for (k = 0; k < 5; k++) { var p = pick(); L.stars.push({ x: p[0] * TS + TS / 2, y: p[1] * TS + TS / 2 }); }
+      if (f.indexOf('water') >= 0) for (k = 0; k < 12; k++) { p = free[(R() * free.length) | 0]; m[p[1]][p[0]] = 2; }
+      if (f.indexOf('fire') >= 0) for (k = 0; k < 6 + lvl * 2; k++) { p = pick(); m[p[1]][p[0]] = 3; }
+      for (k = 0; k < 3 + lvl * 2; k++) { p = pick(); if (Math.hypot(p[0] * TS - L.start.x, p[1] * TS - L.start.y) < 6 * TS) { p = pick(); } L.enemies.push({ x: p[0] * TS + TS / 2, y: p[1] * TS + TS / 2, vx: 0, vy: 0, r: 14, hp: 1, alive: true, dir: R() * 6.28 }); }
+      var e2 = pick(); L.exit = { x: e2[0] * TS + TS / 2, y: e2[1] * TS + TS / 2 };
+      if (f.indexOf('key') >= 0) { var kk = pick(); L.keyAt = { x: kk[0] * TS + TS / 2, y: kk[1] * TS + TS / 2 }; }
+    }
+    if (f.indexOf('key') >= 0 && plat) L.keyAt = { x: ((W / 2) | 0) * TS, y: 3 * TS };
+    if (f.indexOf('boss') >= 0) { var b = L.enemies.pop() || { x: L.exit.x - 60, y: L.exit.y }; L.boss = { x: plat ? L.exit.x - 3 * TS : b.x, y: plat ? 2 * TS : b.y, vx: -60, vy: 0, r: 30, hp: 4 + lvl, alive: true, dir: 0, boss: true }; L.enemies.push(L.boss); }
+    return L;
+  }
+  function solid(L, x, y) { var tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || tx >= L.W) return true; if (ty < 0 || ty >= L.H) return !L.plat; return L.m[ty][tx] === 1; }
+  function tile(L, x, y) { var tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || ty < 0 || tx >= L.W || ty >= L.H) return 0; return L.m[ty][tx]; }
+  function moveBody(L, o, dx, dy, r) {
+    o.x += dx; if (solid(L, o.x + (dx > 0 ? r : -r), o.y - r * 0.6) || solid(L, o.x + (dx > 0 ? r : -r), o.y + r * 0.6)) { o.x -= dx; if (o.vx !== undefined && L.plat) o.vx = -o.vx; }
+    o.y += dy; var hitY = solid(L, o.x - r * 0.6, o.y + (dy > 0 ? r : -r)) || solid(L, o.x + r * 0.6, o.y + (dy > 0 ? r : -r));
+    if (hitY) { o.y -= dy; if (dy > 0) o.ground = true; o.vy = 0; } else if (dy > 0) o.ground = false;
+  }
+
+  function play(g) {
+    var spec = g.spec || readStory(g.story, g.title), ans = Object.assign(newDraft().ans, g.ans || {});
+    G = { g: g, spec: spec, ans: ans, ch: 0, hp: 3, L: null, hero: null, inv: 0, cool: 0, shots: [], key: false, got: 0, shake: 0 };
+    $('play').hidden = false; document.body.style.overflow = 'hidden'; fit();
+    var left = ans.hand === 'l'; $('padL2').className = 'pad2 ' + (left ? 'r' : 'l'); $('padR2').className = 'pad2 ' + (left ? 'l' : 'r');
+    $('bAct').textContent = ans.attack === 'none' ? T('Hide', 'استخبى') : ans.attack === 'stomp' ? T('Dash', 'اندفع') : T('Hit', 'اضرب');
+    $('bJump').textContent = T('Jump', 'نط'); $('bJump').style.display = ans.type === 'plat' ? '' : 'none';
+    chapter(0);
+    cancelAnimationFrame(raf); var last = performance.now();
+    (function loop(now) { var dt = Math.min(0.04, (now - last) / 1000); last = now; if (G) { if (G.L && $('cut').hidden) step(dt); draw(); } raf = requestAnimationFrame(loop); })(last);
+  }
+  function chapter(i) {
+    G.ch = i; var c = G.spec.chapters[i];
+    $('cutCh').textContent = T('Chapter ', 'الفصل ') + (i + 1) + ' / ' + G.spec.chapters.length + ' — ' + G.g.title;
+    $('cutTx').textContent = c.text; $('cutGo').textContent = T('Play this chapter', 'العب الفصل ده'); $('cut').hidden = false;
+    $('cutGo').onclick = function () {
+      $('cut').hidden = true; G.L = makeLevel(c, G.ans, i, G.spec.chapters.length); G.key = false; G.got = 0; G.shots = []; G.inv = 1.5;
+      G.hero = { x: G.L.start.x, y: G.L.start.y, vx: 0, vy: 0, r: 15, ground: false, face: 1, hid: false };
+      hud(); toast(goalText(), 2200);
+    };
+  }
+  function goalText() { var a = G.ans.goal; return a === 'stars' ? T('Collect all stars', 'لمّ كل النجوم') : a === 'exit' ? T('Reach the exit door', 'اوصل لباب الخروج') : T('Beat all enemies', 'اهزم كل الأعداء'); }
+  function hud() {
+    $('pCh').textContent = T('Chapter ', 'الفصل ') + (G.ch + 1) + '/' + G.spec.chapters.length;
+    $('pHp').textContent = '♥'.repeat(Math.max(0, G.hp)) + '♡'.repeat(Math.max(0, 3 - G.hp));
+    var L = G.L; if (!L) return;
+    var left = G.ans.goal === 'stars' ? L.stars.length : G.ans.goal === 'clear' ? L.enemies.filter(function (e) { return e.alive; }).length : 0;
+    $('pGoal').textContent = goalText() + (left ? ' (' + left + ')' : '') + (L.keyAt && !G.key ? ' · ' + T('find the key', 'لاقي المفتاح') : '');
+  }
+  function toast(m, ms) { var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { t.classList.remove('on'); }, ms || 1500); }
+  function hurt() { if (G.inv > 0 || G.hero.hid) return; G.hp--; G.inv = 1.4; G.shake = 0.3; beep(150, 0.25); hud(); if (G.hp <= 0) { G.hp = 3; toast(T('Try the chapter again!', 'جرّب الفصل تاني!'), 1600); var c = G.spec.chapters[G.ch]; G.L = makeLevel(c, G.ans, G.ch, G.spec.chapters.length); G.hero.x = G.L.start.x; G.hero.y = G.L.start.y; G.key = false; G.inv = 1.5; hud(); } }
+  function chapterDone() {
+    beep(660, 0.12); beep(990, 0.2);
+    if (G.ch + 1 < G.spec.chapters.length) { G.L = null; chapter(G.ch + 1); }
+    else { G.L = null; $('cutCh').textContent = G.g.title; $('cutTx').textContent = T('The end! ', 'النهاية! ') + G.spec.hero + T(' finished the story.', ' خلّص القصة.'); $('cutGo').textContent = T('Back', 'رجوع'); $('cut').hidden = false; $('cutGo').onclick = exitPlay; }
+  }
+  function exitPlay() { G = null; cancelAnimationFrame(raf); $('play').hidden = true; $('cut').hidden = true; document.body.style.overflow = ''; home(); }
+  $('pExit').onclick = exitPlay;
+
+  function step(dt) {
+    var L = G.L, h = G.hero, a = G.ans, k = keys;
+    var ix = (k.ArrowRight || k.KeyD ? 1 : 0) - (k.ArrowLeft || k.KeyA ? 1 : 0), iy = (k.ArrowDown || k.KeyS ? 1 : 0) - (k.ArrowUp || k.KeyW ? 1 : 0);
+    if (joy.on) { ix = joy.x; iy = joy.y; }
+    var act = k.Space || k.KeyF || btn.act === 2, jump = k.ArrowUp || k.KeyW || k.KeyK || btn.jump === 2; if (btn.act === 2) btn.act = 1; if (btn.jump === 2) btn.jump = 1;
+    G.inv = Math.max(0, G.inv - dt); G.cool = Math.max(0, G.cool - dt); G.shake = Math.max(0, G.shake - dt);
+    var t = tile(L, h.x, h.y), slow = t === 2 ? 0.55 : 1, sp = 190 * slow;
+    if (a.attack === 'none' && act && G.cool <= 0) { h.hid = !h.hid; G.cool = 0.4; toast(h.hid ? T('Hidden', 'مستخبي') : T('Out', 'خرجت'), 700); }
+    if (h.hid) { ix = 0; iy = 0; }
+    if (ix) h.face = ix > 0 ? 1 : -1;
+    if (L.plat) {
+      h.vx = ix * sp; h.vy += 1500 * dt; if (jump && h.ground) { h.vy = -620; h.ground = false; beep(520, 0.06); }
+      moveBody(L, h, h.vx * dt, h.vy * dt, h.r);
+      if (h.y > L.H * TS + 60) { hurt(); h.x = L.start.x; h.y = L.start.y; h.vy = 0; }
+    } else moveBody(L, h, ix * sp * dt, iy * sp * dt, h.r);
+    if (t === 3) hurt();
+    // attack
+    if (act && G.cool <= 0 && a.attack !== 'none') {
+      G.cool = a.attack === 'shoot' ? 0.3 : 0.4; beep(300, 0.05);
+      if (a.attack === 'shoot') G.shots.push({ x: h.x, y: h.y, vx: (L.plat ? h.face : (ix || iy ? ix : h.face)) * 480, vy: L.plat ? 0 : iy * 480, t: 0 });
+      else if (a.attack === 'stomp') { h.vx = h.face * 600; moveBody(L, h, h.face * 40, 0, h.r); G.swing = 0.15; }
+      else G.swing = 0.2;
+      if (a.attack === 'sword') L.enemies.forEach(function (e) { if (e.alive && Math.hypot(e.x - h.x, e.y - h.y) < 62) dmg(e); });
+    }
+    G.swing = Math.max(0, (G.swing || 0) - dt);
+    G.shots.forEach(function (s) { s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt; if (solid(L, s.x, s.y)) s.t = 9; L.enemies.forEach(function (e) { if (e.alive && s.t < 9 && Math.hypot(e.x - s.x, e.y - s.y) < e.r + 6) { dmg(e); s.t = 9; } }); });
+    G.shots = G.shots.filter(function (s) { return s.t < 1.2; });
+    // enemies
+    var es = 50 + (+a.level) * 18;
+    L.enemies.forEach(function (e) {
+      if (!e.alive) return;
+      var d = Math.hypot(h.x - e.x, h.y - e.y), sees = !h.hid && d < 260;
+      if (L.plat) { e.vy += 1500 * dt; moveBody(L, e, e.vx * dt, e.vy * dt, e.r); if (!solid(L, e.x + Math.sign(e.vx) * (e.r + 4), e.y + e.r + 6) && e.ground) e.vx = -e.vx; if (e.boss && sees) e.vx = Math.sign(h.x - e.x) * 90; }
+      else { if (sees) { e.dir = Math.atan2(h.y - e.y, h.x - e.x); } else e.dir += (Math.random() - 0.5) * dt * 3; var v = sees ? es * (e.boss ? 1.1 : 1) : es * 0.5; moveBody(L, e, Math.cos(e.dir) * v * dt, Math.sin(e.dir) * v * dt, e.r); }
+      if (d < e.r + h.r - 4) {
+        if (L.plat && (a.attack === 'stomp' || true) && h.vy > 120 && h.y < e.y - 6) { dmg(e); h.vy = -420; }
+        else hurt();
+      }
+    });
+    // pick ups
+    L.stars = L.stars.filter(function (s) { if (Math.hypot(s.x - h.x, s.y - h.y) < 26) { beep(1100, 0.06); G.got++; return false; } return true; });
+    if (L.keyAt && !G.key && Math.hypot(L.keyAt.x - h.x, L.keyAt.y - h.y) < 26) { G.key = true; beep(880, 0.1); toast(T('Got the key!', 'معاك المفتاح!'), 1200); }
+    hud();
+    var goalOk = a.goal === 'stars' ? !L.stars.length : a.goal === 'clear' ? !L.enemies.some(function (e) { return e.alive; }) : true;
+    if (L.boss && L.boss.alive) goalOk = false;
+    if (L.keyAt && !G.key) goalOk = false;
+    var atExit = Math.hypot(L.exit.x - h.x, L.exit.y - h.y) < 34;
+    if (a.goal === 'exit' ? atExit && goalOk : goalOk && (atExit || a.goal !== 'exit')) {
+      if (a.goal !== 'exit' && !atExit) { if (!G.exitMsg) { G.exitMsg = 1; toast(T('Done! Go to the door', 'خلصت! روح للباب'), 1600); } } else { G.exitMsg = 0; chapterDone(); }
+    }
+  }
+  function dmg(e) { e.hp--; beep(700, 0.05); if (e.hp <= 0) { e.alive = false; if (e.boss) toast(G.spec.villain + T(' is beaten!', ' اتهزم!'), 1500); } }
+
+  function draw() {
+    var W = innerWidth, Hh = innerHeight; cx.clearRect(0, 0, W, Hh);
+    if (!G || !G.L) { cx.fillStyle = '#020617'; cx.fillRect(0, 0, W, Hh); return; }
+    var L = G.L, h = G.hero, M = L.mood;
+    var gr = cx.createLinearGradient(0, 0, 0, Hh); gr.addColorStop(0, M[0]); gr.addColorStop(1, M[1]); cx.fillStyle = gr; cx.fillRect(0, 0, W, Hh);
+    var zoom = Math.min(1.25, Math.max(0.7, Math.min(W, Hh) / 560));
+    var camX = h.x - W / 2 / zoom, camY = h.y - Hh / 2 / zoom;
+    if (G.shake) { camX += (Math.random() - 0.5) * 8; camY += (Math.random() - 0.5) * 8; }
+    // background shapes (circles, squares, triangles) for depth
+    cx.globalAlpha = 0.12; for (var i = 0; i < 14; i++) { var bx = ((i * 197 - camX * 0.2) % (W + 200) + W + 200) % (W + 200) - 100, by = (i * 89) % Hh; cx.fillStyle = '#fff'; cx.beginPath(); if (i % 3 === 0) cx.arc(bx, by, 30 + i * 3, 0, 7); else if (i % 3 === 1) cx.rect(bx, by, 40 + i * 2, 40 + i * 2); else { cx.moveTo(bx, by - 30); cx.lineTo(bx + 30, by + 25); cx.lineTo(bx - 30, by + 25); } cx.fill(); } cx.globalAlpha = 1;
+    cx.save(); cx.scale(zoom, zoom); cx.translate(-camX, -camY);
+    var x0 = Math.max(0, Math.floor(camX / TS)), x1 = Math.min(L.W, Math.ceil((camX + W / zoom) / TS) + 1), y0 = Math.max(0, Math.floor(camY / TS)), y1 = Math.min(L.H, Math.ceil((camY + Hh / zoom) / TS) + 1);
+    for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) {
+      var v = L.m[y][x], X = x * TS, Y = y * TS;
+      if (v === 1) { cx.fillStyle = M[2]; cx.fillRect(X, Y, TS, TS); cx.fillStyle = 'rgba(255,255,255,.12)'; cx.fillRect(X, Y, TS, 5); cx.fillStyle = 'rgba(0,0,0,.18)'; cx.fillRect(X, Y + TS - 4, TS, 4); }
+      else if (v === 2) { cx.fillStyle = 'rgba(56,189,248,.55)'; cx.fillRect(X, Y, TS, TS); }
+      else if (v === 3) { cx.fillStyle = (Math.floor(performance.now() / 200) + x) % 2 ? '#f97316' : '#ef4444'; cx.fillRect(X, Y, TS, TS); }
+      else if (!L.plat) { cx.fillStyle = (x + y) % 2 ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.06)'; cx.fillRect(X, Y, TS, TS); }
+    }
+    // exit door
+    var ex = L.exit, open = !(L.keyAt && !G.key);
+    cx.fillStyle = open ? '#22c55e' : '#7f1d1d'; if (cx.roundRect) { cx.beginPath(); cx.roundRect(ex.x - 16, ex.y - 26, 32, 46, 8); cx.fill(); } else cx.fillRect(ex.x - 16, ex.y - 26, 32, 46);
+    cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(ex.x + 8, ex.y, 3, 0, 7); cx.fill();
+    if (L.keyAt && !G.key) { cx.strokeStyle = '#facc15'; cx.lineWidth = 4; cx.beginPath(); cx.arc(L.keyAt.x - 6, L.keyAt.y, 7, 0, 7); cx.moveTo(L.keyAt.x + 1, L.keyAt.y); cx.lineTo(L.keyAt.x + 16, L.keyAt.y); cx.stroke(); }
+    var tt = performance.now() / 300;
+    L.stars.forEach(function (s) { cx.save(); cx.translate(s.x, s.y + Math.sin(tt + s.x) * 3); cx.rotate(tt * 0.5); cx.fillStyle = '#facc15'; cx.beginPath(); for (var k = 0; k < 10; k++) { var r = k % 2 ? 6 : 13, a = k * Math.PI / 5; cx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } cx.closePath(); cx.fill(); cx.restore(); });
+    L.enemies.forEach(function (e) { if (!e.alive) return; shape(e.boss ? 'triangle' : G.ans.enemy, e.x, e.y, e.r, e.boss ? '#7f1d1d' : '#ef4444', 0); if (e.boss) { cx.fillStyle = '#fff'; cx.font = 'bold 13px system-ui'; cx.textAlign = 'center'; cx.fillText(G.spec.villain + ' ' + '♥'.repeat(e.hp), e.x, e.y - e.r - 10); } });
+    G.shots.forEach(function (s) { cx.fillStyle = '#fde047'; cx.beginPath(); cx.arc(s.x, s.y, 6, 0, 7); cx.fill(); });
+    if (!h.hid) { cx.globalAlpha = G.inv > 0 && Math.floor(G.inv * 10) % 2 ? 0.4 : 1; shape(G.ans.shape, h.x, h.y, h.r, G.ans.color, L.plat ? 0 : 0); cx.globalAlpha = 1; }
+    else { cx.strokeStyle = 'rgba(255,255,255,.5)'; cx.setLineDash([4, 4]); cx.beginPath(); cx.arc(h.x, h.y, h.r + 4, 0, 7); cx.stroke(); cx.setLineDash([]); }
+    if (G.swing) { cx.strokeStyle = 'rgba(255,255,255,.8)'; cx.lineWidth = 6; cx.beginPath(); cx.arc(h.x, h.y, 50, h.face > 0 ? -1 : Math.PI - 1, h.face > 0 ? 1 : Math.PI + 1); cx.stroke(); }
+    cx.fillStyle = '#fff'; cx.font = 'bold 12px system-ui'; cx.textAlign = 'center'; cx.fillText(G.spec.hero, h.x, h.y - h.r - 8);
+    cx.restore();
+    if (L.feats.indexOf('night') >= 0 || L.feats.indexOf('space') >= 0) { var rg = cx.createRadialGradient(W / 2, Hh / 2, 80, W / 2, Hh / 2, Math.max(W, Hh) * 0.6); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,.7)'); cx.fillStyle = rg; cx.fillRect(0, 0, W, Hh); }
+  }
+  var ac = null; function beep(f, d) { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); var o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.value = 0.04; o.connect(g); g.connect(ac.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d); o.stop(ac.currentTime + d); } catch (e) {} }
+
+  function applyLang() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-en]').forEach(function (el) { el.textContent = lang === 'en' ? el.dataset.en : el.dataset.ar; });
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); if (!$('pAsk').hidden) renderQs(); else if (!$('pHome').hidden) home(); }; });
+  applyLang(); home();
+})();
+</script>
+</body>
+</html>
