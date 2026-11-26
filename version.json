@@ -1,14 +1,14 @@
 {
-  "v": "V16",
+  "v": "V17",
   "date": "2026-11-26",
   "ar": [
-    "THE TEXT بقت 3D: كاميرا تتغيّر (ورا / من فوق / بعيد) والأبطال دواير ومربعات ومثلثات 3D",
-    "MOTOR BIKE بقت 3D بموتوسيكل وسواق معمولين في Blender",
-    "شخصيات ومفاتيح وشجر وصخور جديدة معمولة في Blender في كل الألعاب"
+    "THE TEXT: اختار النوع الأساسي (قصصية أو أكشن) و2D أو 3D",
+    "THE TEXT: أنواع لعب جديدة — اصمد قدام موجات الأعداء، وسباق مع الوقت",
+    "THE TEXT: تحكم أكتر — حجم الجويستيك، زراير الكيبورد، اندفاع، ونطة مزدوجة، ووصف للعبتك"
   ],
   "en": [
-    "THE TEXT is now 3D: switch the camera (behind / top / far); 3D circle, square and triangle heroes",
-    "MOTOR BIKE is now 3D with a bike and rider made in Blender",
-    "New characters, keys, trees and rocks made in Blender in every game"
+    "THE TEXT: pick the main kind (story or action) and 2D or 3D",
+    "THE TEXT: new ways to play — survive enemy waves, race the clock",
+    "THE TEXT: more controls — joystick size, keyboard keys, dash, double jump, and a line about your game"
   ]
 }

@@ -97,6 +97,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
  <p class="lead" data-en="Give your game a name, then write the story. Each paragraph becomes a chapter (up to 6). Words like fire, water, key, monster, treasure, night, forest or space change the levels." data-ar="سمّي لعبتك واكتب القصة. كل فقرة بتبقى فصل (لحد 6 فصول). كلمات زي نار، مية، مفتاح، وحش، كنز، ليل، غابة أو فضاء بتغيّر المراحل."></p>
  <input type="text" id="wTitle" maxlength="40">
  <div style="height:10px"></div>
+ <input type="text" id="wAbout" maxlength="90">
+ <div style="height:10px"></div>
  <textarea id="wStory" maxlength="6000"></textarea>
  <div class="cnt" id="wCnt"></div>
  <div class="row" style="justify-content:flex-start"><button class="big" id="wNext" type="button" data-en="Next: questions" data-ar="التالي: الأسئلة"></button></div>
@@ -118,7 +120,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
  <div id="phud"><button class="chip btn" id="pExit" type="button" data-en="Exit" data-ar="خروج"></button><div class="chip" id="pCh"></div><div class="chip" id="pHp"></div><div class="chip" id="pGoal"></div><button class="chip btn" id="pCam" type="button" aria-label="Camera"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></button></div>
  <div class="toast" id="toast" style="position:absolute;z-index:4"></div>
  <div class="pad2 l" id="padL2"><div id="joy2"><div id="knob2"></div></div></div>
- <div class="pad2 r" id="padR2"><button class="ab j" id="bJump" type="button"></button><button class="ab a" id="bAct" type="button"></button></div>
+ <div class="pad2 r" id="padR2"><button class="ab d" id="bDash" type="button" style="background:rgba(168,85,247,.9);width:64px;height:64px"></button><button class="ab j" id="bJump" type="button"></button><button class="ab a" id="bAct" type="button"></button></div>
  <div id="cut" hidden><div class="box"><div class="ch" id="cutCh"></div><p id="cutTx"></p><button class="big" id="cutGo" type="button"></button></div></div>
 </div>
 
@@ -158,17 +160,23 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
 
   // ---------- questions ----------
   var Q = [
-    { k: 'type', en: 'What kind of game?', ar: 'نوع اللعبة إيه؟', o: [['adv', 'Adventure (seen from above)', 'مغامرة (من فوق)'], ['plat', 'Platform (side, jumping)', 'منصات (من الجنب وبتنط)'], ['sneak', 'Sneak & escape', 'تسلل وهروب']] },
+    { k: 'genre', en: 'The main kind of your game', ar: 'النوع الأساسي للعبتك', o: [['story', 'Story game (your story shows before every chapter)', 'لعبة قصصية (قصتك بتظهر قبل كل فصل)'], ['action', 'Action game (just play, short text)', 'لعبة أكشن (لعب على طول، كلام قليل)']] },
+    { k: 'view', en: '2D or 3D?', ar: '2D ولا 3D؟', o: [['3d', '3D (you can turn the camera)', '3D (تقدر تغيّر الكاميرا)'], ['2d', '2D (flat and simple)', '2D (مسطحة وبسيطة)']] },
+    { k: 'type', en: 'How is it played?', ar: 'بتتلعب إزاي؟', o: [['adv', 'Adventure (seen from above)', 'مغامرة (من فوق)'], ['plat', 'Platform (side, jumping)', 'منصات (من الجنب وبتنط)'], ['sneak', 'Sneak & escape', 'تسلل وهروب'], ['arena', 'Survive waves of enemies', 'اصمد قدام موجات الأعداء'], ['rush', 'Race the clock', 'سباق مع الوقت']] },
     { k: 'shape', en: 'Your hero is a…', ar: 'البطل بتاعك شكله…', o: [['circle', 'Circle', 'دايرة'], ['square', 'Square', 'مربع'], ['triangle', 'Triangle', 'مثلث']] },
     { k: 'color', en: 'Hero colour', ar: 'لون البطل', c: ['#22c55e', '#3b82f6', '#f97316', '#ec4899', '#facc15', '#a855f7', '#f8fafc'] },
     { k: 'attack', en: 'How does your hero attack?', ar: 'البطل بيضرب إزاي؟', o: [['sword', 'Sword swing', 'ضربة سيف'], ['shoot', 'Shoots', 'بيضرب نار'], ['stomp', 'Jumps on enemies', 'بينط على الأعداء'], ['none', 'No attack, only hide', 'من غير ضرب، بيستخبى بس']] },
     { k: 'enemy', en: 'Enemies look like…', ar: 'الأعداء شكلهم…', o: [['square', 'Squares', 'مربعات'], ['triangle', 'Triangles', 'مثلثات'], ['circle', 'Circles', 'دواير']] },
     { k: 'level', en: 'How hard?', ar: 'صعوبتها قد إيه؟', o: [['1', 'Easy', 'سهلة'], ['2', 'Normal', 'عادية'], ['3', 'Hard', 'صعبة']] },
     { k: 'goal', en: 'To finish a chapter you…', ar: 'علشان تخلّص الفصل…', o: [['stars', 'Collect all stars', 'تلمّ كل النجوم'], ['exit', 'Reach the exit door', 'توصل لباب الخروج'], ['clear', 'Beat all enemies', 'تهزم كل الأعداء']] },
-    { k: 'hand', en: 'Controls on the phone', ar: 'التحكم على الموبايل', o: [['r', 'Joystick left, buttons right', 'الجويستيك شمال والزراير يمين'], ['l', 'Joystick right, buttons left', 'الجويستيك يمين والزراير شمال']] }
+    { k: 'hand', en: 'Controls on the phone', ar: 'التحكم على الموبايل', o: [['r', 'Joystick left, buttons right', 'الجويستيك شمال والزراير يمين'], ['l', 'Joystick right, buttons left', 'الجويستيك يمين والزراير شمال']] },
+    { k: 'joy', en: 'Joystick size', ar: 'حجم الجويستيك', o: [['s', 'Small', 'صغير'], ['m', 'Normal', 'عادي'], ['l', 'Big', 'كبير']] },
+    { k: 'keys', en: 'Keyboard keys', ar: 'زراير الكيبورد', o: [['both', 'WASD and arrows', 'WASD والأسهم'], ['wasd', 'WASD only', 'WASD بس'], ['arrows', 'Arrows only', 'الأسهم بس']] },
+    { k: 'dash', en: 'Dash move (fast burst)', ar: 'حركة اندفاع (سرعة لحظية)', o: [['yes', 'Yes (Shift)', 'أيوه (Shift)'], ['no', 'No', 'لأ']] },
+    { k: 'djump', en: 'Double jump (platform games)', ar: 'نطة مزدوجة (في المنصات)', o: [['no', 'No', 'لأ'], ['yes', 'Yes', 'أيوه']] }
   ];
   var draft = null;
-  function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'square', level: '2', goal: 'stars', hand: 'r' }, v: 1, remote: null }; }
+  function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { genre: 'story', view: '3d', type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'square', level: '2', goal: 'stars', hand: 'r', joy: 'm', keys: 'both', dash: 'yes', djump: 'no', about: '' }, v: 1, remote: null }; }
   function renderQs() {
     var box = $('qs'); box.innerHTML = '';
     Q.forEach(function (q) {
@@ -201,7 +209,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   function cardFor(g, own) {
     var d = document.createElement('div'); d.className = 'gc';
     var b = document.createElement('b'); b.textContent = g.title; d.appendChild(b);
-    var s = document.createElement('small'); s.textContent = 'V' + String(g.v || g.version || 1).padStart(2, '0') + (g.author ? ' · ' + g.author : '') + (g.plays != null ? ' · ' + T('plays ', 'مرات لعب ') + g.plays : ''); d.appendChild(s);
+    if (g.ans && g.ans.about) { var ab = document.createElement('small'); ab.style.color = '#e2e8f0'; ab.textContent = g.ans.about; d.appendChild(ab); }
+    var s = document.createElement('small'); s.textContent = (g.ans && g.ans.view === '2d' ? '2D' : '3D') + ' · V' + String(g.v || g.version || 1).padStart(2, '0') + (g.author ? ' · ' + g.author : '') + (g.plays != null ? ' · ' + T('plays ', 'مرات لعب ') + g.plays : ''); d.appendChild(s);
     var a = document.createElement('div'); a.className = 'acts2';
     var p = document.createElement('button'); p.className = 'p'; p.type = 'button'; p.textContent = T('Play', 'العب'); p.onclick = function () { play(g); if (g.remote && sb) sb.rpc('text_game_play', { p_id: g.remote }).then(function () {}, function () {}); }; a.appendChild(p);
     if (own) {
@@ -216,7 +225,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     list.forEach(function (g) { m.appendChild(cardFor(g, true)); });
     search();
   }
-  function openWrite() { show('pWrite'); $('wTitle').value = draft.title; $('wStory').value = draft.story; $('wTitle').placeholder = T('Game name (2–40 letters)', 'اسم اللعبة (من 2 لـ 40 حرف)'); $('wStory').placeholder = T('Once upon a time…', 'في يوم من الأيام…'); cnt(); }
+  function openWrite() { show('pWrite'); $('wTitle').value = draft.title; $('wAbout').value = draft.ans.about || ''; $('wAbout').placeholder = T('What is your game about? (one line)', 'لعبتك عن إيه؟ (سطر واحد)'); $('wStory').value = draft.story; $('wTitle').placeholder = T('Game name (2–40 letters)', 'اسم اللعبة (من 2 لـ 40 حرف)'); $('wStory').placeholder = T('Once upon a time…', 'في يوم من الأيام…'); cnt(); }
   function cnt() { $('wCnt').textContent = $('wStory').value.length + ' / 6000'; }
   $('wStory').oninput = cnt;
   $('bNew').onclick = function () { draft = newDraft(); openWrite(); };
@@ -229,7 +238,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   };
   $('wBack').onclick = home; $('aBack').onclick = openWrite;
   $('wNext').onclick = function () {
-    draft.title = $('wTitle').value.trim().slice(0, 40); draft.story = $('wStory').value.trim().slice(0, 6000);
+    draft.title = $('wTitle').value.trim().slice(0, 40); draft.ans.about = $('wAbout').value.trim().slice(0, 90); draft.story = $('wStory').value.trim().slice(0, 6000);
     if (draft.title.length < 2) { $('wTitle').focus(); return alertMsg(T('Give your game a name', 'سمّي لعبتك')); }
     if (draft.story.length < 20) { $('wStory').focus(); return alertMsg(T('Write a bit more of the story (20 letters at least)', 'اكتب القصة أكتر شوية (20 حرف على الأقل)')); }
     show('pAsk'); renderQs();
@@ -275,8 +284,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   (function () { var b = $('joy2'), k = $('knob2'), R = 46; function set(e) { var r = b.getBoundingClientRect(), dx = e.clientX - r.left - r.width / 2, dy = e.clientY - r.top - r.height / 2, m = Math.hypot(dx, dy); if (m > R) { dx *= R / m; dy *= R / m; } k.style.transform = 'translate(' + dx + 'px,' + dy + 'px)'; joy.x = dx / R; joy.y = dy / R; }
     b.addEventListener('pointerdown', function (e) { joy.on = true; b.setPointerCapture(e.pointerId); set(e); }); b.addEventListener('pointermove', function (e) { if (joy.on) set(e); });
     function end() { joy.on = false; joy.x = joy.y = 0; k.style.transform = ''; } b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end); })();
-  [['bAct', 'act'], ['bJump', 'jump']].forEach(function (p) { var b = $(p[0]); b.addEventListener('pointerdown', function (e) { e.preventDefault(); btn[p[1]] = 2; }); b.addEventListener('pointerup', function () { btn[p[1]] = 0; }); b.addEventListener('pointercancel', function () { btn[p[1]] = 0; }); });
-  function fit() { cv.style.display = 'none'; }
+  [['bAct', 'act'], ['bJump', 'jump'], ['bDash', 'dash']].forEach(function (p) { var b = $(p[0]); b.addEventListener('pointerdown', function (e) { e.preventDefault(); btn[p[1]] = 2; }); b.addEventListener('pointerup', function () { btn[p[1]] = 0; }); b.addEventListener('pointercancel', function () { btn[p[1]] = 0; }); });
+  function fit() { var r = Math.min(devicePixelRatio || 1, 2); cv.width = innerWidth * r; cv.height = innerHeight * r; cx.setTransform(r, 0, 0, r, 0, 0); }
   addEventListener('resize', function () { if (G) fit(); });
   var MOOD = { night: ['#0b1026', '#1e1b4b', '#6366f1'], space: ['#020617', '#0f172a', '#64748b'], forest: ['#14532d', '#166534', '#84cc16'], fire: ['#431407', '#7c2d12', '#a8a29e'], ice: ['#e0f2fe', '#bae6fd', '#475569'], water: ['#0c4a6e', '#075985', '#38bdf8'], city: ['#1f2937', '#374151', '#9ca3af'], def: ['#1e3a8a', '#1d4ed8', '#60a5fa'] };
   function moodOf(feats) { for (var i = 0; i < feats.length; i++) if (MOOD[feats[i]]) return MOOD[feats[i]]; return MOOD.def; }
@@ -309,9 +318,9 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
       var cx0 = W >> 1, cy0 = H >> 1, px = cx0, py2 = cy0, steps = W * H * 2;
       for (var s = 0; s < steps; s++) { m[py2][px] = 0; if (R() < 0.4) { m[py2][Math.min(W - 2, px + 1)] = 0; } var d = R() * 4 | 0; px = Math.max(1, Math.min(W - 2, px + [1, -1, 0, 0][d])); py2 = Math.max(1, Math.min(H - 2, py2 + [0, 0, 1, -1][d])); }
       var free = []; for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++) if (!m[y][x]) free.push([x, y]);
-      var pick = function () { var i = (R() * free.length) | 0; return free.splice(i, 1)[0]; };
+      var pick = function () { var i = (R() * free.length) | 0; return free.splice(i, 1)[0]; }; L.free = free.slice(); if (ans.type === 'arena') { for (y = 2; y < H - 2; y++) for (x = 2; x < W - 2; x++) if (R() < 0.55) m[y][x] = 0; free = []; for (y = 1; y < H - 1; y++) for (x = 1; x < W - 1; x++) if (!m[y][x]) free.push([x, y]); L.free = free.slice(); }
       var st = pick(); L.start = { x: st[0] * TS + TS / 2, y: st[1] * TS + TS / 2 };
-      for (k = 0; k < 5; k++) { var p = pick(); L.stars.push({ x: p[0] * TS + TS / 2, y: p[1] * TS + TS / 2 }); }
+      for (k = 0; k < (ans.type === 'rush' ? 9 : ans.type === 'arena' ? 0 : 5); k++) { var p = pick(); L.stars.push({ x: p[0] * TS + TS / 2, y: p[1] * TS + TS / 2 }); }
       if (f.indexOf('water') >= 0) for (k = 0; k < 12; k++) { p = free[(R() * free.length) | 0]; m[p[1]][p[0]] = 2; }
       if (f.indexOf('fire') >= 0) for (k = 0; k < 6 + lvl * 2; k++) { p = pick(); m[p[1]][p[0]] = 3; }
       for (k = 0; k < 3 + lvl * 2; k++) { p = pick(); if (Math.hypot(p[0] * TS - L.start.x, p[1] * TS - L.start.y) < 6 * TS) { p = pick(); } L.enemies.push({ x: p[0] * TS + TS / 2, y: p[1] * TS + TS / 2, vx: 0, vy: 0, r: 14, hp: 1, alive: true, dir: R() * 6.28 }); }
@@ -321,6 +330,9 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     if (f.indexOf('key') >= 0 && plat) { var kc = (W / 2) | 0; L.keyAt = { x: kc * TS + TS / 2, y: L.groundY(kc) * TS - TS * 1.6 }; }
     if (f.indexOf('boss') >= 0) { var b = L.enemies.pop() || { x: L.exit.x - 60, y: L.exit.y }; L.boss = { x: plat ? L.exit.x - 4 * TS : b.x, y: plat ? L.exit.y - TS : b.y, vx: -60, vy: 0, r: 30, hp: 4 + lvl, alive: true, dir: 0, boss: true }; L.enemies.push(L.boss); }
     return L;
+  }
+  function spawnWave(L, n) {
+    var f = L.free || []; for (var i = 0; i < 2 + n * 2; i++) { var p = f[(Math.random() * f.length) | 0]; if (!p) break; if (Math.hypot(p[0] * TS - G.hero.x, p[1] * TS - G.hero.y) < 5 * TS) continue; L.enemies.push({ x: p[0] * TS + TS / 2, y: p[1] * TS + TS / 2, vx: 0, vy: 0, r: 14, hp: n, alive: true, dir: Math.random() * 6.28 }); }
   }
   function solid(L, x, y) { var tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || tx >= L.W) return true; if (ty < 0 || ty >= L.H) return !L.plat; return L.m[ty][tx] === 1; }
   function tile(L, x, y) { var tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || ty < 0 || tx >= L.W || ty >= L.H) return 0; return L.m[ty][tx]; }
@@ -337,6 +349,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     var left = ans.hand === 'l'; $('padL2').className = 'pad2 ' + (left ? 'r' : 'l'); $('padR2').className = 'pad2 ' + (left ? 'l' : 'r');
     $('bAct').textContent = ans.attack === 'none' ? T('Hide', 'استخبى') : ans.attack === 'stomp' ? T('Dash', 'اندفع') : T('Hit', 'اضرب');
     $('bJump').textContent = T('Jump', 'نط'); $('bJump').style.display = ans.type === 'plat' ? '' : 'none';
+    var js = { s: 100, m: 130, l: 165 }[ans.joy || 'm']; $('joy2').style.width = $('joy2').style.height = js + 'px';
+    $('bDash').hidden = ans.dash !== 'yes'; $('bDash').textContent = T('Dash', 'اندفع'); $('pCam').style.display = ans.view === '2d' ? 'none' : '';
     chapter(0);
     cancelAnimationFrame(raf); var last = performance.now();
     (function loop(now) { var dt = Math.min(0.04, (now - last) / 1000); last = now; if (G) { if (G.L && $('cut').hidden) step(dt); draw(); } raf = requestAnimationFrame(loop); })(last);
@@ -344,18 +358,20 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   function chapter(i) {
     G.ch = i; var c = G.spec.chapters[i];
     $('cutCh').textContent = T('Chapter ', 'الفصل ') + (i + 1) + ' / ' + G.spec.chapters.length + ' — ' + G.g.title;
-    $('cutTx').textContent = c.text; $('cutGo').textContent = T('Play this chapter', 'العب الفصل ده'); $('cut').hidden = false;
+    $('cutTx').textContent = G.ans.genre === 'action' ? goalText() : c.text; $('cutGo').textContent = T('Play this chapter', 'العب الفصل ده'); $('cut').hidden = false;
     $('cutGo').onclick = function () {
       $('cut').hidden = true; G.L = makeLevel(c, G.ans, i, G.spec.chapters.length); G.key = false; G.got = 0; G.shots = []; G.inv = 1.5;
-      G.hero = { x: G.L.start.x, y: G.L.start.y, vx: 0, vy: 0, r: 15, ground: false, face: 1, hid: false };
+      G.hero = { x: G.L.start.x, y: G.L.start.y, vx: 0, vy: 0, r: 15, ground: false, face: 1, hid: false, jumps: 0, dashT: 0, dashCd: 0 }; G.wave = 1; G.timer = G.ans.type === 'rush' ? 75 - (+G.ans.level) * 10 : 0;
       hud(); toast(goalText(), 2200);
     };
   }
-  function goalText() { var a = G.ans.goal; return a === 'stars' ? T('Collect all stars', 'لمّ كل النجوم') : a === 'exit' ? T('Reach the exit door', 'اوصل لباب الخروج') : T('Beat all enemies', 'اهزم كل الأعداء'); }
+  function goalText() { if (G.ans.type === 'arena') return T('Survive 3 waves', 'اصمد 3 موجات'); if (G.ans.type === 'rush') return T('Collect the stars before time runs out', 'لمّ النجوم قبل الوقت ما يخلص'); var a = G.ans.goal; return a === 'stars' ? T('Collect all stars', 'لمّ كل النجوم') : a === 'exit' ? T('Reach the exit door', 'اوصل لباب الخروج') : T('Beat all enemies', 'اهزم كل الأعداء'); }
   function hud() {
     $('pCh').textContent = T('Chapter ', 'الفصل ') + (G.ch + 1) + '/' + G.spec.chapters.length;
     $('pHp').textContent = '♥'.repeat(Math.max(0, G.hp)) + '♡'.repeat(Math.max(0, 3 - G.hp));
     var L = G.L; if (!L) return;
+    if (G.ans.type === 'arena') { $('pGoal').textContent = goalText() + ' · ' + T('wave ', 'موجة ') + G.wave + '/3 (' + L.enemies.filter(function (e) { return e.alive; }).length + ')'; return; }
+    if (G.ans.type === 'rush') $('pHp').textContent += ' · ⏱ ' + Math.max(0, Math.ceil(G.timer));
     var left = G.ans.goal === 'stars' ? L.stars.length : G.ans.goal === 'clear' ? L.enemies.filter(function (e) { return e.alive; }).length : 0;
     $('pGoal').textContent = goalText() + (left ? ' (' + left + ')' : '') + (L.keyAt && !G.key ? ' · ' + T('find the key', 'لاقي المفتاح') : '');
   }
@@ -372,16 +388,25 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
 
   function step(dt) {
     var L = G.L, h = G.hero, a = G.ans, k = keys;
-    var ix = (k.ArrowRight || k.KeyD ? 1 : 0) - (k.ArrowLeft || k.KeyA ? 1 : 0), iy = (k.ArrowDown || k.KeyS ? 1 : 0) - (k.ArrowUp || k.KeyW ? 1 : 0);
+    var ks = a.keys || 'both', W1 = ks !== 'arrows', A1 = ks !== 'wasd';
+    var R_ = (A1 && k.ArrowRight) || (W1 && k.KeyD), L_ = (A1 && k.ArrowLeft) || (W1 && k.KeyA), D_ = (A1 && k.ArrowDown) || (W1 && k.KeyS), U_ = (A1 && k.ArrowUp) || (W1 && k.KeyW);
+    var ix = (R_ ? 1 : 0) - (L_ ? 1 : 0), iy = (D_ ? 1 : 0) - (U_ ? 1 : 0);
     if (joy.on) { ix = joy.x; iy = joy.y; }
-    var act = k.Space || k.KeyF || btn.act === 2, jump = k.ArrowUp || k.KeyW || k.KeyK || btn.jump === 2; if (btn.act === 2) btn.act = 1; if (btn.jump === 2) btn.jump = 1;
+    var act = k.Space || k.KeyF || k.KeyJ || btn.act === 2, jumpNow = (U_ || k.KeyK) && !G.jumpHeld || btn.jump === 2; G.jumpHeld = U_ || k.KeyK;
+    var dash = a.dash === 'yes' && (k.ShiftLeft || k.ShiftRight || k.KeyL || btn.dash === 2);
+    if (btn.act === 2) btn.act = 1; if (btn.jump === 2) btn.jump = 1; if (btn.dash === 2) btn.dash = 1;
     G.inv = Math.max(0, G.inv - dt); G.cool = Math.max(0, G.cool - dt); G.shake = Math.max(0, G.shake - dt);
     var t = tile(L, h.x, h.y), slow = t === 2 ? 0.55 : 1, sp = 190 * slow;
+    h.dashCd = Math.max(0, h.dashCd - dt); h.dashT = Math.max(0, h.dashT - dt);
+    if (dash && h.dashCd <= 0) { h.dashT = 0.18; h.dashCd = 0.9; G.inv = Math.max(G.inv, 0.25); beep(420, 0.08); }
+    if (h.dashT > 0) sp *= 3;
+    if (a.type === 'rush') { G.timer -= dt; if (G.timer <= 0) { toast(T('Time is up!', 'الوقت خلص!'), 1400); G.hp = 1; G.inv = 0; hurt(); G.timer = 75 - (+a.level) * 10; } }
     if (a.attack === 'none' && act && G.cool <= 0) { h.hid = !h.hid; G.cool = 0.4; toast(h.hid ? T('Hidden', 'مستخبي') : T('Out', 'خرجت'), 700); }
     if (h.hid) { ix = 0; iy = 0; }
     if (ix) h.face = ix > 0 ? 1 : -1;
     if (L.plat) {
-      h.vx = ix * sp; h.vy += 1500 * dt; if (jump && h.ground) { h.vy = -620; h.ground = false; beep(520, 0.06); }
+      if (h.ground) h.jumps = 0;
+      h.vx = ix * sp; h.vy += 1500 * dt; if (jumpNow && (h.ground || (a.djump === 'yes' && h.jumps < 2))) { h.vy = -620; h.ground = false; h.jumps = (h.jumps || 0) + 1; if (h.jumps === 1 && !h.ground) h.jumps = 1; beep(520 + h.jumps * 120, 0.06); }
       moveBody(L, h, h.vx * dt, h.vy * dt, h.r);
       if (h.y > L.H * TS + 60) { hurt(); h.x = L.start.x; h.y = L.start.y; h.vy = 0; }
     } else moveBody(L, h, ix * sp * dt, iy * sp * dt, h.r);
@@ -413,6 +438,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     L.stars = L.stars.filter(function (s) { if (Math.hypot(s.x - h.x, s.y - h.y) < 26) { beep(1100, 0.06); G.got++; return false; } return true; });
     if (L.keyAt && !G.key && Math.hypot(L.keyAt.x - h.x, L.keyAt.y - h.y) < 26) { G.key = true; beep(880, 0.1); toast(T('Got the key!', 'معاك المفتاح!'), 1200); }
     hud();
+    if (a.type === 'arena' && !L.enemies.some(function (e) { return e.alive; }) && G.wave < 3) { G.wave++; spawnWave(L, G.wave); toast(T('Wave ', 'الموجة ') + G.wave + ' / 3', 1300); }
+    if (a.type === 'arena') { var allDead = !L.enemies.some(function (e) { return e.alive; }); if (allDead && G.wave >= 3) { chapterDone(); return; } else { hud(); return; } }
     var goalOk = a.goal === 'stars' ? !L.stars.length : a.goal === 'clear' ? !L.enemies.some(function (e) { return e.alive; }) : true;
     if (L.boss && L.boss.alive) goalOk = false;
     if (L.keyAt && !G.key) goalOk = false;
@@ -423,6 +450,41 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   }
   function dmg(e) { e.hp--; beep(700, 0.05); if (e.hp <= 0) { e.alive = false; if (e.boss) toast(G.spec.villain + T(' is beaten!', ' اتهزم!'), 1500); } }
 
+  function draw2d() {
+    var W = innerWidth, Hh = innerHeight; cx.clearRect(0, 0, W, Hh);
+    if (!G || !G.L) { cx.fillStyle = '#020617'; cx.fillRect(0, 0, W, Hh); return; }
+    var L = G.L, h = G.hero, M = L.mood;
+    var gr = cx.createLinearGradient(0, 0, 0, Hh); gr.addColorStop(0, M[0]); gr.addColorStop(1, M[1]); cx.fillStyle = gr; cx.fillRect(0, 0, W, Hh);
+    var zoom = Math.min(1.25, Math.max(0.7, Math.min(W, Hh) / 560));
+    var camX = h.x - W / 2 / zoom, camY = h.y - Hh / 2 / zoom;
+    if (G.shake) { camX += (Math.random() - 0.5) * 8; camY += (Math.random() - 0.5) * 8; }
+    // background shapes (circles, squares, triangles) for depth
+    cx.globalAlpha = 0.12; for (var i = 0; i < 14; i++) { var bx = ((i * 197 - camX * 0.2) % (W + 200) + W + 200) % (W + 200) - 100, by = (i * 89) % Hh; cx.fillStyle = '#fff'; cx.beginPath(); if (i % 3 === 0) cx.arc(bx, by, 30 + i * 3, 0, 7); else if (i % 3 === 1) cx.rect(bx, by, 40 + i * 2, 40 + i * 2); else { cx.moveTo(bx, by - 30); cx.lineTo(bx + 30, by + 25); cx.lineTo(bx - 30, by + 25); } cx.fill(); } cx.globalAlpha = 1;
+    cx.save(); cx.scale(zoom, zoom); cx.translate(-camX, -camY);
+    var x0 = Math.max(0, Math.floor(camX / TS)), x1 = Math.min(L.W, Math.ceil((camX + W / zoom) / TS) + 1), y0 = Math.max(0, Math.floor(camY / TS)), y1 = Math.min(L.H, Math.ceil((camY + Hh / zoom) / TS) + 1);
+    for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) {
+      var v = L.m[y][x], X = x * TS, Y = y * TS;
+      if (v === 1) { cx.fillStyle = M[2]; cx.fillRect(X, Y, TS, TS); cx.fillStyle = 'rgba(255,255,255,.12)'; cx.fillRect(X, Y, TS, 5); cx.fillStyle = 'rgba(0,0,0,.18)'; cx.fillRect(X, Y + TS - 4, TS, 4); }
+      else if (v === 2) { cx.fillStyle = 'rgba(56,189,248,.55)'; cx.fillRect(X, Y, TS, TS); }
+      else if (v === 3) { cx.fillStyle = (Math.floor(performance.now() / 200) + x) % 2 ? '#f97316' : '#ef4444'; cx.fillRect(X, Y, TS, TS); }
+      else if (!L.plat) { cx.fillStyle = (x + y) % 2 ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.06)'; cx.fillRect(X, Y, TS, TS); }
+    }
+    // exit door
+    var ex = L.exit, open = !(L.keyAt && !G.key);
+    cx.fillStyle = open ? '#22c55e' : '#7f1d1d'; if (cx.roundRect) { cx.beginPath(); cx.roundRect(ex.x - 16, ex.y - 26, 32, 46, 8); cx.fill(); } else cx.fillRect(ex.x - 16, ex.y - 26, 32, 46);
+    cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(ex.x + 8, ex.y, 3, 0, 7); cx.fill();
+    if (L.keyAt && !G.key) { cx.strokeStyle = '#facc15'; cx.lineWidth = 4; cx.beginPath(); cx.arc(L.keyAt.x - 6, L.keyAt.y, 7, 0, 7); cx.moveTo(L.keyAt.x + 1, L.keyAt.y); cx.lineTo(L.keyAt.x + 16, L.keyAt.y); cx.stroke(); }
+    var tt = performance.now() / 300;
+    L.stars.forEach(function (s) { cx.save(); cx.translate(s.x, s.y + Math.sin(tt + s.x) * 3); cx.rotate(tt * 0.5); cx.fillStyle = '#facc15'; cx.beginPath(); for (var k = 0; k < 10; k++) { var r = k % 2 ? 6 : 13, a = k * Math.PI / 5; cx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } cx.closePath(); cx.fill(); cx.restore(); });
+    L.enemies.forEach(function (e) { if (!e.alive) return; shape(e.boss ? 'triangle' : G.ans.enemy, e.x, e.y, e.r, e.boss ? '#7f1d1d' : '#ef4444', 0); if (e.boss) { cx.fillStyle = '#fff'; cx.font = 'bold 13px system-ui'; cx.textAlign = 'center'; cx.fillText(G.spec.villain + ' ' + '♥'.repeat(e.hp), e.x, e.y - e.r - 10); } });
+    G.shots.forEach(function (s) { cx.fillStyle = '#fde047'; cx.beginPath(); cx.arc(s.x, s.y, 6, 0, 7); cx.fill(); });
+    if (!h.hid) { cx.globalAlpha = G.inv > 0 && Math.floor(G.inv * 10) % 2 ? 0.4 : 1; shape(G.ans.shape, h.x, h.y, h.r, G.ans.color, L.plat ? 0 : 0); cx.globalAlpha = 1; }
+    else { cx.strokeStyle = 'rgba(255,255,255,.5)'; cx.setLineDash([4, 4]); cx.beginPath(); cx.arc(h.x, h.y, h.r + 4, 0, 7); cx.stroke(); cx.setLineDash([]); }
+    if (G.swing) { cx.strokeStyle = 'rgba(255,255,255,.8)'; cx.lineWidth = 6; cx.beginPath(); cx.arc(h.x, h.y, 50, h.face > 0 ? -1 : Math.PI - 1, h.face > 0 ? 1 : Math.PI + 1); cx.stroke(); }
+    cx.fillStyle = '#fff'; cx.font = 'bold 12px system-ui'; cx.textAlign = 'center'; cx.fillText(G.spec.hero, h.x, h.y - h.r - 8);
+    cx.restore();
+    if (L.feats.indexOf('night') >= 0 || L.feats.indexOf('space') >= 0) { var rg = cx.createRadialGradient(W / 2, Hh / 2, 80, W / 2, Hh / 2, Math.max(W, Hh) * 0.6); rg.addColorStop(0, 'rgba(0,0,0,0)'); rg.addColorStop(1, 'rgba(0,0,0,.7)'); cx.fillStyle = rg; cx.fillRect(0, 0, W, Hh); }
+  }
   // ---------- 3D view (three.js) — top view / behind / far for adventure, side / angled for platform ----------
   var THREE = null, R = null;
   var CAMS_TOP = ['near', 'top', 'far'], CAMS_SIDE = ['side', 'angled', 'close'];
@@ -479,7 +541,13 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   function ent(o, make) { var m = R.ents.get(o); if (!m) { m = make(); R.ents.set(o, m); R.world.add(m); } return m; }
   function cycleCam() { R && (R.camI = (R.camI + 1) % 3); toast(T('Camera: ', 'الكاميرا: ') + (G.L.plat ? [T('side', 'جنب'), T('angled', 'مايلة'), T('close', 'قريبة')] : [T('behind', 'ورا'), T('top', 'من فوق'), T('far', 'بعيدة')])[R.camI], 900); }
   function draw() {
-    if (!THREE) return; initGL(); if (!G || !G.L) { R.r.render(new THREE.Scene(), R.cam); return; }
+    var flat = G && G.ans.view === '2d';
+    cv.style.display = flat || !THREE ? 'block' : 'none'; if (R) R.r.domElement.style.display = flat ? 'none' : 'block';
+    if (flat || !THREE) return draw2d();
+    draw3d();
+  }
+  function draw3d() {
+    initGL(); if (!G || !G.L) { R.r.render(new THREE.Scene(), R.cam); return; }
     if (R.built !== G.L) build3();
     var L = G.L, h = G.hero, t = performance.now() / 1000, hp = P(h.x, h.y, L.plat ? 0 : 0.75);
     R.hero.visible = !h.hid; R.hero.position.copy(hp); R.hero.rotation.y = L.plat ? (h.face > 0 ? Math.PI / 2 : -Math.PI / 2) : Math.atan2(h.face, 0.0001);
