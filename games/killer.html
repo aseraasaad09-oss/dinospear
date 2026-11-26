@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#000000">
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V29" defer></script>
+<script src="../assets/js/rotate.js?v=V30" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
@@ -183,7 +183,7 @@ scene.add(camera);
 setupJoystick(); bindButton('bAtk', 'KeyF'); bindButton('bUse', 'KeyE'); bindButton('bRun', 'Run');
 { // floor, ceiling, walls
   const fc = document.createElement('canvas'); fc.width = fc.height = 128; const g = fc.getContext('2d');
-  g.fillStyle = '#3f4652'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#2a2f38'; g.lineWidth = 6; g.strokeRect(0, 0, 128, 128);
+  g.fillStyle = PART === 2 ? '#27272a' : '#3f4652'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#2a2f38'; g.lineWidth = 6; g.strokeRect(0, 0, 128, 128);
   g.fillStyle = '#4b5563'; [[20, 20], [108, 20], [20, 108], [108, 108]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 4, 0, 7); g.fill(); });
   const ft = new THREE.CanvasTexture(fc); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(Wd * 2, H * 2); ft.colorSpace = THREE.SRGBColorSpace;
   const fl = new THREE.Mesh(new THREE.PlaneGeometry(Wd * C, H * C), new THREE.MeshStandardMaterial({ map: ft, roughness: 0.6, metalness: 0.3 }));
@@ -191,7 +191,7 @@ setupJoystick(); bindButton('bAtk', 'KeyF'); bindButton('bUse', 'KeyE'); bindBut
   const ce = new THREE.Mesh(new THREE.PlaneGeometry(Wd * C, H * C), mat(0x1f2329)); ce.rotation.x = Math.PI / 2; ce.position.y = 4; scene.add(ce);
   const wc = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wc.push([c, r]); }));
   const wcan = document.createElement('canvas'); wcan.width = 128; wcan.height = 128; const w = wcan.getContext('2d');
-  w.fillStyle = '#d4d8de'; w.fillRect(0, 0, 128, 128); w.fillStyle = '#b8bec7'; w.fillRect(0, 96, 128, 32); w.fillStyle = '#7c3aed'; w.fillRect(0, 92, 128, 4); w.strokeStyle = '#aab1bb'; w.lineWidth = 3; w.strokeRect(2, 2, 124, 90);
+  w.fillStyle = PART === 2 ? '#9a3412' : '#d4d8de'; w.fillRect(0, 0, 128, 128); if (PART === 2) { w.strokeStyle = '#7c2d12'; w.lineWidth = 3; for (let y = 0; y < 96; y += 16) { w.beginPath(); w.moveTo(0, y); w.lineTo(128, y); w.stroke(); for (let x = (y / 16) % 2 ? 0 : 16; x < 128; x += 32) { w.beginPath(); w.moveTo(x, y); w.lineTo(x, y + 16); w.stroke(); } } } w.fillStyle = PART === 2 ? '#44403c' : '#b8bec7'; w.fillRect(0, 96, 128, 32); w.fillStyle = PART === 2 ? '#facc15' : '#7c3aed'; w.fillRect(0, 92, 128, 4); w.strokeStyle = '#aab1bb'; w.lineWidth = 3; w.strokeRect(2, 2, 124, 90);
   const wt = new THREE.CanvasTexture(wcan); wt.colorSpace = THREE.SRGBColorSpace;
   const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(C, 4, C), new THREE.MeshStandardMaterial({ map: wt, roughness: 0.7 }), wc.length);
   const m4 = new THREE.Matrix4(); wc.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 2, p.z); inst.setMatrixAt(i, m4); }); scene.add(inst);
@@ -200,10 +200,10 @@ setupJoystick(); bindButton('bAtk', 'KeyF'); bindButton('bUse', 'KeyE'); bindBut
 const lamps = [];
 for (let r = 1; r < H - 1; r += 2) for (let c = 1; c < Wd - 1; c += 3) {
   if (!free(c, r)) continue; const p = cell(c, r);
-  const pan = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 0.5), new THREE.MeshBasicMaterial({ color: 0xe0e7ff })); pan.position.set(p.x, 3.95, p.z); scene.add(pan);
+  const pan = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 0.5), new THREE.MeshBasicMaterial({ color: PART === 2 ? 0xfde68a : 0xe0e7ff })); pan.position.set(p.x, 3.95, p.z); scene.add(pan);
   lamps.push({ pan, p, flick: Math.random() < 0.3 });
 }
-const lights = [0, 1, 2, 3, 4, 5].map(() => { const l = new THREE.PointLight(0xc7d2fe, 14, 13, 1.6); l.position.y = 3.6; scene.add(l); return l; });
+const lights = [0, 1, 2, 3, 4, 5].map(() => { const l = new THREE.PointLight(PART === 2 ? 0xfcd34d : 0xc7d2fe, 14, 13, 1.6); l.position.y = 3.6; scene.add(l); return l; });
 // the hangar door + red warning
 const hangar = spots('R');
 const GP = cell(12, 14);
@@ -660,6 +660,6 @@ requestAnimationFrame(loop);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V29" defer></script>
+<script src="../assets/js/game_admin.js?v=V30" defer></script>
 </body>
 </html>
