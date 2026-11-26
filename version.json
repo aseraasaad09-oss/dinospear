@@ -1,10 +1,10 @@
 {
-  "v": "V25",
+  "v": "V26",
   "date": "2026-11-26",
   "ar": [
-    "إصلاح: الحيوانات الأليفة بقت بتظهر في المدينة (زرار G)، ومسافة الرؤية بتشتغل طول الوقت"
+    "كل صفحات البرنامج بقت بتاخد آخر نسخة من ملفاتها على طول — مفيش ملفات قديمة عالقة"
   ],
   "en": [
-    "Fix: pets now show in the town (key G), and view distance always applies"
+    "Every page now always gets the newest copy of its files — no stuck old files"
   ]
 }
