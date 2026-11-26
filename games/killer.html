@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#000000">
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V37" defer></script>
+<script src="../assets/js/rotate.js?v=V38" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
@@ -356,7 +356,7 @@ function netStart(code) {
   ch.on('presence', { event: 'sync' }, () => { const st = ch.presenceState(); net.members = Object.keys(st).map(k => ({ id: k, n: st[k][0].n, at: st[k][0].at })).sort((a, b) => a.at - b.at); net.host = net.members[0] && net.members[0].id === myId; coopDraw(); });
   ch.subscribe(st => { if (st === 'SUBSCRIBED') ch.track({ n: myName(), at: Date.now() }); });
 }
-function myName() { try { return (localStorage.getItem('ds_name') || '').slice(0, 12) || T('Player', 'لاعب') + myId.slice(-2); } catch (e) { return 'Player'; } }
+function myName() { try { let n = localStorage.getItem('ds_name') || ''; if (!n) { const k = Object.keys(localStorage).find(x => /^sb-.*-auth-token$/.test(x)); const j = k && JSON.parse(localStorage.getItem(k)); n = (j && (j.user || (j.currentSession || {}).user) || {}).user_metadata?.username || ''; } return n.slice(0, 12) || T('Player ', 'لاعب ') + myId.slice(-2).toUpperCase(); } catch (e) { return 'Player'; } }
 function coopDraw() { if (!net) return; $('cRoom').textContent = net.code; $('cList').textContent = net.members.slice(0, 4).map((m, i) => (i ? '' : '👑 ') + m.n).join(' · ');
   $('cStart').hidden = !net.host || net.members.length < 2 || net.members.length > 4; $('cMsg').textContent = net.members.length > 4 ? T('The room is full (4).', 'الأوضة مليانة (4).') : net.host ? (net.members.length < 2 ? T('Send the code to your friends…', 'ابعت الكود لصحابك…') : T('Ready!', 'جاهزين!')) : T('Waiting for the room owner…', 'مستنيين صاحب الأوضة…'); }
 $('cMake').onclick = () => netStart(Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random() * 24 | 0]).join(''));
@@ -660,6 +660,6 @@ requestAnimationFrame(loop);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V37" defer></script>
+<script src="../assets/js/game_admin.js?v=V38" defer></script>
 </body>
 </html>

@@ -1,16 +1,12 @@
 {
-  "v": "V37",
+  "v": "V38",
   "date": "2026-11-26",
   "ar": [
-    "القايمة على الموبايل بقت كلها باينة (مش هتتحبس في مكان تاني)",
-    "SILENT SLIPPER: الفرن الحديد والمدخنة القديمة بقوا ماكينة واحدة، والكاميرا بقت ورا اللاعب مش من فوق",
-    "في القايمة «🆕 اللي نزل»: كل النسخ وكل حاجة نزلت",
-    "الألعاب مكتوب عليها «نسخة تجريبية»"
+    "SILENT SLIPPER أونلاين: اعمل أوضة وابعت الكود لصحابك (2–4) وتشوفوا بعض على الترابيزة وتتسابقوا مين يضرب أكتر",
+    "في الأونلاين بيظهر اسم حسابك بدل «لاعب m2»"
   ],
   "en": [
-    "The phone menu now shows every place (no more getting stuck)",
-    "SILENT SLIPPER: the iron oven and old chimney are now one machine, camera behind the player, not from the top",
-    "New menu item «🆕 What came out»: every version and what it added",
-    "Games are labelled «Trial version»"
+    "SILENT SLIPPER online: make a room, send the code to 2–4 friends, see each other on the table and race for the most hits",
+    "Online rooms show your account name"
   ]
 }
