@@ -218,11 +218,30 @@ addEventListener('wheel', e => { view.zoom = clampZoom(view.zoom * (e.deltaY > 0
   addEventListener('pointerup', up); addEventListener('pointercancel', up);
 }
 
-// ---------- camera follow (third person, a bit above) ----------
+// ---------- camera follow (third person) — V02: 3 views you can switch: normal / close / from the top (V key or 🎥 button) ----------
+view.mode = store.get('ds_cam', 0);
+const CAM_NAMES = [['Normal', 'عادي'], ['Close', 'قريب'], ['Top', 'من فوق']];
+let camBtn = null;
+export function cycleView() {
+  view.mode = (view.mode + 1) % 3; store.set('ds_cam', view.mode);
+  if (camBtn) camBtn.textContent = '🎥 ' + T(CAM_NAMES[view.mode][0], CAM_NAMES[view.mode][1]);
+}
+function camButton() {
+  if (camBtn || !document.body) return;
+  camBtn = document.createElement('button'); camBtn.type = 'button'; camBtn.className = 'ds-cam';
+  camBtn.textContent = '🎥 ' + T(CAM_NAMES[view.mode][0], CAM_NAMES[view.mode][1]);
+  camBtn.style.cssText = 'position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:40;border:0;border-radius:999px;padding:7px 14px;font:700 13px system-ui;background:rgba(15,23,42,.72);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer';
+  camBtn.onclick = e => { e.stopPropagation(); cycleView(); };
+  document.body.appendChild(camBtn);
+  addEventListener('keydown', e => { if ((e.key === 'v' || e.key === 'V') && !/INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName)) cycleView(); });
+}
 export function follow(camera, target, dt, height, back) {
-  const z = view.zoom, want = new THREE.Vector3(target.x, (height || 9) * z, target.z + (back || 8) * z);
+  camButton();
+  const z = view.zoom, m = view.mode || 0;
+  const h = (height || 9) * z * (m === 1 ? 0.42 : m === 2 ? 1.9 : 1), b = (back || 8) * z * (m === 1 ? 0.62 : m === 2 ? 0.08 : 1);
+  const want = new THREE.Vector3(target.x, h, target.z + b);
   camera.position.lerp(want, 1 - Math.pow(0.001, dt));
-  camera.lookAt(target.x, 0.8, target.z - 1);
+  camera.lookAt(target.x, m === 1 ? 1.2 : 0.8, target.z - (m === 1 ? 4 : 1));
 }
 
 function charFromModel(c) {
