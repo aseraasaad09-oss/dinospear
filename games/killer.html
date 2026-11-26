@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#000000">
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V28" defer></script>
+<script src="../assets/js/rotate.js?v=V29" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
@@ -81,6 +81,12 @@
    <button class="big sec" id="mNew" type="button" data-en="New game (with the film)" data-ar="لعبة جديدة (بالفيلم)"></button>
    <button class="big" id="mPart2" type="button" hidden data-en="Chapter 2 — Earth" data-ar="الفصل 2 — الأرض"></button>
    <button class="big sec" id="mPart1" type="button" hidden data-en="Chapter 1 — Mars" data-ar="الفصل 1 — المريخ"></button>
+  </div>
+  <div id="coop" hidden style="margin-top:12px;background:rgba(255,255,255,.06);border-radius:16px;padding:12px">
+   <b data-en="Play online together (2–4)" data-ar="العبوا أونلاين سوا (2–4)"></b>
+   <div class="row"><button class="big" id="cMake" type="button" data-en="Make a room" data-ar="اعمل أوضة"></button><input id="cCode" maxlength="4" placeholder="ABCD" style="width:110px;text-align:center;font:800 18px system-ui;letter-spacing:3px;text-transform:uppercase;border-radius:12px;border:2px solid #334155;background:#0f172a;color:#fff"><button class="big sec" id="cJoin" type="button" data-en="Join" data-ar="ادخل"></button></div>
+   <h2 id="cRoom" style="letter-spacing:6px;margin:6px 0"></h2><p id="cList" style="margin:4px 0"></p><p id="cMsg" style="opacity:.8;margin:4px 0"></p>
+   <div class="row"><button class="big" id="cStart" type="button" hidden data-en="Start together" data-ar="ابدأوا سوا"></button></div>
   </div>
   <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
  </div>
@@ -333,7 +339,35 @@ function questStep(i) { const q = quest(Math.floor(i / 10)); return q.steps[Math
 function nextIndex(i) { const q = Math.floor(i / 10), s2 = i % 10; return s2 + 1 < quest(q).steps.length ? i + 1 : (q + 1) * 10; }
 const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 4, 14, 1, true), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
 beacon.position.y = 2; scene.add(beacon);
+// ---------- online together (Chapter 2): friends see each other and share the quests ----------
+let net = null, remoteApply = false; const mates = new Map();
+const myId = 'k' + Math.random().toString(36).slice(2, 8);
+function mateMesh(name) { const m = model('creature') || new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 1.4), mat(0x1f2937)); const g = new THREE.Group(); g.add(m);
+  const c = document.createElement('canvas'); c.width = 160; c.height = 36; const x = c.getContext('2d'); x.font = 'bold 22px system-ui'; x.textAlign = 'center'; x.fillStyle = '#bef264'; x.fillText(name, 80, 26);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false })); sp.scale.set(2, 0.45, 1); sp.position.y = 2; g.add(sp); scene.add(g); return g; }
+function netStart(code) {
+  if (!window.supabase || !window.ASER_KEY) return;
+  const sb = window.supabase.createClient('https://djpgranztcqxyfehynux.supabase.co', window.ASER_KEY);
+  const ch = sb.channel('kw-' + code, { config: { broadcast: { self: false }, presence: { key: myId } } });
+  net = { code, ch, members: [], host: false, acc: 0, send: (e, p) => ch.send({ type: 'broadcast', event: e, payload: p }) };
+  ch.on('broadcast', { event: 'p' }, ({ payload: d }) => { let m = mates.get(d.id); if (!m) { m = { g: mateMesh(d.n), x: d.x, z: d.z, yaw: d.yaw }; mates.set(d.id, m); } m.tx = d.x; m.tz = d.z; m.yaw = d.yaw; m.seen = performance.now(); });
+  ch.on('broadcast', { event: 'step' }, ({ payload: d }) => { if (M && d.i > M.i && state === 'play') { remoteApply = true; if (d.i >= TOTAL) openGate(); setupMission(d.i); save(); remoteApply = false; toast(T('Your friend finished a step!', 'صاحبك خلّص خطوة!'), 1500); } });
+  ch.on('broadcast', { event: 'start' }, ({ payload: d }) => { store.set(SAVE, { m: d.m, x: bedP.x + 1.6, z: bedP.z, yaw: Math.PI / 2 }); begin(true); });
+  ch.on('presence', { event: 'sync' }, () => { const st = ch.presenceState(); net.members = Object.keys(st).map(k => ({ id: k, n: st[k][0].n, at: st[k][0].at })).sort((a, b) => a.at - b.at); net.host = net.members[0] && net.members[0].id === myId; coopDraw(); });
+  ch.subscribe(st => { if (st === 'SUBSCRIBED') ch.track({ n: myName(), at: Date.now() }); });
+}
+function myName() { try { return (localStorage.getItem('ds_name') || '').slice(0, 12) || T('Player', 'لاعب') + myId.slice(-2); } catch (e) { return 'Player'; } }
+function coopDraw() { if (!net) return; $('cRoom').textContent = net.code; $('cList').textContent = net.members.slice(0, 4).map((m, i) => (i ? '' : '👑 ') + m.n).join(' · ');
+  $('cStart').hidden = !net.host || net.members.length < 2 || net.members.length > 4; $('cMsg').textContent = net.members.length > 4 ? T('The room is full (4).', 'الأوضة مليانة (4).') : net.host ? (net.members.length < 2 ? T('Send the code to your friends…', 'ابعت الكود لصحابك…') : T('Ready!', 'جاهزين!')) : T('Waiting for the room owner…', 'مستنيين صاحب الأوضة…'); }
+$('cMake').onclick = () => netStart(Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random() * 24 | 0]).join(''));
+$('cJoin').onclick = () => { const c = $('cCode').value.trim().toUpperCase(); if (c.length === 4) netStart(c); };
+$('cStart').onclick = () => { const sv = load(), m = sv ? sv.m : 0; net.send('start', { m }); store.set(SAVE, { m, x: bedP.x + 1.6, z: bedP.z, yaw: Math.PI / 2 }); begin(true); };
+function netTick(dt) {
+  if (!net) return; net.acc += dt; if (net.acc > 0.1) { net.acc = 0; net.send('p', { id: myId, n: myName(), x: P.pos.x, z: P.pos.z, yaw: P.yaw }); }
+  const now = performance.now(); mates.forEach((m, id) => { if (now - m.seen > 6000) { scene.remove(m.g); mates.delete(id); return; } m.x += (m.tx - m.x) * 0.2; m.z += (m.tz - m.z) * 0.2; m.g.position.set(m.x, 0, m.z); m.g.rotation.y = m.yaw + Math.PI; });
+}
 function setupMission(i) {
+  if (net && !remoteApply && M && i > M.i) net.send('step', { i });
   mObjs.forEach(o => scene.remove(o.mesh)); mObjs = []; keys.filter(k => k.mission).forEach(k => { scene.remove(k.m.g); k.alive = false; k.gone = true; }); keys = keys.filter(k => !k.gone); holdT = 0;
   if (i >= TOTAL) { M = { i, type: 'escape', x: GP.x, z: GP.z + 3 }; beacon.position.set(M.x, 2, M.z); hudMission(); return; }
   const type = PART === 2 ? questStep(i) : (seed = 777 + i * 131, i < 2 ? ['reach', 'term'][i] : TYPES[Math.floor(rnd() * 5)]); seed = 777 + i * 131;
@@ -414,6 +448,7 @@ function jumpScare() {
 }
 
 function step(dt) {
+  netTick(dt);
   const inp = readInput();
   P.four = inp.run && Math.hypot(inp.x, inp.z) > 0.1;
   P.eye += ((P.four ? EYE4 : EYE) - P.eye) * Math.min(1, dt * 8);
@@ -531,7 +566,7 @@ function showMenu() {
   $('hud').hidden = true; $('cross').hidden = true; $('end').hidden = true; $('story').hidden = true; $('menu').hidden = false;
   const sv = load(); $('mCont').hidden = !sv;
   $('mProg').textContent = PART === 2 ? T('Chapter 2 — Earth', 'الفصل 2 — الأرض') + (sv ? ' · ' + T('quest ', 'كويست ') + Math.min(100, Math.floor(sv.m / 10) + 1) + '/100' : '') : (sv ? T('Saved: mission ' + Math.min(TOTAL, sv.m + 1) + ' of 50', 'متحفظ: مهمة ' + Math.min(TOTAL, sv.m + 1) + ' من 50') : '');
-  $('mPart2').hidden = PART === 2 || !store.get('kw_won', false); $('mPart1').hidden = PART !== 2;
+  $('mPart2').hidden = PART === 2 || !store.get('kw_won', false); $('mPart1').hidden = PART !== 2; $('coop').hidden = PART !== 2;
   if (store.get('kw_won', false)) $('mProg').textContent += ' ' + T('· You escaped Mars!', '· هربت من المريخ!');
 }
 // the wake-up film in 3D: black → "10 years later" → eyes open → look at your hands → stand up tall → the mirror
@@ -625,6 +660,6 @@ requestAnimationFrame(loop);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V28" defer></script>
+<script src="../assets/js/game_admin.js?v=V29" defer></script>
 </body>
 </html>
