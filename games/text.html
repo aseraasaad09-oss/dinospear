@@ -7,7 +7,7 @@
 <title>THE TEXT — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script src="../assets/js/rotate.js?v=V46" data-noask defer></script>
+<script src="../assets/js/rotate.js?v=V47" data-noask defer></script>
 <style>
 /* THE TEXT V01 — write a story, answer a few questions, get your own game */
 body{touch-action:manipulation;overflow:auto}
@@ -238,10 +238,28 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     { k: 'w_color2', t: 1, en: 'Enemy colour in words', ar: 'لون العدو بالكلام' }, { k: 'w_mood', t: 1, en: 'Mood (scary, funny, calm…)', ar: 'الإحساس (مرعب، مضحك، هادي…)' }, { k: 'w_time', t: 1, en: 'Time word (night, morning…)', ar: 'كلمة عن الوقت (ليل، صبح…)' },
     { k: 'w_extra1', t: 1, en: 'One more thing in the world', ar: 'حاجة كمان في العالم' }, { k: 'w_extra2', t: 1, en: 'Another thing', ar: 'حاجة تانية' }, { k: 'w_extra3', t: 1, en: 'Another thing', ar: 'حاجة تالتة' }, { k: 'w_goal', t: 1, en: 'What must the hero do in the end?', ar: 'البطل لازم يعمل إيه في الآخر؟' }
   ];
-  var draft = null, qOpen = { 'Hero': false };
+  var draft = null, qOpen = { 'Hero': false }, sqCache = null;
+  import('./tt_world.js').then(function (m) { window.TT_SQ = m.storyQuestions; if (!$('pAsk').hidden) renderQs(); }).catch(function () {});
   function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { genre: 'story', view: '3d', type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'auto', map: 'auto', time: 'auto', weather: 'auto', cam: '3rd', level: '2', goal: 'stars', hand: 'r', joy: 'm', keys: 'both', dash: 'yes', djump: 'no', about: '' }, v: 1, remote: null }; }
   function renderQs() {
     var box = $('qs'), keepY = scrollY; box.innerHTML = ''; var cur = box, nq = 0;
+    // V05: first, the questions made from YOUR story — pick an answer or write your own
+    if (window.TT_SQ && draft.story) {
+      var key = draft.story + '|' + draft.title; if (!sqCache || sqCache.key !== key) sqCache = { key: key, list: window.TT_SQ(draft.story, draft.title, draft.ans) };
+      var sd = document.createElement('details'); sd.className = 'qsec'; sd.open = qOpen.story !== false; sd.ontoggle = function () { qOpen.story = sd.open; };
+      var ss = document.createElement('summary'); ss.textContent = T('🔎 Questions from your story (' + sqCache.list.length + ')', '🔎 أسئلة من قصتك (' + sqCache.list.length + ')'); sd.appendChild(ss);
+      sqCache.list.forEach(function (q, qi) {
+        var d = document.createElement('div'); d.className = 'q'; var h = document.createElement('h3'); h.textContent = T(q.en, q.ar); d.appendChild(h);
+        var o = document.createElement('div'); o.className = 'opts';
+        q.o.forEach(function (op) { var b = document.createElement('button'); b.type = 'button'; b.textContent = T(op[1], op[2]); b.classList.toggle('on', draft.ans[q.k] === op[0]); b.onclick = function () { draft.ans[q.k] = op[0]; renderQs(); }; o.appendChild(b); });
+        d.appendChild(o);
+        var own = document.createElement('input'); own.className = 'qin'; own.maxLength = 60; own.dir = 'auto'; own.placeholder = T('✍️ …or write your own answer', '✍️ …أو اكتب إجابتك انت');
+        var isOwn = draft.ans[q.k] && !q.o.some(function (op) { return op[0] === draft.ans[q.k]; }); if (isOwn) own.value = draft.ans[q.k];
+        own.oninput = function () { var v = own.value.replace(/[<>]/g, ''); draft.ans[q.k] = v; own.classList.toggle('bad', findLocal(v).length > 0); o.querySelectorAll('button').forEach(function (b) { b.classList.remove('on'); }); };
+        d.appendChild(own); sd.appendChild(d);
+      });
+      box.appendChild(sd);
+    }
     var cnt = document.createElement('p'); cnt.className = 'lead'; cnt.textContent = T('100 questions — open any group. The boxes are your own words: they change the places, enemies, names and lines.', '100 سؤال — افتح أي مجموعة. المربعات دي كلامك انت: بتغيّر الأماكن والأعداء والأسامي والجمل.'); box.appendChild(cnt);
     Q.forEach(function (q) {
       if (q.sec) { var dt = document.createElement('details'); dt.className = 'qsec'; dt.open = !!qOpen[q.sec[0]]; dt.ontoggle = function () { qOpen[q.sec[0]] = dt.open; }; var sm = document.createElement('summary'); sm.textContent = T(q.sec[0], q.sec[1]); dt.appendChild(sm); box.appendChild(dt); cur = dt; return; }
@@ -758,6 +776,6 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   window.DS_GAME = { name: 'THE TEXT', cmds: [['skip', 'Finish this chapter', 'خلّص الفصل ده'], ['clear', 'Remove all enemies', 'شيل كل الأعداء']], run: function (c) { if (!G || !G.L) return; if (c === 'skip') chapterDone(); if (c === 'clear') G.L.enemies.forEach(function (e) { e.alive = false; }); } };
 })();
 </script>
-<script src="../assets/js/game_admin.js?v=V46" defer></script>
+<script src="../assets/js/game_admin.js?v=V47" defer></script>
 </body>
 </html>

@@ -87,6 +87,30 @@ export function analyse(story, title, ans) {
   return { v: 2, hero, friends, foe, chapters, theme: mainTheme };
 }
 
+
+// ---------- V04: questions made from the story (what the game needs to know, with answers taken from the story) ----------
+const PLACE_NAMES = { forest: ['Forest', 'غابة'], desert: ['Desert', 'صحرا'], ice: ['Snow land', 'أرض التلج'], space: ['Space', 'الفضاء'], city: ['City', 'مدينة'], sea: ['Sea and islands', 'بحر وجزر'], volcano: ['Volcano', 'بركان'], castle: ['Castle', 'قلعة'], haunted: ['Haunted place', 'مكان مسكون'], cave: ['Cave', 'كهف'], farm: ['Farm', 'مزرعة'] };
+const FOE_NAMES = { robot: ['Robots', 'روبوتات'], ghost: ['Ghosts', 'أشباح'], dragon: ['A dragon', 'تنين'], creature: ['Monsters', 'وحوش'], soldier: ['Guards / thieves', 'حراس / حرامية'] };
+export function storyQuestions(story, title, ans) {
+  const a = analyse(story, title, Object.assign({}, ans, { n_hero: '', n_friend1: '', n_friend2: '', n_friend3: '' })), out = [], nm = names(String(story || ''));
+  const opt = (v, en, ar) => [v, en, ar || en];
+  out.push({ k: 'n_hero', en: 'Who is the hero of your story?', ar: 'مين البطل في قصتك؟', o: (nm.length ? nm.slice(0, 3) : [title || 'Hero']).map(n => opt(n, n)) });
+  if (nm.length > 1) out.push({ k: 'n_friend1', en: 'Who is the hero\'s friend?', ar: 'مين صاحب البطل؟', o: nm.slice(1, 4).map(n => opt(n, n)) });
+  const foes = Object.keys(FOES).filter(k => FOES[k].test(story)); const fl = (foes.length ? foes : ['creature', 'robot', 'ghost']).concat(Object.keys(FOE_NAMES)).filter((x, i, arr) => arr.indexOf(x) === i).slice(0, 4);
+  out.push({ k: 'w_enemy1', en: 'Who are the bad guys?', ar: 'مين الأشرار؟', o: fl.map(f => opt(FOE_NAMES[f][1] + ' ' + f, FOE_NAMES[f][0], FOE_NAMES[f][1])) });
+  a.chapters.forEach((c, i) => {
+    if (i > 4) return;
+    const first = c.theme, others = Object.keys(PLACE_NAMES).filter(t => t !== first).sort(() => 0.5 - Math.random()).slice(0, 2);
+    out.push({ k: 'w_place' + (i + 1), en: 'Chapter ' + (i + 1) + ': where does it happen? (“' + c.text.slice(0, 40) + '…”)', ar: 'الفصل ' + (i + 1) + ': بيحصل فين؟ («' + c.text.slice(0, 40) + '…»)', o: [first].concat(others).map(t => opt(PLACE_NAMES[t][1] + ' ' + t, PLACE_NAMES[t][0], PLACE_NAMES[t][1])) });
+    const q = c.quests.find(x => x.k === 'find'); if (q && i === 0) out.push({ k: 'n_item', en: 'What does the hero look for?', ar: 'البطل بيدوّر على إيه؟', o: [opt(T(q.label[0], q.label[1]), q.label[0], q.label[1]), opt(T('Treasure', 'الكنز'), 'Treasure', 'الكنز'), opt(T('Magic stone', 'الحجر السحري'), 'Magic stone', 'الحجر السحري')] });
+  });
+  const last = a.chapters[a.chapters.length - 1] || { quests: [] };
+  out.push({ k: 'w_goal', en: 'How does the story end?', ar: 'القصة بتخلص إزاي؟', o: [opt('boss ' + T('beat the boss', 'يهزم الزعيم'), 'Beat the boss', 'يهزم الزعيم'), opt('rescue ' + T('save a friend', 'ينقذ صاحبه'), 'Save a friend', 'ينقذ صاحبه'), opt('escape ' + T('escape', 'يهرب'), 'Escape', 'يهرب'), opt('treasure ' + T('find the treasure', 'يلاقي الكنز'), 'Find the treasure', 'يلاقي الكنز')] });
+  out.push({ k: 'world', en: 'Is the game a straight road or an open world?', ar: 'اللعبة طريق واحد ولا عالم مفتوح؟', o: [opt('linear', 'Straight road — one chapter after the other', 'طريق واحد — فصل ورا فصل'), opt('open', 'Open world — go anywhere, quests all around', 'عالم مفتوح — روح أي حتة، والمهمات في كل حتة')] });
+  out.push({ k: 'time', en: 'Your story feels like…', ar: 'قصتك إحساسها…', o: [opt(a.chapters.some(c => c.night) ? 'night' : 'day', a.chapters.some(c => c.night) ? 'Night (from your story)' : 'Day (from your story)', a.chapters.some(c => c.night) ? 'ليل (من قصتك)' : 'نهار (من قصتك)'), opt('sunset', 'Sunset', 'غروب'), opt('auto', 'Changes with each chapter', 'بيتغيّر مع كل فصل')] });
+  return out;
+}
+
 // ---------- 2) the game ----------
 const KIND_MODEL = { robot: 'robot', ghost: 'ghost', dragon: 'dragon', creature: 'creature', soldier: 'person' };
 const ALL_MODELS = ['person', 'tree', 'rock', 'bush', 'key', 'creature', 'dog', 'cat', 'dinopet', 'crate', 'house', 'tower', 'car', 'boat', 'rocket', 'robot', 'dragon', 'ghost', 'chest', 'sword', 'cactus', 'palm', 'snowman', 'mushroom', 'crystal', 'star', 'coin', 'portal'];
@@ -223,7 +247,7 @@ export async function playWorld(g, opts) {
     if (night) for (let k = 0; k < 4; k++) { const p = new THREE.PointLight(0xffd27a, 30, 22); p.position.set((R() - 0.5) * 60, 4, (R() - 0.5) * 60); scene.add(p); }
     // map shape: from the choice, or from the story
     const auto = { sea: 'island', city: 'city', castle: 'path', cave: 'maze', haunted: 'maze', volcano: 'levels', space: 'island', desert: 'path', ice: 'island', forest: 'path', farm: 'island' }[ch.theme] || 'island';
-    const shape = ans.map && ans.map !== 'auto' ? ans.map : (ans.type === 'plat' ? 'levels' : ans.type === 'arena' ? 'arena' : ans.type === 'sneak' ? 'maze' : auto);
+    const shape = ans.map && ans.map !== 'auto' ? ans.map : ans.world === 'open' ? 'island' : ans.world === 'linear' ? 'path' : (ans.type === 'plat' ? 'levels' : ans.type === 'arena' ? 'arena' : ans.type === 'sneak' ? 'maze' : auto);
     H.shape = shape;
     const gTex = groundTex(th.ground, ch.theme);
     groundAt = () => 0; bounds = 60;
@@ -231,11 +255,12 @@ export async function playWorld(g, opts) {
     const start = new THREE.Vector3(0, 0, 0); let goal = new THREE.Vector3(0, 0, -40);
     const spots = [];   // free places for quests
     if (shape === 'island') {
-      bounds = 52; addGround(new THREE.CircleGeometry(bounds, 64));
+      const OW = ans.world === 'open' ? 2.2 : 1;   // open world: a much bigger island, quests spread all over
+      bounds = 52 * OW; addGround(new THREE.CircleGeometry(bounds, 96));
       const water = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: ch.theme === 'volcano' ? 0xff4d00 : ch.theme === 'space' ? 0x1e1b4b : 0x2b8fd6, roughness: 0.2, metalness: 0.1, emissive: ch.theme === 'volcano' ? 0x7a1800 : 0 }));
       water.rotation.x = -Math.PI / 2; water.position.y = -0.35; scene.add(water); H.water = water;
-      start.set(0, 0, 36); goal.set(0, 0, -38);
-      for (let k = 0; k < 28; k++) { const a = R() * 6.28, d = 8 + R() * 38; spots.push(new THREE.Vector3(Math.cos(a) * d, 0, Math.sin(a) * d)); }
+      start.set(0, 0, 36 * OW); goal.set(0, 0, -38 * OW);
+      for (let k = 0; k < 28 * OW * OW; k++) { const a = R() * 6.28, d = 8 + R() * 38 * OW; spots.push(new THREE.Vector3(Math.cos(a) * d, 0, Math.sin(a) * d)); }
     } else if (shape === 'path' || shape === 'levels') {
       const len = shape === 'levels' ? 120 : 160; bounds = 999;
       if (shape === 'path') {
