@@ -359,7 +359,7 @@ const SIZE_N = { s: [T('Small', 'صغيرة'), 1], m: [T('Medium (4 houses)', '�
     if (!rooms.length) { L2.innerHTML = `<small>${T('No public rooms right now — make one!', 'مفيش أوض عامة دلوقتي — اعمل واحدة!')}</small>`; return; }
     rooms.forEach(x => { const d = document.createElement('div'); d.className = 'pr'; const t = document.createElement('div'); t.textContent = `${x.code} · ${x.host} · ${SIZE_N[x.size] ? SIZE_N[x.size][0] : ''} · ${x.n || 1} 👤`; const sm = document.createElement('small'); sm.textContent = x.desc || ''; t.appendChild(document.createElement('br')); t.appendChild(sm); const b = document.createElement('button'); b.type = 'button'; b.className = 'big'; b.textContent = T('Join', 'ادخل'); b.onclick = () => joinRoom(x.code, false); d.appendChild(t); d.appendChild(b); L2.appendChild(d); });
   };
-  lob.on('presence', { event: 'sync' }, drawPub).subscribe();
+  lob.on('presence', { event: 'sync' }, drawPub).subscribe(st => { if (st === 'SUBSCRIBED') lob.track({ v: 1 }); });   // everyone in the lobby is counted, so the room list arrives
   window.HS_LOBBY = lob;
   $('nMake').onclick = () => joinRoom(code4(), true);
   $('nJoin').onclick = () => { const v = $('nCode').value.trim().toUpperCase(); if (/^[A-Z]{4}$/.test(v)) joinRoom(v, false); else $('nMsg').textContent = T('Write the 4-letter code.', 'اكتب الكود (4 حروف).'); };
