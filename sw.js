@@ -1,7 +1,7 @@
 // DINOSPEAR service worker V08
 // • every update of the site reaches the phone app by itself (new version = auto reload)
 // • works with no internet: offline page, article and the offline games stay saved
-const V = 'dinospear-v21';
+const V = 'dinospear-v22';
 const CORE = ['./', 'index.html', 'offline.html', 'article.html', 'manifest.webmanifest', 'favicon.svg',
   'assets/css/style.css', 'assets/js/home.js', 'assets/js/events.js', 'assets/js/translate.js', 'assets/js/icons.js', 'assets/js/ds_auth.js', 'assets/js/config.js', 'key.js',
   'assets/img/logo_v02.svg', 'assets/img/dino_v03.svg', 'assets/img/dinospear.svg', 'assets/img/icon-192.png', 'assets/img/icon-512.png',

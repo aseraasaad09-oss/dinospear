@@ -1,16 +1,10 @@
 {
-  "v": "V21",
+  "v": "V22",
   "date": "2026-11-26",
   "ar": [
-    "التحديث بقى بيسألك: «تحب تحدّث دلوقتي؟» أيوه أو لأ — ومفيش إعادة تشغيل لوحده تاني",
-    "إشعار على الموبايل أو الكمبيوتر أول ما يطلع تحديث جديد (فعّله من كارت التحديث)",
-    "الترجمة بقت أقوى وطبيعية أكتر",
-    "جرافيك أحلى: أثاث وشخصيات جديدة معمولة في Blender وإضاءة أنعم"
+    "الترجمة بقت بتفهم الكلام المصري والخليجي (زي «جامد اوي» و«عايز» و«شلونك») قبل ما تترجمه"
   ],
   "en": [
-    "Updates now ask: “Do you want to update now?” Yes or No — no more restarting by itself",
-    "A phone/PC notification when a new update is out (turn it on from the update card)",
-    "Stronger, more natural translation",
-    "Nicer graphics: new furniture and characters made in Blender, softer lighting"
+    "Translation now understands Egyptian and Gulf chat words (like “gamed awi”, “3ayez”, “shlonak”) before translating"
   ]
 }
