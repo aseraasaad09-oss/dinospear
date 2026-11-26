@@ -70,6 +70,46 @@
     wrap.appendChild(box); refresh();
   }
   function checkAdmin() { sb.auth.getSession().then(function (s) { if (s.data && s.data.session) sb.rpc('is_admin').then(function (r) { if (r.data) adminForm(); }); }); }
+  // ---------- NEWS: the admin's global channel (only the admin writes, everyone reads) ----------
+  function news() {
+    sb.from('site_news').select('*').eq('hidden', false).order('pinned', { ascending: false }).order('created_at', { ascending: false }).limit(6).then(function (r) {
+      var old = document.getElementById('nwBox'); if (old) old.remove(); if (r.error || !r.data.length) return;
+      var box = document.createElement('div'); box.id = 'nwBox';
+      box.style.cssText = 'margin:10px auto;max-width:1100px;border-radius:18px;padding:12px 16px;background:var(--card,#fff);border:2px solid var(--line,#e2e8f0);color:inherit';
+      var h = document.createElement('b'); h.style.cssText = 'display:block;margin-bottom:6px;font-size:16px'; h.textContent = T('📣 News from the admin', '📣 أخبار من الأدمن'); box.appendChild(h);
+      r.data.forEach(function (n) {
+        var row = document.createElement('div'); row.style.cssText = 'padding:6px 0;border-top:1px solid var(--line,#e2e8f0);display:flex;gap:8px;align-items:baseline';
+        var t = document.createElement('span'); t.style.flex = '1'; t.dir = 'auto';
+        var txt = en() ? (n.body_en || n.body_ar) : (n.body_ar || n.body_en); t.textContent = (n.pinned ? '📌 ' : '') + txt;
+        if ((en() && !n.body_en) || (!en() && !n.body_ar)) t.setAttribute('data-tr', '1');   // the other language is missing: translate it
+        var d = document.createElement('small'); d.style.opacity = '.6'; d.textContent = fmt(n.created_at);
+        row.appendChild(t); row.appendChild(d); box.appendChild(row);
+      });
+      var after = document.getElementById('evBanner') || document.getElementById('home'); if (after) after.parentNode.insertBefore(box, document.getElementById('home'));
+    });
+  }
+  function newsAdmin() {
+    var wrap = document.querySelector('#admin .admin-wrap'); if (!wrap || document.getElementById('nwAdmin')) return;
+    var box = document.createElement('div'); box.id = 'nwAdmin'; box.style.cssText = 'margin-top:22px;border-top:2px solid var(--line,#334155);padding-top:16px';
+    var h = document.createElement('h3'); h.textContent = T('News (global channel)', 'الأخبار (القناة العامة)'); box.appendChild(h);
+    var ar = document.createElement('textarea'); ar.placeholder = T('News in Arabic', 'الخبر بالعربي'); ar.style.width = '100%'; ar.maxLength = 500;
+    var e2 = document.createElement('textarea'); e2.placeholder = T('News in English (optional — it gets translated)', 'الخبر بالإنجليزي (اختياري — بيتترجم لوحده)'); e2.style.width = '100%'; e2.maxLength = 500;
+    var pin = document.createElement('label'); var pc = document.createElement('input'); pc.type = 'checkbox'; pin.appendChild(pc); pin.appendChild(document.createTextNode(' ' + T('Pin at the top', 'ثبّته فوق')));
+    var go = document.createElement('button'); go.type = 'button'; go.className = 'btn'; go.textContent = T('Post the news', 'انشر الخبر'); go.style.marginTop = '8px';
+    var msg = document.createElement('div'); msg.style.marginTop = '6px';
+    var list = document.createElement('div');
+    [ar, e2, pin, go, msg, list].forEach(function (x) { box.appendChild(x); });
+    function refresh() { sb.from('site_news').select('*').order('created_at', { ascending: false }).limit(20).then(function (r) { list.innerHTML = ''; (r.data || []).forEach(function (n) {
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line,#334155)' + (n.hidden ? ';opacity:.45' : '');
+      var t = document.createElement('span'); t.style.flex = '1'; t.textContent = (n.pinned ? '📌 ' : '') + (n.body_ar || n.body_en); row.appendChild(t);
+      var hb = document.createElement('button'); hb.type = 'button'; hb.className = 'btn ghost'; hb.textContent = n.hidden ? T('Show', 'اظهر') : T('Hide', 'خبّي'); hb.onclick = function () { sb.from('site_news').update({ hidden: !n.hidden }).eq('id', n.id).then(function () { refresh(); news(); }); }; row.appendChild(hb);
+      list.appendChild(row); }); }); }
+    go.onclick = function () { if ((ar.value + e2.value).trim().length < 2) { msg.textContent = T('Write the news first.', 'اكتب الخبر الأول.'); return; }
+      sb.from('site_news').insert({ body_ar: ar.value.trim(), body_en: e2.value.trim(), pinned: pc.checked }).then(function (r) { msg.textContent = r.error ? T('Could not post: ', 'ما اتنشرش: ') + r.error.message : T('Posted ✓ — everyone sees it now.', 'اتنشر ✓ — الكل شايفه دلوقتي.'); if (!r.error) { ar.value = e2.value = ''; pc.checked = false; refresh(); news(); } }); };
+    wrap.appendChild(box); refresh();
+  }
+  var _adm = adminForm; adminForm = function () { _adm(); newsAdmin(); };
+  news(); setInterval(news, 300000);
   load(); checkAdmin(); setInterval(load, 300000);
   sb.auth.onAuthStateChange(function (e) { if (e === 'SIGNED_IN') checkAdmin(); });
 })();
