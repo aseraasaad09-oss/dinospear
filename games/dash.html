@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>SHADOW DASH — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script src="../assets/js/rotate.js?v=V48" defer></script>
+<style>
+/* SHADOW DASH V01 — a hard boss-rush story game: run, jump, dash through danger, shoot, and parry the pink shots. 1 player or 2 on one device. Works offline. */
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;background:#0b1020}
+.screen{position:fixed;inset:0;display:grid;place-items:center;z-index:20;background:radial-gradient(circle at 50% 30%,rgba(124,58,237,.35),rgba(5,8,20,.95));padding:16px;overflow:auto}
+.screen[hidden],.pad[hidden],#hudD[hidden]{display:none}
+.card{background:rgba(15,23,42,.92);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:22px;max-width:640px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card h1{margin:4px 0 6px;font-size:clamp(30px,6vw,48px);letter-spacing:1px;background:linear-gradient(90deg,#f472b6,#a78bfa,#38bdf8);-webkit-background-clip:text;color:transparent}
+.card p{opacity:.88;line-height:1.7;margin:6px 0}
+.bosses{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}
+.bosses button{border-radius:16px;padding:12px;color:#fff;font-weight:900;text-align:center;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12)}
+.bosses button small{display:block;font-weight:600;opacity:.8;margin-top:4px}
+.bosses button[disabled]{opacity:.35}
+.bosses button.won{border-color:#22c55e}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.big{border-radius:14px;padding:12px 22px;font-weight:900;font-size:16px;background:#a78bfa;color:#140b2e}
+.big.sec{background:rgba(255,255,255,.12);color:#fff}
+.big.on{background:#22c55e;color:#06210f}
+#hudD{position:fixed;top:max(10px,env(safe-area-inset-top));inset-inline:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:6;pointer-events:none}
+#hudD .chip{pointer-events:auto}
+.pad{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));z-index:6;display:flex;gap:10px;align-items:flex-end}
+.pad.r{right:max(14px,env(safe-area-inset-right));flex-wrap:wrap;width:190px;justify-content:flex-end}
+.pb{width:78px;height:78px;border-radius:50%;color:#fff;font-weight:900;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.35);touch-action:none}
+.pb.j{background:rgba(34,197,94,.88)}.pb.d{background:rgba(56,189,248,.88)}.pb.s{background:rgba(244,114,182,.88)}.pb.x{background:rgba(250,204,21,.9);color:#3b2f00;width:62px;height:62px}
+.pb.on{transform:scale(.92);filter:brightness(1.25)}
+@media (pointer:fine){.pad{display:none}}
+body.playing .lang{display:none}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hudD" hidden>
+ <button class="chip btn" id="bMenu" type="button">☰</button>
+ <div class="chip" id="hBoss"></div><div class="chip" id="hTime">0.0</div>
+</div>
+<div id="joy" hidden><div id="knob"></div></div>
+<div class="pad r" id="padR" hidden>
+ <button class="pb x" id="kSuper" type="button">★<span data-en="Super" data-ar="سوبر"></span></button>
+ <button class="pb s" id="kShoot" type="button">✦<span data-en="Shoot" data-ar="اضرب"></span></button>
+ <button class="pb d" id="kDash" type="button">➤<span data-en="Dash" data-ar="اندفع"></span></button>
+ <button class="pb j" id="kJump" type="button">▲<span data-en="Jump" data-ar="نط"></span></button>
+</div>
+<div class="screen" id="menu">
+ <div class="card">
+  <div style="opacity:.8;font-weight:800">DINOSPEAR · <span data-en="Trial version" data-ar="نسخة تجريبية"></span></div>
+  <h1>SHADOW DASH</h1>
+  <p data-en="The Shadow stole every colour from the five lands. Only you — and maybe a friend — can take them back. Every boss is HARD: learn its moves, dash through its attacks, and jump on the pink shots to fill your super." data-ar="الظل سرق كل الألوان من الخمس أراضي. انت بس — وممكن صاحبك معاك — تقدروا ترجعوها. كل زعيم صعب: اتعلم حركاته، اندفع جوه ضرباته، ونط على الطلقات البمبي عشان تملى السوبر."></p>
+  <div class="row"><button class="big on" type="button" id="p1">👤 <span data-en="1 player" data-ar="لاعب واحد"></span></button><button class="big sec" type="button" id="p2">👥 <span data-en="2 players (same device)" data-ar="2 لاعيبة (نفس الجهاز)"></span></button></div>
+  <div class="bosses" id="bosses"></div>
+  <p style="font-size:13px" id="keysTxt"></p>
+  <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none" data-en="All games" data-ar="كل الألعاب"></a></div>
+ </div>
+</div>
+<div class="screen" id="story" hidden><div class="card"><h2 id="sTitle"></h2><p id="sText" style="font-size:17px"></p><div class="row"><button class="big" type="button" id="sGo"></button></div></div></div>
+<div class="screen" id="end" hidden><div class="card"><h2 id="eTitle"></h2><p id="eText"></p><div id="eBar" style="height:14px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin:10px 0"><i style="display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#facc15,#ef4444)"></i></div><div class="row"><button class="big" type="button" id="eAgain"></button><button class="big sec" type="button" id="eMenu"></button></div></div></div>
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var lang = 'ar'; try { lang = localStorage.getItem('aser_lang') || 'ar'; } catch (e) {}
+  var T = function (en, ar) { return lang === 'en' ? en : ar; };
+  var store = { get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  var cv = $('cv'), cx = cv.getContext('2d'), W = 960, H = 540, FLOOR = 470, scale = 1, offX = 0, offY = 0;
+  function size() { var dpr = Math.min(2, devicePixelRatio || 1); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; scale = Math.min(cv.width / W, cv.height / H); offX = (cv.width - W * scale) / 2; offY = (cv.height - H * scale) / 2; }
+  addEventListener('resize', size); size();
+
+  // ---------- sounds (no files) ----------
+  var ac = null; function beep(f, d, type, vol) { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'square'; o.frequency.value = f; g.gain.value = vol || 0.04; o.connect(g); g.connect(ac.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + (d || 0.1)); o.stop(ac.currentTime + (d || 0.1)); } catch (e) {} }
+
+  // ---------- story + bosses ----------
+  var BOSSES = [
+    { id: 'beetle', name: ['The Iron Beetle', 'الخنفسة الحديد'], land: ['The Rust Desert', 'صحرا الصدا'], hp: 260, sky: ['#f59e0b', '#7c2d12'], col: '#64748b', eye: '#f97316',
+      story: ['The first land lost its gold. A huge iron beetle guards the stolen colour. It charges, it jumps, and it shakes rocks from the sky.', 'أول أرض خسرت لونها الدهبي. خنفسة حديد ضخمة بتحرس اللون المسروق. بتجري عليك، وبتنط، وبتوقّع صخور من السما.'] },
+    { id: 'witch', name: ['The Ink Witch', 'ساحرة الحبر'], land: ['The Paper Forest', 'غابة الورق'], hp: 300, sky: ['#a78bfa', '#1e1b4b'], col: '#312e81', eye: '#f472b6',
+      story: ['In the paper forest, a witch paints with stolen blue. She floats, throws ink balls at you and fills the air with rings.', 'في غابة الورق، ساحرة بترسم باللون الأزرق المسروق. بتطير، وبترمي عليك كور حبر، وبتملى الجو حلقات.'] },
+    { id: 'mush', name: ['The Mushroom King', 'ملك الفطر'], land: ['The Glow Caves', 'الكهوف المنوّرة'], hp: 340, sky: ['#22c55e', '#052e16'], col: '#be123c', eye: '#fde047',
+      story: ['Deep in the caves the Mushroom King keeps the green. He calls little mushroom soldiers and rains glowing spores.', 'جوه الكهوف ملك الفطر شايل اللون الأخضر. بينادي عساكر فطر صغيرين، وبيمطّر جراثيم منوّرة.'] },
+    { id: 'pirate', name: ['Captain Cloud', 'القبطان سحاب'], land: ['The Sky Docks', 'ميناء السما'], hp: 380, sky: ['#38bdf8', '#0c4a6e'], col: '#7c2d12', eye: '#fde047',
+      story: ['Above the clouds, a sky pirate flies a ship full of stolen white. Bombs, a laser that sweeps the floor, and cannon balls.', 'فوق السحاب، قرصان السما بيسوق سفينة مليانة باللون الأبيض المسروق. قنابل، وليزر بيمسح الأرض، وكور مدفع.'] },
+    { id: 'shadow', name: ['The Shadow', 'الظل'], land: ['The Grey Throne', 'العرش الرمادي'], hp: 460, sky: ['#475569', '#020617'], col: '#0f172a', eye: '#f8fafc',
+      story: ['The Shadow copies everything you do. It dashes like you, shoots like you — and it never gets tired. Take the last colour back!', 'الظل بيقلّد كل حاجة بتعملها. بيندفع زيك، وبيضرب زيك — وعمره ما بيتعب. رجّع آخر لون!'] }
+  ];
+  var players = 1, won = store.get('sd_won', []), bossI = 0, state = 'menu', time = 0, shake = 0;
+
+  // ---------- input: keyboard, gamepads, touch ----------
+  var keys = {}, pressed = {};
+  addEventListener('keydown', function (e) { if (!keys[e.code]) pressed[e.code] = true; keys[e.code] = true; if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.code) >= 0) e.preventDefault(); if (e.code === 'Escape' && state === 'play') menu(); });
+  addEventListener('keyup', function (e) { keys[e.code] = false; });
+  var touch = { x: 0, jump: false, dash: false, shoot: false, sup: false, jp: false, dp: false, spp: false };
+  (function () {
+    var joy = $('joy'), knob = $('knob'), id = null;
+    function set(ev) { var r = joy.getBoundingClientRect(), dx = ev.clientX - (r.left + r.width / 2), m = Math.max(-46, Math.min(46, dx)); knob.style.transform = 'translate(' + m + 'px,0)'; touch.x = m / 46; }
+    joy.addEventListener('pointerdown', function (e) { id = e.pointerId; joy.setPointerCapture(id); set(e); });
+    joy.addEventListener('pointermove', function (e) { if (e.pointerId === id) set(e); });
+    var end = function () { id = null; touch.x = 0; knob.style.transform = ''; }; joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end);
+    [['kJump', 'jump', 'jp'], ['kDash', 'dash', 'dp'], ['kShoot', 'shoot', null], ['kSuper', 'sup', 'spp']].forEach(function (b) {
+      var el = $(b[0]);
+      el.addEventListener('pointerdown', function (e) { e.preventDefault(); if (b[1] === 'shoot') { touch.shoot = !touch.shoot; el.classList.toggle('on', touch.shoot); return; } touch[b[1]] = true; if (b[2]) touch[b[2]] = true; el.classList.add('on'); });
+      var up = function () { if (b[1] === 'shoot') return; touch[b[1]] = false; el.classList.remove('on'); }; el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('pointerleave', up);
+    });
+  })();
+  function ctl(i) {
+    var c = { x: 0, jump: false, jp: false, dash: false, shoot: false, sup: false };
+    var two = players === 2;
+    if (i === 0) {
+      c.x = (keys.KeyD || (!two && keys.ArrowRight) ? 1 : 0) - (keys.KeyA || (!two && keys.ArrowLeft) ? 1 : 0);
+      c.jump = keys.KeyW || keys.Space || (!two && keys.ArrowUp); c.jp = pressed.KeyW || pressed.Space || (!two && pressed.ArrowUp);
+      c.dash = pressed.ShiftLeft || pressed.KeyE; c.shoot = keys.KeyF || keys.KeyJ || (!two && keys.KeyX); c.sup = pressed.KeyG || pressed.KeyK;
+      if (Math.abs(touch.x) > 0.15) c.x = touch.x; c.jump = c.jump || touch.jump; c.jp = c.jp || touch.jp; c.dash = c.dash || touch.dp; c.shoot = c.shoot || touch.shoot; c.sup = c.sup || touch.spp;
+    } else {
+      c.x = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0); c.jump = keys.ArrowUp; c.jp = pressed.ArrowUp;
+      c.dash = pressed.ShiftRight || pressed.Slash; c.shoot = keys.KeyL || keys.Numpad0; c.sup = pressed.Semicolon || pressed.Period;
+    }
+    var gp = (navigator.getGamepads && navigator.getGamepads()) || [], g = gp[i];
+    if (g) { var ax = g.axes[0] || 0; if (Math.abs(ax) > 0.25) c.x = ax; if (g.buttons[14] && g.buttons[14].pressed) c.x = -1; if (g.buttons[15] && g.buttons[15].pressed) c.x = 1; var bj = g.buttons[0] && g.buttons[0].pressed, bd = (g.buttons[1] && g.buttons[1].pressed) || (g.buttons[5] && g.buttons[5].pressed), bs = (g.buttons[2] && g.buttons[2].pressed) || (g.buttons[7] && g.buttons[7].pressed), bu = g.buttons[3] && g.buttons[3].pressed; var pj = gpPrev[i] || {}; c.jump = c.jump || bj; c.jp = c.jp || (bj && !pj.j); c.dash = c.dash || (bd && !pj.d); c.shoot = c.shoot || bs; c.sup = c.sup || (bu && !pj.u); gpPrev[i] = { j: bj, d: bd, u: bu }; }
+    return c;
+  }
+  var gpPrev = [];
+
+  // ---------- the fight ----------
+  var P = [], boss = null, shots = [], foes = [], parts = [], minions = [], beams = [];
+  function makePlayer(i) { return { i: i, x: 300 + i * 80, y: FLOOR, vx: 0, vy: 0, face: 1, ground: true, jumps: 0, dash: 0, dashCd: 0, inv: 1, hp: 3, cd: 0, sup: 0, dead: false, deadT: 0, col: i ? '#38bdf8' : '#f472b6', parried: 0 }; }
+  function start(i) {
+    bossI = i; var B = BOSSES[i]; state = 'story';
+    $('menu').hidden = true; $('end').hidden = true; $('story').hidden = false;
+    $('sTitle').textContent = T('Land ', 'الأرض ') + (i + 1) + ' — ' + T(B.land[0], B.land[1]); $('sText').textContent = T(B.story[0], B.story[1]); $('sGo').textContent = T('Fight ', 'حارب ') + T(B.name[0], B.name[1]);
+  }
+  function fight() {
+    var B = BOSSES[bossI]; $('story').hidden = true; state = 'play'; time = 0; shots = []; parts = []; minions = []; beams = [];
+    P = [makePlayer(0)]; if (players === 2) P.push(makePlayer(1));
+    var hpMul = players === 2 ? 1.5 : 1;
+    boss = { B: B, x: 760, y: FLOOR, w: 150, h: 120, hp: B.hp * hpMul, max: B.hp * hpMul, phase: 0, t: 0, act: null, wait: 1.2, flash: 0, vx: 0, vy: 0, face: -1, fly: B.id === 'witch' || B.id === 'pirate' };
+    if (boss.fly) { boss.y = 230; }
+    if (B.id === 'mush') { boss.w = 170; boss.h = 150; }
+    document.body.classList.add('playing'); $('hudD').hidden = false; $('padR').hidden = false; $('joy').hidden = false;
+    $('hBoss').textContent = T(B.name[0], B.name[1]);
+    beep(330, 0.1); beep(440, 0.15);
+  }
+  function hurtP(p, n) { if (p.inv > 0 || p.dead || p.dash > 0) return; if ((window.DS_ADM || {}).powerful) return; p.hp -= n || 1; p.inv = 1.4; shake = 0.3; beep(140, 0.25, 'sawtooth', 0.06); burst(p.x, p.y - 30, p.col, 14); if (p.hp <= 0) { p.dead = true; p.deadT = 0; if (P.every(function (q) { return q.dead; })) lose(); } }
+  function shoot(x, y, vx, vy, o) { var s = { x: x, y: y, vx: vx, vy: vy, r: (o && o.r) || 10, pink: o && o.pink, bad: !(o && o.good), life: (o && o.life) || 6, grav: (o && o.grav) || 0, col: (o && o.col) || '#f8fafc', dmg: (o && o.dmg) || 1, home: o && o.home }; shots.push(s); return s; }
+  function burst(x, y, col, n) { for (var k = 0; k < (n || 10); k++) { var a = Math.random() * 6.28, s = 80 + Math.random() * 240; parts.push({ x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 60, t: 0.5 + Math.random() * 0.4, col: col, r: 2 + Math.random() * 4 }); } }
+  function target() { var a = P.filter(function (p) { return !p.dead; }); return a[Math.floor(Math.random() * a.length)] || P[0]; }
+  function damageBoss(n) {
+    if (!boss || boss.hp <= 0) return; boss.hp -= n; boss.flash = 0.06; P.forEach(function (p) { p.sup = Math.min(100, p.sup + n * 0.35); });
+    var ph = boss.hp < boss.max * 0.33 ? 2 : boss.hp < boss.max * 0.66 ? 1 : 0;
+    if (ph !== boss.phase) { boss.phase = ph; boss.act = null; boss.wait = 1.4; shake = 0.6; burst(boss.x, boss.y - boss.h / 2, boss.B.eye, 40); beep(220, 0.4, 'sawtooth', 0.06); flashText(ph === 1 ? T('Phase 2!', 'المرحلة 2!') : T('Final phase!', 'المرحلة الأخيرة!')); }
+    if (boss.hp <= 0) winFight();
+  }
+  var ftext = null; function flashText(t) { ftext = { t: t, life: 1.6 }; }
+
+  // ---------- boss moves (each one is a small plan: telegraph → attack → rest) ----------
+  var MOVES = {
+    beetle: [
+      function charge(b) { return { dur: 2.2, t: 0, run: function (dt) { this.t += dt; if (this.t < 0.6) { b.shake = 1; return; } if (!this.dir) { var tg = target(); this.dir = tg.x < b.x ? -1 : 1; b.face = this.dir; } b.x += this.dir * (520 + b.phase * 120) * dt; if (b.x < 90 || b.x > W - 90) { b.x = Math.max(90, Math.min(W - 90, b.x)); shake = 0.4; for (var k = 0; k < 3 + b.phase * 2; k++) shoot(150 + Math.random() * 660, -20, 0, 180 + Math.random() * 120, { r: 14, col: '#92400e', grav: 300 }); this.t = 99; } } }; },
+      function hop(b) { return { dur: 2.4, t: 0, n: 0, run: function (dt) { this.t += dt; if (b.y >= FLOOR && this.t > 0.5 && this.n < 2 + b.phase) { var tg = target(); b.vx = (tg.x - b.x) * 1.1; b.vy = -820; this.n++; this.t = 0; } b.vy += 1900 * dt; b.x += b.vx * dt; b.y += b.vy * dt; if (b.y > FLOOR) { if (b.vy > 300) { shake = 0.35; shoot(b.x - 60, FLOOR - 10, -380, 0, { r: 12, col: '#facc15' }); shoot(b.x + 60, FLOOR - 10, 380, 0, { r: 12, col: '#facc15' }); } b.y = FLOOR; b.vy = 0; b.vx = 0; } b.x = Math.max(90, Math.min(W - 90, b.x)); } }; },
+      function spit(b) { return { dur: 1.8, t: 0, k: 0, run: function (dt) { this.t += dt; if (this.t > 0.25 * this.k + 0.4 && this.k < 4 + b.phase * 2) { var tg = target(), a = Math.atan2(tg.y - 40 - (b.y - 70), tg.x - b.x); shoot(b.x, b.y - 70, Math.cos(a) * 360, Math.sin(a) * 360, { r: 11, pink: this.k % 3 === 2, col: '#fb923c' }); this.k++; } } }; }
+    ],
+    witch: [
+      function orbs(b) { return { dur: 2.2, t: 0, k: 0, run: function (dt) { this.t += dt; b.x += Math.sin(time * 1.6) * 120 * dt; if (this.t > 0.3 * this.k + 0.3 && this.k < 5 + b.phase * 2) { var tg = target(), a = Math.atan2(tg.y - 40 - b.y, tg.x - b.x); shoot(b.x, b.y, Math.cos(a) * 300, Math.sin(a) * 300, { r: 13, pink: this.k % 2 === 1, col: '#818cf8', home: b.phase > 1 ? 0.9 : 0 }); this.k++; beep(600, 0.05, 'sine', 0.03); } } }; },
+      function ring(b) { return { dur: 2, t: 0, done: 0, run: function (dt) { this.t += dt; if (this.t > 0.6 && this.done < 1 + b.phase) { var n = 14 + b.phase * 4, off = Math.random(); for (var k = 0; k < n; k++) { var a = (k + off) / n * 6.28; if (k % 7 === 3) continue; shoot(b.x, b.y, Math.cos(a) * 230, Math.sin(a) * 230, { r: 10, col: '#c084fc', pink: k % 7 === 0 }); } this.done++; this.t = 0.2; shake = 0.15; } } }; },
+      function swoop(b) { return { dur: 2.4, t: 0, run: function (dt) { this.t += dt; var tg = target(); if (this.t < 1.2) { b.x += (tg.x - b.x) * dt * 1.5; b.y += (FLOOR - 60 - b.y) * dt * 2; } else { b.y += (230 - b.y) * dt * 3; } } }; }
+    ],
+    mush: [
+      function minionsMove(b) { return { dur: 2.4, t: 0, k: 0, run: function (dt) { this.t += dt; if (this.t > 0.5 * this.k + 0.4 && this.k < 2 + b.phase) { minions.push({ x: b.x - 60, y: FLOOR, vx: -(140 + b.phase * 40), hp: 3, t: 0 }); this.k++; beep(300, 0.08, 'triangle'); } } }; },
+      function spores(b) { return { dur: 2.6, t: 0, k: 0, run: function (dt) { this.t += dt; if (this.t > 0.14 * this.k + 0.4 && this.k < 12 + b.phase * 6) { shoot(60 + Math.random() * 840, -10, 0, 150 + Math.random() * 80, { r: 9, col: '#fde047', pink: this.k % 5 === 4 }); this.k++; } } }; },
+      function bounce(b) { return { dur: 2.2, t: 0, run: function (dt) { this.t += dt; if (this.t > 0.5 && !this.d) { this.d = 1; for (var k = 0; k < 3 + b.phase; k++) shoot(b.x - 40, b.y - 120, -150 - k * 90, -520, { r: 16, col: '#f43f5e', grav: 900, life: 4 }); } } }; }
+    ],
+    pirate: [
+      function bombs(b) { return { dur: 2.4, t: 0, k: 0, run: function (dt) { this.t += dt; b.x += Math.cos(time) * 160 * dt; if (this.t > 0.35 * this.k + 0.3 && this.k < 4 + b.phase * 2) { var tg = target(); shoot(b.x, b.y + 50, (tg.x - b.x) * 0.9, -120, { r: 15, col: '#111827', grav: 700, pink: this.k === 3 }); this.k++; } } }; },
+      function laser(b) { return { dur: 2.8, t: 0, run: function (dt) { this.t += dt; if (this.t > 0.9 && !this.on) { this.on = true; beams.push({ x: b.x < W / 2 ? 0 : W, dir: b.x < W / 2 ? 1 : -1, y: FLOOR - 22 - (b.phase > 1 ? Math.random() * 60 : 0), t: 0, warn: 0 }); } } }; },
+      function cannon(b) { return { dur: 2, t: 0, k: 0, run: function (dt) { this.t += dt; if (this.t > 0.3 + 0.22 * this.k && this.k < 6 + b.phase * 2) { var a = -Math.PI / 2 + (this.k - 3) * 0.28; shoot(b.x, b.y + 40, Math.cos(a + Math.PI) * -260, 260 + Math.random() * 60, { r: 12, col: '#e2e8f0' }); this.k++; } } }; }
+    ],
+    shadow: [
+      function copyDash(b) { return { dur: 1.6, t: 0, run: function (dt) { this.t += dt; if (this.t < 0.45) return; if (!this.d) { var tg = target(); this.d = tg.x < b.x ? -1 : 1; b.face = this.d; } b.x += this.d * 980 * dt; b.x = Math.max(60, Math.min(W - 60, b.x)); } }; },
+      function shots2(b) { return { dur: 1.8, t: 0, k: 0, run: function (dt) { this.t += dt; if (this.t > 0.12 * this.k + 0.3 && this.k < 9 + b.phase * 4) { var tg = target(); b.face = tg.x < b.x ? -1 : 1; shoot(b.x + b.face * 40, b.y - 60 + Math.sin(this.k) * 20, b.face * 560, 0, { r: 8, col: '#e2e8f0', pink: this.k % 4 === 3 }); this.k++; } } }; },
+      function jumpRain(b) { return { dur: 2.6, t: 0, run: function (dt) { this.t += dt; if (!this.j) { this.j = 1; b.vy = -1000; } b.vy += 1700 * dt; b.y += b.vy * dt; if (b.y > FLOOR) { b.y = FLOOR; b.vy = 0; if (!this.l) { this.l = 1; shake = 0.4; for (var k = 0; k < 10 + b.phase * 4; k++) shoot(b.x, FLOOR - 20, Math.cos(k / (10 + b.phase * 4) * 3.14) * -320, -Math.sin(k / (10 + b.phase * 4) * 3.14) * 380, { r: 9, grav: 500, col: '#94a3b8', pink: k % 5 === 2 }); } } } }; },
+      function ring2(b) { return MOVES.witch[1](b); }
+    ]
+  };
+  function bossStep(dt) {
+    var b = boss; if (!b || b.hp <= 0) return;
+    b.t += dt; b.flash = Math.max(0, b.flash - dt); b.shake = 0;
+    if (b.act) { b.act.run(dt); b.act.dur -= dt; if (b.act.dur <= 0) { b.act = null; b.wait = Math.max(0.35, 1.1 - b.phase * 0.3); } }
+    else { b.wait -= dt; if (b.wait <= 0) { var list = MOVES[b.B.id]; b.act = list[Math.floor(Math.random() * list.length)](b); } if (b.fly) { b.y += Math.sin(time * 2) * 20 * dt; } }
+    if (b.B.id === 'shadow' && !b.act) { var tg = target(); b.x += Math.sign(tg.x - b.x) * 60 * dt; }
+    // touching the boss hurts
+    P.forEach(function (p) { if (!p.dead && Math.abs(p.x - b.x) < b.w / 2 + 14 && p.y > b.y - b.h - 10 && p.y - 50 < b.y) hurtP(p); });
+  }
+
+  function step(dt) {
+    time += dt; shake = Math.max(0, shake - dt);
+    P.forEach(function (p, i) {
+      if (p.dead) { p.deadT += dt; p.y -= 30 * dt; if (players === 2 && p.deadT > 8 && P.some(function (q) { return !q.dead; })) { p.dead = false; p.hp = 1; p.inv = 2; p.y = 100; p.vy = 0; flashText(T('Back in the fight!', 'رجع للمعركة!')); } return; }
+      var c = ctl(i), spd = 290;
+      if (p.dash > 0) { p.dash -= dt; p.vx = p.face * 760; p.vy = 0; }
+      else { p.vx = c.x * spd; if (Math.abs(c.x) > 0.1) p.face = c.x > 0 ? 1 : -1; p.vy += 2000 * dt; }
+      if (c.jp) {
+        // parry: jump into a pink shot in the air
+        var pk = !p.ground && shots.find(function (s) { return s.bad && s.pink && Math.hypot(s.x - p.x, s.y - (p.y - 28)) < s.r + 30; });
+        if (pk) { pk.life = 0; p.vy = -650; p.sup = Math.min(100, p.sup + 25); p.jumps = 1; p.inv = Math.max(p.inv, 0.25); burst(pk.x, pk.y, '#f472b6', 18); beep(1300, 0.1, 'triangle', 0.06); flashText(T('PARRY!', 'صدّ!')); }
+        else if (p.ground || p.jumps < 2) { p.vy = p.ground ? -760 : -640; p.jumps++; p.ground = false; beep(520, 0.05, 'sine', 0.03); }
+      }
+      if (!c.jump && p.vy < -260 && p.dash <= 0) p.vy = -260;   // short hop when you let go
+      if (c.dash && p.dashCd <= 0) { p.dash = 0.17; p.dashCd = 0.5; beep(260, 0.07, 'triangle', 0.04); burst(p.x, p.y - 26, p.col, 6); }
+      p.dashCd -= dt; p.inv = Math.max(0, p.inv - dt);
+      p.x += p.vx * dt; p.y += p.vy * dt; p.x = Math.max(20, Math.min(W - 20, p.x));
+      if (p.y >= FLOOR) { p.y = FLOOR; p.vy = 0; p.ground = true; p.jumps = 0; } else p.ground = false;
+      p.cd -= dt;
+      if (c.shoot && p.cd <= 0) { p.cd = 0.11; shoot(p.x + p.face * 26, p.y - 34 + (Math.random() - 0.5) * 6, p.face * 900, 0, { good: true, r: 6, col: p.col, life: 1.1 }); beep(900, 0.02, 'square', 0.012); }
+      if (c.sup && p.sup >= 100) { p.sup = 0; beams.push({ good: true, x: p.x, y: p.y - 34, dir: p.face, t: 0, who: p }); shake = 0.5; beep(180, 0.5, 'sawtooth', 0.07); flashText(T('SUPER!', 'سوبر!')); }
+    });
+    bossStep(dt);
+    // shots
+    shots.forEach(function (s) {
+      if (s.home) { var tg = target(), a = Math.atan2(tg.y - 30 - s.y, tg.x - s.x), sp = Math.hypot(s.vx, s.vy); s.vx += (Math.cos(a) * sp - s.vx) * dt * s.home; s.vy += (Math.sin(a) * sp - s.vy) * dt * s.home; }
+      s.vy += s.grav * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+      if (s.grav && s.y > FLOOR - s.r) { s.y = FLOOR - s.r; s.vy *= -0.45; s.vx *= 0.8; if (Math.abs(s.vy) < 60) s.life = Math.min(s.life, 0.5); }
+      if (s.bad) { P.forEach(function (p) { if (!p.dead && Math.hypot(s.x - p.x, s.y - (p.y - 28)) < s.r + 16) { if (p.dash > 0 || p.inv > 0) return; hurtP(p, s.dmg); s.life = 0; } }); }
+      else if (boss && boss.hp > 0 && Math.abs(s.x - boss.x) < boss.w / 2 && s.y > boss.y - boss.h - 10 && s.y < boss.y + 10) { damageBoss(1); s.life = 0; burst(s.x, s.y, s.col, 3); }
+      else minions.forEach(function (m) { if (m.hp > 0 && Math.abs(s.x - m.x) < 22 && Math.abs(s.y - (m.y - 20)) < 26) { m.hp--; s.life = 0; if (m.hp <= 0) { burst(m.x, m.y - 20, '#be123c', 12); P.forEach(function (p) { p.sup = Math.min(100, p.sup + 5); }); } } });
+      if (s.x < -60 || s.x > W + 60 || s.y > H + 60) s.life = 0;
+    });
+    shots = shots.filter(function (s) { return s.life > 0; });
+    minions.forEach(function (m) { if (m.hp <= 0) return; m.t += dt; m.x += m.vx * dt; if (m.x < 30 || m.x > W - 30) m.vx *= -1; P.forEach(function (p) { if (!p.dead && Math.abs(p.x - m.x) < 26 && p.y > m.y - 40) { if (p.vy > 100 && p.y < m.y - 20) { m.hp = 0; p.vy = -520; burst(m.x, m.y, '#be123c', 10); } else hurtP(p); } }); });
+    minions = minions.filter(function (m) { return m.hp > 0; });
+    beams.forEach(function (bm) {
+      bm.t += dt;
+      if (bm.good) { if (bm.t < 0.8 && boss && boss.hp > 0 && Math.sign(boss.x - bm.x) === bm.dir && Math.abs((boss.y - boss.h / 2) - bm.y) < boss.h) damageBoss(40 * dt); }
+      else if (bm.t > 0.8 && bm.t < 1.8) { var bx = bm.dir > 0 ? (bm.t - 0.8) * 1100 : W - (bm.t - 0.8) * 1100; P.forEach(function (p) { if (!p.dead && Math.abs(p.y - 10 - bm.y) < 30 && (bm.dir > 0 ? p.x < bx : p.x > bx)) hurtP(p); }); }
+    });
+    beams = beams.filter(function (bm) { return bm.t < (bm.good ? 0.9 : 1.9); });
+    parts.forEach(function (q) { q.t -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; }); parts = parts.filter(function (q) { return q.t > 0; });
+    if (ftext) { ftext.life -= dt; if (ftext.life <= 0) ftext = null; }
+    $('hTime').textContent = time.toFixed(1) + 's';
+    for (var k in pressed) delete pressed[k];
+    touch.jp = touch.dp = touch.spp = false;
+  }
+  function winFight() {
+    state = 'end'; burst(boss.x, boss.y - 60, boss.B.eye, 80); shake = 1; beep(523, 0.2, 'triangle'); setTimeout(function () { beep(784, 0.3, 'triangle'); }, 180); setTimeout(function () { beep(1046, 0.4, 'triangle'); }, 400);
+    if (won.indexOf(bossI) < 0) won.push(bossI); store.set('sd_won', won);
+    var best = store.get('sd_best_' + bossI, 0); if (!best || time < best) store.set('sd_best_' + bossI, +time.toFixed(1));
+    var hits = P.reduce(function (a, p) { return a + (3 - Math.max(0, p.hp)); }, 0), grade = hits === 0 ? 'S' : hits <= 1 ? 'A' : hits <= 3 ? 'B' : 'C';
+    setTimeout(function () {
+      hud(false); $('end').hidden = false; $('eTitle').textContent = bossI === 4 ? T('You brought every colour back!', 'رجّعت كل الألوان!') : T('Colour saved! Grade ', 'اللون رجع! التقدير ') + grade;
+      $('eText').textContent = (bossI === 4 ? T('The Shadow is gone and the five lands shine again. Thank you, hero.', 'الظل اختفى والخمس أراضي نوّروا تاني. شكرًا يا بطل.') + ' ' : '') + T('Time ', 'الوقت ') + time.toFixed(1) + 's';
+      $('eBar').firstChild.style.width = '100%';
+      $('eAgain').textContent = bossI < 4 ? T('Next land ▶', 'الأرض الجاية ▶') : T('Play again', 'العب تاني'); $('eAgain').onclick = function () { start(bossI < 4 ? bossI + 1 : 0); };
+      $('eMenu').textContent = T('Menu', 'القايمة'); $('eMenu').onclick = menu;
+    }, 1400);
+  }
+  function lose() {
+    state = 'end'; var pct = Math.round((1 - boss.hp / boss.max) * 100);
+    setTimeout(function () {
+      hud(false); $('end').hidden = false; $('eTitle').textContent = T('Knocked out!', 'اتغلبت!');
+      $('eText').textContent = T('You got ' + pct + '% of the way. Learn the moves — dash THROUGH the attacks and jump on the pink shots.', 'وصلت ' + pct + '% من الطريق. اتعلم الحركات — اندفع جوه الضربات، ونط على الطلقات البمبي.');
+      $('eBar').firstChild.style.width = pct + '%';
+      $('eAgain').textContent = T('Try again', 'جرّب تاني'); $('eAgain').onclick = fight; $('eMenu').textContent = T('Menu', 'القايمة'); $('eMenu').onclick = menu;
+    }, 900);
+  }
+  function hud(on) { document.body.classList.toggle('playing', on); $('hudD').hidden = !on; $('padR').hidden = !on; $('joy').hidden = !on; }
+  function menu() {
+    state = 'menu'; hud(false); $('end').hidden = true; $('story').hidden = true; $('menu').hidden = false;
+    var bx = $('bosses'); bx.innerHTML = '';
+    BOSSES.forEach(function (B, i) { var b = document.createElement('button'); b.type = 'button'; var open = i === 0 || won.indexOf(i - 1) >= 0 || won.indexOf(i) >= 0; b.disabled = !open; if (won.indexOf(i) >= 0) b.className = 'won'; var best = store.get('sd_best_' + i, 0); b.innerHTML = (i + 1) + '. ' + T(B.name[0], B.name[1]) + '<small>' + (open ? T(B.land[0], B.land[1]) + (best ? ' · ⏱ ' + best + 's' : '') : '🔒') + '</small>'; b.onclick = function () { start(i); }; bx.appendChild(b); });
+    $('keysTxt').textContent = players === 2 ? T('Player 1: A/D move · W jump · Shift dash · F shoot · G super — Player 2: arrows · ↑ jump · Right Shift dash · L shoot · ; super — or two game controllers', 'لاعب 1: A/D مشي · W نط · Shift اندفاع · F ضرب · G سوبر — لاعب 2: الأسهم · ↑ نط · Shift اليمين اندفاع · L ضرب · ; سوبر — أو دراعين تحكم') : T('Move: A/D or arrows · Jump: W/Space (twice = double jump) · Dash: Shift · Shoot: F (hold) · Super: G · Jump on PINK shots to parry', 'المشي: A/D أو الأسهم · النط: W/Space (مرتين = نطة مزدوجة) · الاندفاع: Shift · الضرب: F (دوس على طول) · السوبر: G · نط على الطلقات البمبي عشان تصدّها');
+  }
+  $('p1').onclick = function () { players = 1; $('p1').className = 'big on'; $('p2').className = 'big sec'; menu(); };
+  $('p2').onclick = function () { players = 2; $('p2').className = 'big on'; $('p1').className = 'big sec'; menu(); };
+  $('sGo').onclick = fight; $('bMenu').onclick = menu;
+
+  // ---------- drawing: circles, squares and triangles with soft shadows ----------
+  function draw() {
+    cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = '#05070f'; cx.fillRect(0, 0, cv.width, cv.height);
+    var sx = shake > 0 ? (Math.random() - 0.5) * 16 * shake : 0, sy = shake > 0 ? (Math.random() - 0.5) * 16 * shake : 0;
+    cx.setTransform(scale, 0, 0, scale, offX + sx * scale, offY + sy * scale);
+    var B = boss ? boss.B : BOSSES[bossI];
+    var g = cx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, B.sky[0]); g.addColorStop(1, B.sky[1]); cx.fillStyle = g; cx.fillRect(0, 0, W, H);
+    // background shapes (parallax)
+    for (var k = 0; k < 12; k++) { var x = ((k * 137 + time * (8 + k % 3 * 6)) % (W + 200)) - 100, y = 120 + (k * 53) % 260; cx.globalAlpha = 0.12; cx.fillStyle = '#ffffff'; cx.beginPath(); if (k % 3 === 0) cx.arc(x, y, 40 + k % 4 * 12, 0, 6.28); else if (k % 3 === 1) cx.rect(x, y, 70, 70); else { cx.moveTo(x, y + 80); cx.lineTo(x + 50, y); cx.lineTo(x + 100, y + 80); } cx.fill(); }
+    cx.globalAlpha = 1;
+    // floor
+    cx.fillStyle = 'rgba(0,0,0,.35)'; cx.fillRect(0, FLOOR, W, H - FLOOR); cx.fillStyle = 'rgba(255,255,255,.25)'; cx.fillRect(0, FLOOR, W, 4);
+    // boss
+    if (boss) drawBoss(boss);
+    minions.forEach(function (m) { cx.save(); cx.translate(m.x, m.y); var bob = Math.abs(Math.sin(m.t * 10)) * 4; cx.fillStyle = '#f8fafc'; cx.fillRect(-9, -22 - bob, 18, 22); cx.fillStyle = '#be123c'; cx.beginPath(); cx.arc(0, -26 - bob, 20, Math.PI, 0); cx.fill(); cx.fillStyle = '#fff'; [-8, 6].forEach(function (d) { cx.beginPath(); cx.arc(d, -32 - bob, 4, 0, 6.28); cx.fill(); }); cx.fillStyle = '#111'; cx.fillRect(-6, -16 - bob, 3, 4); cx.fillRect(3, -16 - bob, 3, 4); cx.restore(); });
+    // shots
+    shots.forEach(function (s) { cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.28); cx.fillStyle = s.pink ? '#f472b6' : s.col; cx.shadowColor = s.pink ? '#f472b6' : s.col; cx.shadowBlur = s.bad ? 14 : 8; cx.fill(); cx.shadowBlur = 0; if (s.pink) { cx.strokeStyle = '#fff'; cx.lineWidth = 2; cx.stroke(); } });
+    // beams
+    beams.forEach(function (bm) {
+      if (bm.good) { cx.fillStyle = 'rgba(253,224,71,' + (0.9 - bm.t) + ')'; var x0 = bm.dir > 0 ? bm.x : 0, w = bm.dir > 0 ? W - bm.x : bm.x; cx.fillRect(x0, bm.y - 26, w, 52); }
+      else { if (bm.t < 0.8) { cx.fillStyle = 'rgba(239,68,68,' + (0.2 + 0.2 * Math.sin(bm.t * 30)) + ')'; cx.fillRect(0, bm.y - 20, W, 40); } else { var bx = bm.dir > 0 ? (bm.t - 0.8) * 1100 : W - (bm.t - 0.8) * 1100; cx.fillStyle = '#ef4444'; cx.shadowColor = '#ef4444'; cx.shadowBlur = 20; if (bm.dir > 0) cx.fillRect(0, bm.y - 14, bx, 28); else cx.fillRect(bx, bm.y - 14, W - bx, 28); cx.shadowBlur = 0; } }
+    });
+    // players
+    P.forEach(function (p) { drawPlayer(p); });
+    parts.forEach(function (q) { cx.globalAlpha = Math.max(0, q.t * 1.5); cx.fillStyle = q.col; cx.beginPath(); cx.arc(q.x, q.y, q.r, 0, 6.28); cx.fill(); }); cx.globalAlpha = 1;
+    // HUD inside the canvas: hearts, super, boss bar
+    if (state === 'play' || state === 'end') {
+      P.forEach(function (p, i) { var x0 = 16 + i * 230, y0 = H - 36; for (var k = 0; k < 3; k++) { cx.fillStyle = k < p.hp ? p.col : 'rgba(255,255,255,.2)'; heart(x0 + k * 30, y0, 11); } cx.fillStyle = 'rgba(0,0,0,.4)'; cx.fillRect(x0 + 96, y0 - 8, 110, 14); cx.fillStyle = p.sup >= 100 ? '#fde047' : '#a78bfa'; cx.fillRect(x0 + 96, y0 - 8, 110 * p.sup / 100, 14); cx.fillStyle = '#fff'; cx.font = '800 11px system-ui'; cx.fillText(p.sup >= 100 ? T('SUPER READY (G)', 'السوبر جاهز (G)') : '★', x0 + 100, y0 + 3); });
+    }
+    if (ftext) { cx.globalAlpha = Math.min(1, ftext.life); cx.font = '900 54px system-ui'; cx.textAlign = 'center'; cx.fillStyle = '#fff'; cx.shadowColor = '#000'; cx.shadowBlur = 12; cx.fillText(ftext.t, W / 2, 170); cx.shadowBlur = 0; cx.textAlign = 'start'; cx.globalAlpha = 1; }
+  }
+  function heart(x, y, r) { cx.beginPath(); cx.moveTo(x, y + r * 0.6); cx.bezierCurveTo(x - r * 1.4, y - r * 0.4, x - r * 0.6, y - r * 1.4, x, y - r * 0.5); cx.bezierCurveTo(x + r * 0.6, y - r * 1.4, x + r * 1.4, y - r * 0.4, x, y + r * 0.6); cx.fill(); }
+  function drawPlayer(p) {
+    if (p.dead) { cx.globalAlpha = 0.5; cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(p.x, p.y - 30, 14, 0, 6.28); cx.fill(); cx.globalAlpha = 1; return; }
+    if (p.inv > 0 && Math.floor(p.inv * 14) % 2 && p.dash <= 0) return;
+    cx.save(); cx.translate(p.x, p.y); cx.scale(p.face, 1);
+    cx.fillStyle = 'rgba(0,0,0,.3)'; cx.beginPath(); cx.ellipse(0, 2, 18, 5, 0, 0, 6.28); cx.fill();
+    if (p.dash > 0) { cx.globalAlpha = 0.35; cx.fillStyle = p.col; cx.fillRect(-60, -46, 50, 40); cx.globalAlpha = 1; }
+    var run = Math.abs(p.vx) > 10 && p.ground ? Math.sin(time * 18) * 6 : 0;
+    cx.fillStyle = '#1e293b'; cx.fillRect(-10 + run, -16, 8, 16); cx.fillRect(2 - run, -16, 8, 16);
+    cx.fillStyle = p.col; cx.beginPath(); cx.roundRect ? cx.roundRect(-15, -44, 30, 30, 8) : cx.rect(-15, -44, 30, 30); cx.fill();
+    cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(0, -56, 14, 0, 6.28); cx.fill();
+    cx.fillStyle = '#111827'; cx.fillRect(4, -60, 4, 6); cx.fillStyle = p.col; cx.beginPath(); cx.moveTo(-14, -64); cx.lineTo(16, -70); cx.lineTo(-6, -78); cx.fill();
+    cx.fillStyle = '#fff'; cx.fillRect(12, -36, 14, 6);
+    cx.restore();
+    if (players === 2) { cx.fillStyle = p.col; cx.font = '900 12px system-ui'; cx.textAlign = 'center'; cx.fillText('P' + (p.i + 1), p.x, p.y - 86); cx.textAlign = 'start'; }
+  }
+  function drawBoss(b) {
+    if (b.hp <= 0 && state === 'end') { cx.globalAlpha = 0.4; }
+    var id = b.B.id, x = b.x + (b.shake ? (Math.random() - 0.5) * 6 : 0), y = b.y;
+    cx.save(); cx.translate(x, y); if (b.flash > 0) cx.filter = 'brightness(2.2)';
+    cx.fillStyle = 'rgba(0,0,0,.3)'; cx.beginPath(); cx.ellipse(0, b.fly ? FLOOR - y : 2, b.w / 2, 10, 0, 0, 6.28); cx.fill();
+    var t = time;
+    if (id === 'beetle') { cx.scale(b.face, 1); cx.fillStyle = b.B.col; cx.beginPath(); cx.ellipse(0, -60, 85, 60, 0, Math.PI, 0); cx.fill(); cx.fillStyle = '#475569'; cx.fillRect(-85, -62, 170, 14); for (var k = -1; k <= 1; k++) { cx.fillStyle = '#1f2937'; cx.fillRect(k * 45 - 6, -20, 12, 22 + Math.sin(t * 20 + k) * 4); } cx.fillStyle = '#334155'; cx.beginPath(); cx.arc(-82, -50, 30, 0, 6.28); cx.fill(); cx.fillStyle = b.B.eye; cx.beginPath(); cx.arc(-92, -56, 8, 0, 6.28); cx.fill(); cx.strokeStyle = '#94a3b8'; cx.lineWidth = 6; cx.beginPath(); cx.moveTo(-100, -70); cx.quadraticCurveTo(-130, -110, -110, -130); cx.stroke(); }
+    if (id === 'witch') { cx.fillStyle = b.B.col; cx.beginPath(); cx.moveTo(0, -150); cx.lineTo(-60, 10); cx.lineTo(60, 10); cx.fill(); cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(0, -150, 30, 0, 6.28); cx.fill(); cx.fillStyle = '#1e1b4b'; cx.beginPath(); cx.moveTo(-40, -165); cx.lineTo(40, -165); cx.lineTo(8, -240); cx.fill(); cx.fillStyle = b.B.eye; [-10, 10].forEach(function (d) { cx.beginPath(); cx.arc(d, -150, 5, 0, 6.28); cx.fill(); }); for (var k = 0; k < 5; k++) { cx.globalAlpha = 0.5; cx.fillStyle = '#818cf8'; cx.beginPath(); cx.arc(Math.cos(t * 2 + k * 1.26) * 80, -90 + Math.sin(t * 2 + k * 1.26) * 30, 8, 0, 6.28); cx.fill(); } cx.globalAlpha = 1; }
+    if (id === 'mush') { cx.fillStyle = '#f8fafc'; cx.fillRect(-45, -90, 90, 90); cx.fillStyle = b.B.col; cx.beginPath(); cx.ellipse(0, -100, 105, 70, 0, Math.PI, 0); cx.fill(); cx.fillStyle = '#fff'; [[-50, -130, 14], [10, -150, 18], [55, -118, 12]].forEach(function (d) { cx.beginPath(); cx.arc(d[0], d[1], d[2], 0, 6.28); cx.fill(); }); cx.fillStyle = '#facc15'; cx.beginPath(); cx.moveTo(-40, -165); cx.lineTo(-25, -200); cx.lineTo(0, -175); cx.lineTo(25, -200); cx.lineTo(40, -165); cx.fill(); cx.fillStyle = '#111'; [-18, 18].forEach(function (d) { cx.beginPath(); cx.arc(d, -60, 7, 0, 6.28); cx.fill(); }); cx.fillRect(-15, -38, 30, 5); }
+    if (id === 'pirate') { cx.fillStyle = '#7c2d12'; cx.beginPath(); cx.moveTo(-110, -20); cx.lineTo(110, -20); cx.lineTo(80, 30); cx.lineTo(-80, 30); cx.fill(); cx.fillStyle = '#f8fafc'; cx.beginPath(); cx.moveTo(-6, -20); cx.lineTo(-6, -160); cx.lineTo(80, -40); cx.fill(); cx.fillStyle = '#e2e8f0'; for (var k = 0; k < 3; k++) { cx.beginPath(); cx.arc(-80 + k * 30, -40 + Math.sin(t * 3 + k) * 4, 26, 0, 6.28); cx.fill(); } cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(-40, -60, 18, 0, 6.28); cx.fill(); cx.fillStyle = '#111'; cx.fillRect(-60, -82, 40, 10); cx.fillStyle = b.B.eye; cx.beginPath(); cx.arc(-34, -62, 4, 0, 6.28); cx.fill(); }
+    if (id === 'shadow') { cx.scale(b.face, 1); cx.globalAlpha = 0.95; cx.fillStyle = '#020617'; cx.beginPath(); cx.roundRect ? cx.roundRect(-30, -90, 60, 60, 14) : cx.rect(-30, -90, 60, 60); cx.fill(); cx.beginPath(); cx.arc(0, -112, 26, 0, 6.28); cx.fill(); cx.fillRect(-20, -30, 14, 30); cx.fillRect(6, -30, 14, 30); cx.fillStyle = b.B.eye; cx.fillRect(4, -118, 12, 5); cx.fillRect(-14, -118, 8, 5); for (var k = 0; k < 6; k++) { cx.globalAlpha = 0.18; cx.beginPath(); cx.arc(-30 - k * 12, -70 + Math.sin(t * 5 + k) * 10, 20 - k * 2, 0, 6.28); cx.fill(); } cx.globalAlpha = 1; }
+    cx.restore(); cx.filter = 'none'; cx.globalAlpha = 1;
+    // boss health bar
+    var w = 420; cx.fillStyle = 'rgba(0,0,0,.45)'; cx.fillRect(W / 2 - w / 2, 18, w, 16); cx.fillStyle = b.phase === 2 ? '#ef4444' : b.phase === 1 ? '#f59e0b' : '#22c55e'; cx.fillRect(W / 2 - w / 2, 18, w * Math.max(0, b.hp) / b.max, 16);
+    [0.33, 0.66].forEach(function (f) { cx.fillStyle = '#fff'; cx.fillRect(W / 2 - w / 2 + w * f, 16, 2, 20); });
+  }
+
+  // ---------- loop ----------
+  var last = performance.now();
+  function frame(now) { var dt = Math.min(0.033, (now - last) / 1000); last = now; if (state === 'play') step(dt); else if (state === 'end' && boss) { parts.forEach(function (q) { q.t -= dt; q.x += q.vx * dt; q.y += q.vy * dt; }); parts = parts.filter(function (q) { return q.t > 0; }); time += dt * 0.2; } draw(); requestAnimationFrame(frame); }
+  function applyLang() { document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.querySelectorAll('[data-en]').forEach(function (el) { el.textContent = lang === 'en' ? el.dataset.en : el.dataset.ar; }); }
+  document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); menu(); }; });
+  window.DS_GAME = { name: 'SHADOW DASH', cmds: [['win', 'Beat this boss', 'اهزم الزعيم ده'], ['unlock', 'Open all lands', 'افتح كل الأراضي'], ['heal', 'Full hearts', 'قلوب كاملة']], run: function (c) { if (c === 'win' && boss && state === 'play') damageBoss(boss.hp + 1); if (c === 'unlock') { won = [0, 1, 2, 3, 4]; store.set('sd_won', won); menu(); } if (c === 'heal') P.forEach(function (p) { p.hp = 3; p.dead = false; }); } };
+  applyLang(); menu(); requestAnimationFrame(frame);
+})();
+</script>
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script src="../assets/js/game_admin.js?v=V48" defer></script>
+</body>
+</html>
