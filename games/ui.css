@@ -39,6 +39,6 @@ canvas.gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lv button b{display:block;font-size:18px}
 .lv button.done{outline:2px solid #86efac}
 .lv button[disabled]{opacity:.35}
-.lang{position:fixed;top:max(10px,env(safe-area-inset-top));inset-inline-end:10px;z-index:30;display:flex;gap:6px}
+.lang{position:fixed;bottom:max(10px,env(safe-area-inset-bottom));inset-inline-end:10px;z-index:30;display:flex;gap:6px;opacity:.85}
 .lang button{padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-weight:800}
 .hud:not([hidden]) ~ .lang{display:none}

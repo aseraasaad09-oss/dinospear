@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>HIDE & SEEK — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V35" defer></script>
+<script src="../assets/js/rotate.js?v=V36" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 </head>
 <body>
@@ -80,7 +80,7 @@ const FRIENDS = [
  { en: 'Lina', ar: 'لينا', shirt: 0x8b5cf6, hair: 0x7c2d12, skin: 0xf2c49b },
  { en: 'Yusuf', ar: 'يوسف', shirt: 0x10b981, hair: 0x111111, skin: 0x8d5524 }];
 
-const W = makeWorld({ sky: 0x2f6b2a, fog: 0x9bd8f5, fogNear: 30, fogFar: 80, ambient: 0.7, sun: 1.25 });
+const W = makeWorld({ sky: 0x9bd8f5, fog: 0x9bd8f5, fogNear: 30, fogFar: 80, ambient: 0.7, sun: 1.25 });
 const { scene, camera, renderer, sun } = W;
 setupJoystick(); bindButton('bAct', 'KeyE'); bindButton('bRun', 'Run');
 const $ = id => document.getElementById(id);
@@ -278,7 +278,7 @@ function step(dt) {
     }
   }
   const focus = player.hidden ? player.back : player.pos;
-  follow(camera, focus, dt, innerWidth < innerHeight ? 15 : 12, innerWidth < innerHeight ? 9 : 8);
+  follow(camera, focus, dt, 0, 0, player.hidden ? null : player.mesh);
   sun.position.set(focus.x + 14, 28, focus.z + 10); sun.target.position.set(focus.x, 0, focus.z);
 }
 
@@ -317,6 +317,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V35" defer></script>
+<script src="../assets/js/game_admin.js?v=V36" defer></script>
 </body>
 </html>

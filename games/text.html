@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#0b1020">
 <title>THE TEXT — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
-<script src="../assets/js/rotate.js?v=V35" data-noask defer></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script src="../assets/js/rotate.js?v=V36" data-noask defer></script>
 <style>
 /* THE TEXT V01 — write a story, answer a few questions, get your own game */
 body{touch-action:manipulation;overflow:auto}
@@ -163,11 +163,15 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   var Q = [
     { k: 'genre', en: 'The main kind of your game', ar: 'النوع الأساسي للعبتك', o: [['story', 'Story game (your story shows before every chapter)', 'لعبة قصصية (قصتك بتظهر قبل كل فصل)'], ['action', 'Action game (just play, short text)', 'لعبة أكشن (لعب على طول، كلام قليل)']] },
     { k: 'view', en: '2D or 3D?', ar: '2D ولا 3D؟', o: [['3d', '3D (you can turn the camera)', '3D (تقدر تغيّر الكاميرا)'], ['2d', '2D (flat and simple)', '2D (مسطحة وبسيطة)']] },
-    { k: 'type', en: 'How is it played?', ar: 'بتتلعب إزاي؟', o: [['adv', 'Adventure (seen from above)', 'مغامرة (من فوق)'], ['plat', 'Platform (side, jumping)', 'منصات (من الجنب وبتنط)'], ['sneak', 'Sneak & escape', 'تسلل وهروب'], ['arena', 'Survive waves of enemies', 'اصمد قدام موجات الأعداء'], ['rush', 'Race the clock', 'سباق مع الوقت']] },
+    { k: 'type', en: 'How is it played?', ar: 'بتتلعب إزاي؟', o: [['adv', 'Adventure (explore and do quests)', 'مغامرة (استكشف واعمل مهمات)'], ['plat', 'Platforms (jump from place to place)', 'منصات (نط من مكان لمكان)'], ['sneak', 'Sneak & hide', 'تسلل واستخباء'], ['arena', 'Survive waves of enemies', 'اصمد قدام موجات الأعداء'], ['rush', 'Race the clock', 'سباق مع الوقت']] },
+    { k: 'map', en: 'Map shape (3D)', ar: 'شكل الخريطة (3D)', o: [['auto', 'From my story', 'من قصتي'], ['island', 'Island', 'جزيرة'], ['path', 'Long road', 'طريق طويل'], ['city', 'City streets', 'شوارع مدينة'], ['maze', 'Maze', 'متاهة'], ['levels', 'Floating platforms', 'منصات في الهوا'], ['arena', 'Arena', 'ساحة']] },
+    { k: 'time', en: 'Time of day', ar: 'الوقت', o: [['auto', 'From my story', 'من قصتي'], ['day', 'Day', 'نهار'], ['sunset', 'Sunset', 'غروب'], ['night', 'Night', 'ليل']] },
+    { k: 'weather', en: 'Weather', ar: 'الجو', o: [['auto', 'From my story', 'من قصتي'], ['clear', 'Clear', 'صافي'], ['rain', 'Rain', 'مطر'], ['snow', 'Snow', 'تلج']] },
+    { k: 'cam', en: 'Camera (3D)', ar: 'الكاميرا (3D)', o: [['3rd', 'Third person (behind the hero)', 'شخص تالت (ورا البطل)'], ['1st', 'First person (your eyes)', 'من عينيك']] },
     { k: 'shape', en: 'Your hero is a…', ar: 'البطل بتاعك شكله…', o: [['circle', 'Circle', 'دايرة'], ['square', 'Square', 'مربع'], ['triangle', 'Triangle', 'مثلث']] },
     { k: 'color', en: 'Hero colour', ar: 'لون البطل', c: ['#22c55e', '#3b82f6', '#f97316', '#ec4899', '#facc15', '#a855f7', '#f8fafc'] },
     { k: 'attack', en: 'How does your hero attack?', ar: 'البطل بيضرب إزاي؟', o: [['sword', 'Sword swing', 'ضربة سيف'], ['shoot', 'Shoots', 'بيضرب نار'], ['stomp', 'Jumps on enemies', 'بينط على الأعداء'], ['none', 'No attack, only hide', 'من غير ضرب، بيستخبى بس']] },
-    { k: 'enemy', en: 'Enemies look like…', ar: 'الأعداء شكلهم…', o: [['square', 'Squares', 'مربعات'], ['triangle', 'Triangles', 'مثلثات'], ['circle', 'Circles', 'دواير']] },
+    { k: 'enemy', en: 'Enemies', ar: 'الأعداء', o: [['auto', 'From my story', 'من قصتي'], ['creature', 'Monsters', 'وحوش'], ['robot', 'Robots', 'روبوتات'], ['ghost', 'Ghosts', 'أشباح'], ['soldier', 'Guards', 'حراس'], ['dragon', 'Dragon boss', 'تنين زعيم']] },
     { k: 'level', en: 'How hard?', ar: 'صعوبتها قد إيه؟', o: [['1', 'Easy', 'سهلة'], ['2', 'Normal', 'عادية'], ['3', 'Hard', 'صعبة']] },
     { k: 'goal', en: 'To finish a chapter you…', ar: 'علشان تخلّص الفصل…', o: [['stars', 'Collect all stars', 'تلمّ كل النجوم'], ['exit', 'Reach the exit door', 'توصل لباب الخروج'], ['clear', 'Beat all enemies', 'تهزم كل الأعداء']] },
     { k: 'hand', en: 'Controls on the phone', ar: 'التحكم على الموبايل', o: [['r', 'Joystick left, buttons right', 'الجويستيك شمال والزراير يمين'], ['l', 'Joystick right, buttons left', 'الجويستيك يمين والزراير شمال']] },
@@ -177,7 +181,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     { k: 'djump', en: 'Double jump (platform games)', ar: 'نطة مزدوجة (في المنصات)', o: [['no', 'No', 'لأ'], ['yes', 'Yes', 'أيوه']] }
   ];
   var draft = null;
-  function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { genre: 'story', view: '3d', type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'square', level: '2', goal: 'stars', hand: 'r', joy: 'm', keys: 'both', dash: 'yes', djump: 'no', about: '' }, v: 1, remote: null }; }
+  function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { genre: 'story', view: '3d', type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'auto', map: 'auto', time: 'auto', weather: 'auto', cam: '3rd', level: '2', goal: 'stars', hand: 'r', joy: 'm', keys: 'both', dash: 'yes', djump: 'no', about: '' }, v: 1, remote: null }; }
   function renderQs() {
     var box = $('qs'); box.innerHTML = '';
     Q.forEach(function (q) {
@@ -218,6 +222,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
       var e = document.createElement('button'); e.type = 'button'; e.textContent = T('Update', 'حدّث'); e.onclick = function () { draft = JSON.parse(JSON.stringify(g)); openWrite(); }; a.appendChild(e);
       var pub = document.createElement('button'); pub.type = 'button'; pub.textContent = g.remote ? T('Published ✓', 'منشورة ✓') : T('Publish', 'انشر'); pub.onclick = function () { publish(g, pub); }; a.appendChild(pub);
     }
+    var ln = document.createElement('button'); ln.type = 'button'; ln.textContent = T('🔗 Own site', '🔗 موقع لوحدها'); ln.title = T('Open this game as its own page (you can add it to your home screen like an app)', 'افتح اللعبة كصفحة لوحدها (تقدر تضيفها للشاشة الرئيسية زي البرنامج)'); ln.onclick = function () { var u = soloUrl(g); try { navigator.clipboard.writeText(u); } catch (e) {} open(u, '_blank'); }; a.appendChild(ln);
+    var dl = document.createElement('button'); dl.type = 'button'; dl.textContent = T('⬇ Download', '⬇ نزّلها'); dl.onclick = function () { downloadGame(g); }; a.appendChild(dl);
     d.appendChild(a); return d;
   }
   function home() {
@@ -267,7 +273,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   $('aMake').onclick = function () {
     var r = readStory(draft.story, draft.title);
     var old = mine().find(function (x) { return x.id === draft.id; });
-    draft.v = old ? (old.v || 1) + 1 : 1; draft.spec = r; saveMine(draft);
+    draft.v = old ? (old.v || 1) + 1 : 1; draft.spec = r; draft.made = Date.now(); saveMine(draft); store.set('tt_prog_' + draft.id, 0);
     if (draft.remote) publish(draft, null, true);
     play(draft);
   };
@@ -363,7 +369,10 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   }
 
   function play(g) {
+    var a0 = Object.assign(newDraft().ans, g.ans || {});
+    if (a0.view !== '2d') { $('pHome').hidden = $('pWrite').hidden = $('pAsk').hidden = true; import('./tt_world.js').then(function (m) { m.playWorld(Object.assign({}, g, { ans: a0 }), { onExit: function () { home(); } }); }).catch(function (e) { alertMsg(T('Could not load the 3D game. Check the internet.', 'اللعبة 3D ما اتحملتش. اتأكد من النت.')); home(); }); return; }
     var spec = g.spec || readStory(g.story, g.title), ans = Object.assign(newDraft().ans, g.ans || {});
+    ans.type = 'plat';  // 2D is always seen from the side, never from the top
     G = { g: g, spec: spec, ans: ans, ch: 0, hp: 3, L: null, hero: null, inv: 0, cool: 0, shots: [], key: false, got: 0, shake: 0 };
     $('play').hidden = false; document.body.style.overflow = 'hidden'; fit();
     var left = ans.hand === 'l'; $('padL2').className = 'pad2 ' + (left ? 'r' : 'l'); $('padR2').className = 'pad2 ' + (left ? 'l' : 'r');
@@ -597,10 +606,45 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     document.querySelectorAll('[data-en]').forEach(function (el) { el.textContent = lang === 'en' ? el.dataset.en : el.dataset.ar; });
   }
   document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); if (!$('pAsk').hidden) renderQs(); else if (!$('pHome').hidden) home(); }; });
-  applyLang(); home();
+  // ---------- V03: every game can live on its own (own page / downloaded file) and games can be uploaded back ----------
+  function packGame(g) { var o = { t: 'thetext', v: 1, title: g.title, story: g.story, ans: g.ans, author: g.author || '' }; return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function unpack(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var o = JSON.parse(decodeURIComponent(escape(atob(s)))); if (o && o.t === 'thetext' && o.story) return o; } catch (e) {} return null; }
+  function soloUrl(g) { return location.href.split('#')[0].split('?')[0] + '#g=' + packGame(g); }
+  function downloadGame(g) {
+    var u = soloUrl(g), name = String(g.title || 'game').replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 40) || 'game';
+    var html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + name.replace(/</g, '') + ' — THE TEXT</title><meta name="thetext" content="' + packGame(g) + '"><style>body{margin:0;background:#0b1020;color:#fff;font:700 18px system-ui;display:grid;place-items:center;height:100vh;text-align:center}a{color:#fde047}</style></head><body><div>🎮 ' + name.replace(/</g, '') + '<br><small>THE TEXT · DINOSPEAR</small><br><br><a id="go" href="' + u + '">▶ Play / العب</a></div><script>location.replace(document.getElementById("go").href)<\/script></body></html>';
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' })); a.download = name + '.html'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  function importGame() {
+    var f = document.createElement('input'); f.type = 'file'; f.accept = '.html,.htm,.json,.txt';
+    f.onchange = function () { var file = f.files[0]; if (!file) return; file.text().then(function (t) {
+      var m = t.match(/name="thetext" content="([\w-]+)"/) || t.match(/#g=([\w-]+)/), o = m ? unpack(m[1]) : null;
+      if (!o) { try { var j = JSON.parse(t); if (j.story) o = j; } catch (e) {} }
+      if (!o) return alertMsg(T('This file is not a THE TEXT game.', 'الملف ده مش لعبة من THE TEXT.'));
+      var g = { id: 'g' + Date.now().toString(36), title: o.title, story: o.story, ans: o.ans || {}, author: o.author, v: 1 }; saveMine(g); home();
+    }); };
+    f.click();
+  }
+  (function () { var nb = $('bNew'); if (!nb) return; var ib = document.createElement('button'); ib.type = 'button'; ib.className = nb.className + ' sec'; ib.style.marginInlineStart = '8px'; ib.textContent = T('📂 Upload a game', '📂 ارفع لعبة'); ib.onclick = importGame; nb.parentNode.insertBefore(ib, nb.nextSibling); })();
+  var solo = location.hash.indexOf('#g=') === 0 ? unpack(location.hash.slice(3)) : null;
+  applyLang();
+  if (solo) {
+    var sg = { id: 'solo', title: solo.title, story: solo.story, ans: solo.ans || {}, author: solo.author };
+    document.title = solo.title + ' — THE TEXT';
+    var mf = document.createElement('link'); mf.rel = 'manifest'; mf.href = URL.createObjectURL(new Blob([JSON.stringify({ name: solo.title, short_name: String(solo.title).slice(0, 12), start_url: location.href, display: 'fullscreen', orientation: 'landscape', background_color: '#0b1020', theme_color: '#0b1020', icons: [{ src: new URL('../assets/img/icon-192.png', location.href).href, sizes: '192x192', type: 'image/png' }] })], { type: 'application/manifest+json' })); document.head.appendChild(mf);
+    var homeReal = home;
+    home = function () {
+      var o = document.createElement('div'); o.style.cssText = 'position:fixed;inset:0;z-index:99;background:rgba(5,8,20,.86);display:grid;place-items:center;font:700 18px system-ui;color:#fff;text-align:center';
+      var box = document.createElement('div'); box.style.cssText = 'background:#111a33;border-radius:18px;padding:22px;display:grid;gap:12px;min-width:240px';
+      box.appendChild(document.createTextNode('🎮 ' + solo.title));
+      [[T('▶ Play again', '▶ العب تاني'), function () { o.remove(); play(sg); }], [T('✍️ Make my own game', '✍️ اعمل لعبتي'), function () { o.remove(); history.replaceState(null, '', location.pathname); homeReal(); }]].forEach(function (x, i) { var b = document.createElement('button'); b.type = 'button'; b.className = 'big' + (i ? ' sec' : ''); b.textContent = x[0]; b.onclick = x[1]; box.appendChild(b); });
+      o.appendChild(box); document.body.appendChild(o);
+    };
+    play(sg);
+  } else home();
   window.DS_GAME = { name: 'THE TEXT', cmds: [['skip', 'Finish this chapter', 'خلّص الفصل ده'], ['clear', 'Remove all enemies', 'شيل كل الأعداء']], run: function (c) { if (!G || !G.L) return; if (c === 'skip') chapterDone(); if (c === 'clear') G.L.enemies.forEach(function (e) { e.alive = false; }); } };
 })();
 </script>
-<script src="../assets/js/game_admin.js?v=V35" defer></script>
+<script src="../assets/js/game_admin.js?v=V36" defer></script>
 </body>
 </html>

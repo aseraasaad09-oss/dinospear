@@ -188,6 +188,7 @@ export function readInput() {
   if (k.has('KeyA') || k.has('ArrowLeft')) x -= 1; if (k.has('KeyD') || k.has('ArrowRight')) x += 1;
   if (joy.active) { x = joy.x; z = joy.z; }
   const m = Math.hypot(x, z); if (m > 1) { x /= m; z /= m; }
+  if (typeof view !== 'undefined' && view.yaw) { const d = camDir(x, z); x = d.x; z = d.z; }
   input.x = x; input.z = z; input.run = k.has('ShiftLeft') || k.has('ShiftRight') || k.has('Run');
   return input;
 }
@@ -218,13 +219,27 @@ addEventListener('wheel', e => { view.zoom = clampZoom(view.zoom * (e.deltaY > 0
   addEventListener('pointerup', up); addEventListener('pointercancel', up);
 }
 
-// ---------- camera follow (third person) — V02: 3 views you can switch: normal / close / from the top (V key or 🎥 button) ----------
-view.mode = store.get('ds_cam', 0);
-const CAM_NAMES = [['Normal', 'عادي'], ['Close', 'قريب'], ['Top', 'من فوق']];
+// ---------- camera V03: never from the top — third person behind you, close over the shoulder, or first person ----------
+// drag on the screen (finger or mouse) to turn the camera; walking is always "forward = where the camera looks"
+view.mode = Math.min(2, store.get('ds_cam3', 0)); view.yaw = 0;
+const CAM_NAMES = [['3rd person', 'شخص تالت'], ['Shoulder', 'ورا الكتف'], ['1st person', 'من عينيك']];
 let camBtn = null;
 export function cycleView() {
-  view.mode = (view.mode + 1) % 3; store.set('ds_cam', view.mode);
+  view.mode = (view.mode + 1) % 3; store.set('ds_cam3', view.mode);
   if (camBtn) camBtn.textContent = '🎥 ' + T(CAM_NAMES[view.mode][0], CAM_NAMES[view.mode][1]);
+}
+{
+  let drag = null, nPts = 0;
+  addEventListener('pointerdown', e => { if (e.target.tagName !== 'CANVAS') return; nPts++; drag = nPts === 1 ? { id: e.pointerId, x: e.clientX } : null; });
+  addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; view.yaw -= (e.clientX - drag.x) * 0.008; drag.x = e.clientX; });
+  const up = e => { if (e.target.tagName === 'CANVAS' || drag) { nPts = Math.max(0, nPts - 1); if (drag && e.pointerId === drag.id) drag = null; } };
+  addEventListener('pointerup', up); addEventListener('pointercancel', up);
+  addEventListener('keydown', e => { if (e.code === 'KeyQ') view.yaw += 0.12; if (e.code === 'KeyR') view.yaw -= 0.12; });
+}
+// turn joystick/keys (x right, z back) into world directions for the current camera
+export function camDir(x, z) {
+  const c = Math.cos(view.yaw), s = Math.sin(view.yaw);
+  return { x: x * c + z * s, z: -x * s + z * c };
 }
 function camButton() {
   if (camBtn || !document.body) return;
@@ -235,13 +250,22 @@ function camButton() {
   document.body.appendChild(camBtn);
   addEventListener('keydown', e => { if ((e.key === 'v' || e.key === 'V') && !/INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName)) cycleView(); });
 }
-export function follow(camera, target, dt, height, back) {
+const _ct = new THREE.Vector3(), _cw = new THREE.Vector3();
+export function follow(camera, target, dt, height, back, mesh) {
   camButton();
-  const z = view.zoom, m = view.mode || 0;
-  const h = (height || 9) * z * (m === 1 ? 0.42 : m === 2 ? 1.9 : 1), b = (back || 8) * z * (m === 1 ? 0.62 : m === 2 ? 0.08 : 1);
-  const want = new THREE.Vector3(target.x, h, target.z + b);
-  camera.position.lerp(want, 1 - Math.pow(0.001, dt));
-  camera.lookAt(target.x, m === 1 ? 1.2 : 0.8, target.z - (m === 1 ? 4 : 1));
+  const z = view.zoom, m = view.mode || 0, s = Math.sin(view.yaw), c = Math.cos(view.yaw);
+  if (mesh) mesh.visible = m !== 2;
+  if (m === 2) {   // first person: eyes at head height, look where the camera faces
+    camera.position.set(target.x, 1.65, target.z);
+    camera.lookAt(target.x - s * 10, 1.45, target.z - c * 10); return;
+  }
+  let h = m === 1 ? 2.3 : 3.4, bk = (m === 1 ? 3.0 : 5.6) * z;
+  // pull the camera in so it never goes behind a wall
+  for (let i = 0; i < 8 && bk > 1.2; i++) { if (canSee(target, { x: target.x + s * bk, z: target.z + c * bk })) break; bk *= 0.78; }
+  _cw.set(target.x + s * bk + (m === 1 ? c * 0.7 : 0), h * (0.75 + z * 0.25), target.z + c * bk - (m === 1 ? s * 0.7 : 0));
+  camera.position.lerp(_cw, 1 - Math.pow(0.0005, dt));
+  _ct.set(target.x - s * 2, 1.3, target.z - c * 2);
+  camera.lookAt(_ct);
 }
 
 function charFromModel(c) {

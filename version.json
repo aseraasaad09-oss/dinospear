@@ -1,10 +1,20 @@
 {
-  "v": "V35",
+  "v": "V36",
   "date": "2026-11-26",
   "ar": [
-    "المساعد بقى فاهم كل الألعاب: THE KILLER WINNER، KILLER KILLER WARS، THE TEXT، الموتوسيكل، الزومبي، الاستغماية، الحيوانات، واتساب، الكاميرا والتحديثات"
+    "لعبة THE KILLER WINNER (اللي بتبقى فيها مخلوق) كانت مش بتفتح — اتصلحت",
+    "THE TEXT: كل قصة بتعمل عالم مختلف (المكان، الحاجات، الأعداء، المهمات) وتختار شكل الخريطة",
+    "THE TEXT: كل لعبة تقدر تفتحها كموقع لوحدها أو تنزّلها كملف، وتقدر ترفع لعبة جوه الموقع",
+    "الكاميرا: شخص تالت / ورا الكتف / من عينيك — مفيش من فوق تاني، واسحب بصباعك عشان تلف",
+    "17 موديل جديد من Blender",
+    "زرار اللغة ما بقاش فوق زرار الرجوع، والحيوانات بتتحمل صح على الموبايلات القديمة"
   ],
   "en": [
-    "The helper now knows every game: THE KILLER WINNER, KILLER KILLER WARS, THE TEXT, Motor Bike, Zombie, Hide & Seek, pets, WhatsApp, camera and updates"
+    "THE KILLER WINNER (where you become the creature) did not open — fixed",
+    "THE TEXT: every story makes a different world (places, things, enemies, quests) and you pick the map shape",
+    "THE TEXT: open any game as its own site or download it as a file, and upload games back",
+    "Camera: 3rd person / over the shoulder / 1st person — no more top view, drag to turn",
+    "17 new Blender models",
+    "Language switch no longer covers the back button; pets load right on older phones"
   ]
 }
