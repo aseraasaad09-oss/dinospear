@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>HIDE & SEEK — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V44" defer></script>
+<script src="../assets/js/rotate.js?v=V45" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 </head>
 <body>
@@ -56,10 +56,10 @@
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store , preload, model } from './engine.js';
-await preload(['person', 'tree', 'bush', 'wardrobe', 'crate', 'bed', 'sofa', 'lamp']);
+await preload(['person', 'tree', 'bush', 'wardrobe', 'crate', 'bed', 'sofa', 'lamp', 'cactus', 'snowman', 'palm', 'rock', 'mushroom']);
 
 // '#' wall, 'H' hiding place in the house (wardrobe / boxes / bed), 'B' bush in the garden, 'T' tree (sofa inside the house), 'S' base, 'P' player start
-const MAP = [
+const MAP0 = [
  '########################',
  '#H.....#.....H#.......H#',
  '#......#......#........#',
@@ -74,13 +74,38 @@ const MAP = [
  '#.T....B...P....B...T..#',
  '########################'];
 const HOUSE_ROWS = 6;
+// ---------- V02: online rooms get a generated map (up to 7×7 houses = about 50× bigger) with hiding places at random free spots ----------
+const NET = (() => { try { return JSON.parse(sessionStorage.getItem('hs_net') || 'null'); } catch (e) { return null; } })();
+function rng(seed) { let x = (seed >>> 0) % 2147483646 + 1; return () => (x = (x * 16807) % 2147483647, (x - 1) / 2147483646); }
+const THEMES = [
+  [/(صحرا|رمل|desert|sand)/i, { name: 'desert', grass: 0xe3c07a, sky: 0xffe0a8, tree: 'cactus', bush: 'rock' }],
+  [/(تلج|ثلج|شتا|snow|ice|winter)/i, { name: 'snow', grass: 0xeef5ff, sky: 0xcfe6ff, tree: 'snowman', bush: 'rock' }],
+  [/(بحر|شاطئ|جزير|beach|sea|island)/i, { name: 'beach', grass: 0xf1d79a, sky: 0x8fd3ff, tree: 'palm', bush: 'bush' }],
+  [/(غاب|شجر|forest|jungle|woods)/i, { name: 'forest', grass: 0x3f7f32, sky: 0x9fd8ff, tree: 'tree', bush: 'bush' }],
+  [/(مدين|شارع|city|street)/i, { name: 'city', grass: 0x8a8f98, sky: 0xa9d6ff, tree: 'tree', bush: 'crate' }],
+  [/(رعب|مسكون|شبح|ليل|haunted|scary|ghost|night)/i, { name: 'night', grass: 0x2f3b2f, sky: 0x1b2552, tree: 'tree', bush: 'mushroom' }]];
+const THEME = (NET && (THEMES.find(t => t[0].test(NET.cfg.desc || '')) || [0, null])[1]) || { name: 'garden', grass: 0x4d9a3c, sky: 0x9bd8f5, tree: 'tree', bush: 'bush' };
+const BLOCKS = NET ? ({ s: 1, m: 2, l: 4, xl: 7 }[NET.cfg.size] || 2) : 1;
+function genMap(cfg) {
+  const R = rng(cfg.seed), base = MAP0.slice(1, -1).map(row => row.slice(1, -1).replace(/[HBSP]/g, '.'));
+  const bw = base[0].length, bh = base.length, N = BLOCKS, W = N * bw + (N - 1), Hh2 = N * bh + (N - 1);
+  const g = []; for (let r = 0; r < Hh2; r++) { let row = ''; for (let c = 0; c < W; c++) { const br = r % (bh + 1), bc = c % (bw + 1); row += (br === bh || bc === bw) ? '.' : base[br][bc]; } g.push(row.split('')); }
+  const mid = Math.floor(N / 2), oy = mid * (bh + 1), ox = mid * (bw + 1);
+  g[oy + 2][ox + 10] = 'S'; g[oy + 10][ox + 10] = 'P';
+  const ok = (r, c) => { for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const ch = (g[r + dr] || [])[c + dc]; if (ch !== '.') return false; } return true; };
+  let want = N * N * 9, tries = 0;
+  while (want > 0 && tries++ < 20000) { const r = 1 + Math.floor(R() * (Hh2 - 2)), c = 1 + Math.floor(R() * (W - 2)); if (!ok(r, c)) continue; g[r][c] = (r % (bh + 1)) < 5 ? 'H' : 'B'; want--; }
+  const out = ['#'.repeat(W + 2)]; g.forEach(row => out.push('#' + row.join('') + '#')); out.push('#'.repeat(W + 2)); return out;
+}
+const MAP = NET ? genMap(NET.cfg) : MAP0;
+const houseRow = r => BLOCKS === 1 ? r < HOUSE_ROWS : (r === 0 || ((r - 1) % 12) < 5);
 const FRIENDS = [
  { en: 'Mona', ar: 'منى', shirt: 0xec4899, hair: 0x111111, skin: 0xc68642 },
  { en: 'Omar', ar: 'عمر', shirt: 0xf59e0b, hair: 0x3b2314, skin: 0xf2c49b },
  { en: 'Lina', ar: 'لينا', shirt: 0x8b5cf6, hair: 0x7c2d12, skin: 0xf2c49b },
  { en: 'Yusuf', ar: 'يوسف', shirt: 0x10b981, hair: 0x111111, skin: 0x8d5524 }];
 
-const W = makeWorld({ sky: 0x9bd8f5, fog: 0x9bd8f5, fogNear: 30, fogFar: 80, ambient: 0.7, sun: 1.25 });
+const W = makeWorld({ sky: THEME.sky, fog: THEME.sky, fogNear: 30, fogFar: 80 + BLOCKS * 10, ambient: THEME.name === 'night' ? 0.45 : 0.7, sun: THEME.name === 'night' ? 0.6 : 1.25 });
 const { scene, camera, renderer, sun } = W;
 setupJoystick(); bindButton('bAct', 'KeyE'); bindButton('bRun', 'Run');
 const $ = id => document.getElementById(id);
@@ -89,16 +114,16 @@ const cell = (c, r) => ({ x: (c - Wd / 2) * 2 + 1, z: (r - Hh / 2) * 2 + 1 });
 function toast(msg, ms) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1800); }
 
 // ---------- build the house and garden once ----------
-floor(scene, Wd * 2, Hh * 2, 0x4d9a3c, 3);
-const wood = floor(scene, Wd * 2 - 0.2, HOUSE_ROWS * 2, 0xb07a4a, 1.5);
-wood.position.set(0, 0.01, cell(0, 0).z - 1 + HOUSE_ROWS);
+floor(scene, Wd * 2, Hh * 2, THEME.grass, 3);
+if (BLOCKS === 1) { const wood = floor(scene, Wd * 2 - 0.2, HOUSE_ROWS * 2, 0xb07a4a, 1.5); wood.position.set(0, 0.01, cell(0, 0).z - 1 + HOUSE_ROWS); }
+else for (let by = 0; by < BLOCKS; by++) for (let bx = 0; bx < BLOCKS; bx++) { const a = cell(1 + bx * 23, 1 + by * 12), wd = floor(scene, 44, 10, 0xb07a4a, 1.5); wd.position.set(a.x + 21, 0.01, a.z + 4); }
 const wallCells = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wallCells.push([c, r]); }));
 const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 2.6, 2), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }), wallCells.length);
 const fence = [], m4 = new THREE.Matrix4();
-wallCells.forEach(([c, r], i) => { const p = cell(c, r); const low = r >= HOUSE_ROWS; m4.compose(new THREE.Vector3(p.x, low ? 0.6 : 1.3, p.z), new THREE.Quaternion(), new THREE.Vector3(1, low ? 1.2 / 2.6 : 1, 1)); inst.setMatrixAt(i, m4); if (low) fence.push(i); });
+wallCells.forEach(([c, r], i) => { const p = cell(c, r); const low = !houseRow(r); m4.compose(new THREE.Vector3(p.x, low ? 0.6 : 1.3, p.z), new THREE.Quaternion(), new THREE.Vector3(1, low ? 1.2 / 2.6 : 1, 1)); inst.setMatrixAt(i, m4); if (low) fence.push(i); });
 inst.castShadow = inst.receiveShadow = true; scene.add(inst);
 fence.forEach(i => inst.setColorAt(i, new THREE.Color(0xd6a46c))); wallCells.forEach((w, i) => { if (!fence.includes(i)) inst.setColorAt(i, new THREE.Color(0xfef3c7)); }); inst.instanceColor.needsUpdate = true;
-grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const isW = row[c] === '#'; if (isW && s < 0) s = c; if (!isW && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: r < HOUSE_ROWS }); s = -1; } } });
+grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const isW = row[c] === '#'; if (isW && s < 0) s = c; if (!isW && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: houseRow(r) }); s = -1; } } });
 
 const spots = []; let base = null, startP = null;
 grid.forEach((row, r) => row.forEach((ch, c) => {
@@ -106,9 +131,9 @@ grid.forEach((row, r) => row.forEach((ch, c) => {
   if (ch === 'S') base = p;
   if (ch === 'P') startP = p;
   if (ch === 'T') {
-    if (r < HOUSE_ROWS) { const so = model('sofa'); if (so) { so.position.set(p.x, 0, p.z); scene.add(so); walls.push({ x0: p.x - 0.9, x1: p.x + 0.9, z0: p.z - 0.4, z1: p.z + 0.4, tall: false }); const la = model('lamp'); if (la) { la.position.set(p.x + 1.3, 0, p.z); scene.add(la); } } else { box(scene, p.x, p.z, 1.8, 0.8, 0.5, 0x2563eb); box(scene, p.x, p.z - 0.35, 1.8, 0.2, 1.0, 0x1d4ed8, { solid: false }); } }
+    if (houseRow(r)) { const so = model('sofa'); if (so) { so.position.set(p.x, 0, p.z); scene.add(so); walls.push({ x0: p.x - 0.9, x1: p.x + 0.9, z0: p.z - 0.4, z1: p.z + 0.4, tall: false }); const la = model('lamp'); if (la) { la.position.set(p.x + 1.3, 0, p.z); scene.add(la); } } else { box(scene, p.x, p.z, 1.8, 0.8, 0.5, 0x2563eb); box(scene, p.x, p.z - 0.35, 1.8, 0.2, 1.0, 0x1d4ed8, { solid: false }); } }
     else {
-      const tm = model('tree');
+      const tm = model(THEME.tree);
       if (tm) { tm.position.set(p.x, 0, p.z); tm.rotation.y = c * 1.3; scene.add(tm); walls.push({ x0: p.x - 0.3, x1: p.x + 0.3, z0: p.z - 0.3, z1: p.z + 0.3, tall: true }); }
       else { box(scene, p.x, p.z, 0.4, 0.4, 1.4, 0x7c4a1e); const top = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2.6, 9), mat(0x15803d, { flatShading: true })); top.position.set(p.x, 2.6, p.z); top.castShadow = true; scene.add(top); }
     }
@@ -116,7 +141,7 @@ grid.forEach((row, r) => row.forEach((ch, c) => {
   if (ch === 'H' || ch === 'B') {
     const g = new THREE.Group(); let kind;
     if (ch === 'B') {
-      kind = 'bush'; const bm = model('bush');
+      kind = 'bush'; const bm = model(THEME.bush);
       if (bm) g.add(bm); else [[0, 0.6, 0, 0.9], [0.5, 0.5, 0.2, 0.65], [-0.45, 0.5, -0.15, 0.7]].forEach(b => { const s = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 1), mat(0x22863a, { flatShading: true })); s.position.set(b[0], b[1], b[2]); s.castShadow = true; g.add(s); });
     } else {
       kind = ['wardrobe', 'boxes', 'bed'][spots.length % 3];
@@ -134,9 +159,9 @@ grid.forEach((row, r) => row.forEach((ch, c) => {
   }
 }));
 // garden flowers so the grass is not empty
-for (let i = 0; i < 70; i++) {
-  const c = 1 + Math.floor(Math.random() * (Wd - 2)), r = HOUSE_ROWS + 1 + Math.floor(Math.random() * (Hh - HOUSE_ROWS - 2));
-  if (grid[r][c] !== '.') continue;
+for (let i = 0; i < 70 * BLOCKS * BLOCKS; i++) {
+  const c = 1 + Math.floor(Math.random() * (Wd - 2)), r = 1 + Math.floor(Math.random() * (Hh - 2));
+  if (grid[r][c] !== '.' || houseRow(r)) continue;
   const p = cell(c, r), f = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 5), new THREE.MeshBasicMaterial({ color: [0xfde047, 0xf472b6, 0xffffff, 0xfb923c][i % 4] }));
   f.position.set(p.x + Math.random() * 1.6 - 0.8, 0.1, p.z + Math.random() * 1.6 - 0.8); scene.add(f);
 }
@@ -301,13 +326,154 @@ $('mSeek').onclick = () => startRound('seek'); $('mHide').onclick = () => startR
 $('eAgain').onclick = () => startRound(mode); $('eMenu').onclick = showMenu; $('bBack').onclick = showMenu;
 addEventListener('keydown', e => { if (e.code === 'Escape' && state === 'play') showMenu(); });
 document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); showMenu(); });
-setLang(L()); showMenu();
+setLang(L()); if (!NET) showMenu();
 place(player, startP); place(seeker, base); friends.forEach((f, i) => place(f, { x: base.x + (i - 1.5) * 1.3, z: base.z + 2 }));
+
+// ---------- V02: ONLINE ROOMS — public or private (code), host picks time, map size and describes the map ----------
+const SB_URL = 'https://djpgranztcqxyfehynux.supabase.co';
+const myId = (() => { try { let i = sessionStorage.getItem('hs_id'); if (!i) { i = Math.random().toString(36).slice(2, 10); sessionStorage.setItem('hs_id', i); } return i; } catch (e) { return Math.random().toString(36).slice(2, 10); } })();
+function myName() { try { const k = Object.keys(localStorage).find(x => /^sb-.*-auth-token$/.test(x)); const j = k && JSON.parse(localStorage.getItem(k)); return ((j && j.user && j.user.user_metadata && j.user.user_metadata.username) || localStorage.getItem('ds_name') || T('Player ', 'لاعب ') + myId.slice(0, 2).toUpperCase()).slice(0, 14); } catch (e) { return 'Player'; } }
+let sb = null; const client = () => sb || (window.supabase && window.ASER_KEY ? (sb = window.supabase.createClient(SB_URL, window.ASER_KEY, { auth: { persistSession: false } })) : null);
+const code4 = () => { let c = '', A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; for (let i = 0; i < 4; i++) c += A[Math.floor(Math.random() * A.length)]; return c; };
+const SIZE_N = { s: [T('Small', 'صغيرة'), 1], m: [T('Medium (4 houses)', 'متوسطة (4 بيوت)'), 4], l: [T('Big (16 houses)', 'كبيرة (16 بيت)'), 16], xl: [T('Huge (49 houses, 50×)', 'ضخمة (49 بيت، 50 مرة)'), 49] };
+
+// --- lobby UI (in the menu) ---
+(function lobby() {
+  const card = $('menu').querySelector('.card'); if (!card || NET) return;
+  const box = document.createElement('div'); box.className = 'hsl';
+  box.innerHTML = `<style>.hsl{margin-top:14px;display:grid;gap:10px;text-align:start}.hsl h3{margin:0}.hsl .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.hsl select,.hsl input{border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.25);color:#fff;padding:8px;font:700 14px system-ui}.hsl input{min-width:0;flex:1}.hsl .pub{display:grid;gap:6px;max-height:200px;overflow:auto}.hsl .pr{display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.08);border-radius:12px;padding:8px}.hsl small{opacity:.8}</style>
+  <h3>🌐 ${T('Play online with people', 'العب أونلاين مع ناس')}</h3>
+  <div class="r"><label>${T('Time', 'الوقت')} <select id="nTime"><option value="120">2 ${T('min', 'دقيقة')}</option><option value="240" selected>4 ${T('min', 'دقايق')}</option><option value="360">6 ${T('min', 'دقايق')}</option><option value="600">10 ${T('min', 'دقايق')}</option></select></label>
+  <label>${T('Map', 'الخريطة')} <select id="nSize">${Object.keys(SIZE_N).map(k => `<option value="${k}" ${k === 'm' ? 'selected' : ''}>${SIZE_N[k][0]}</option>`).join('')}</select></label>
+  <label><input type="checkbox" id="nPub" checked style="flex:none"> ${T('Public room', 'أوضة عامة')}</label></div>
+  <div class="r"><input id="nDesc" maxlength="60" placeholder="${T('Describe the map: desert, snow, beach, forest, city, haunted…', 'اوصف الخريطة: صحرا، تلج، شاطئ، غابة، مدينة، مسكونة…')}"></div>
+  <div class="r"><button type="button" class="big" id="nMake">${T('Make a room', 'اعمل أوضة')}</button><input id="nCode" maxlength="4" placeholder="ABCD" style="max-width:90px;text-transform:uppercase"><button type="button" class="big sec" id="nJoin">${T('Join', 'ادخل')}</button></div>
+  <b>${T('Public rooms now', 'الأوض العامة دلوقتي')}</b><div class="pub" id="nPubList"><small>${T('Looking…', 'بدوّر…')}</small></div><small id="nMsg"></small>`;
+  card.appendChild(box);
+  // public rooms are announced on one lobby channel
+  const c = client(); if (!c) { $('nPubList').innerHTML = `<small>${T('Online needs the internet.', 'الأونلاين محتاج نت.')}</small>`; return; }
+  const lob = c.channel('hs-lobby', { config: { presence: { key: myId } } });
+  const drawPub = () => {
+    const st = lob.presenceState(), rooms = []; Object.keys(st).forEach(k => (st[k] || []).forEach(x => { if (x.code && x.pub) rooms.push(x); }));
+    const L2 = $('nPubList'); L2.innerHTML = '';
+    if (!rooms.length) { L2.innerHTML = `<small>${T('No public rooms right now — make one!', 'مفيش أوض عامة دلوقتي — اعمل واحدة!')}</small>`; return; }
+    rooms.forEach(x => { const d = document.createElement('div'); d.className = 'pr'; const t = document.createElement('div'); t.textContent = `${x.code} · ${x.host} · ${SIZE_N[x.size] ? SIZE_N[x.size][0] : ''} · ${x.n || 1} 👤`; const sm = document.createElement('small'); sm.textContent = x.desc || ''; t.appendChild(document.createElement('br')); t.appendChild(sm); const b = document.createElement('button'); b.type = 'button'; b.className = 'big'; b.textContent = T('Join', 'ادخل'); b.onclick = () => joinRoom(x.code, false); d.appendChild(t); d.appendChild(b); L2.appendChild(d); });
+  };
+  lob.on('presence', { event: 'sync' }, drawPub).subscribe();
+  window.HS_LOBBY = lob;
+  $('nMake').onclick = () => joinRoom(code4(), true);
+  $('nJoin').onclick = () => { const v = $('nCode').value.trim().toUpperCase(); if (/^[A-Z]{4}$/.test(v)) joinRoom(v, false); else $('nMsg').textContent = T('Write the 4-letter code.', 'اكتب الكود (4 حروف).'); };
+})();
+
+// --- waiting room ---
+let room = null;
+function joinRoom(code, host) {
+  const c = client(); if (!c) return;
+  if (room) try { room.ch.unsubscribe(); } catch (e) {}
+  const cfg = host ? { seed: Math.floor(Math.random() * 1e9), size: $('nSize').value, desc: ($('nDesc').value || '').replace(/[<>]/g, '').slice(0, 60), time: +$('nTime').value, pub: $('nPub').checked } : null;
+  const ch = c.channel('hs-' + code, { config: { broadcast: { self: false }, presence: { key: myId } } });
+  room = { code, ch, host, cfg, at: Date.now() };
+  const wait = document.createElement('div'); wait.className = 'screen'; wait.id = 'hsWait'; wait.innerHTML = `<div class="card"><h2>🌐 ${T('Room', 'الأوضة')} ${code}</h2><p id="wInfo"></p><div id="wList" style="display:grid;gap:6px"></div><div class="row"><button type="button" class="big" id="wStart" hidden>${T('Start', 'ابدأ')}</button><button type="button" class="big sec" id="wLeave">${T('Leave', 'اخرج')}</button></div></div>`;
+  document.body.appendChild(wait); $('menu').hidden = true;
+  const draw = () => {
+    const st = ch.presenceState(), ppl = Object.keys(st).map(k => Object.assign({ id: k }, st[k][0] || {})).sort((a, b) => a.at - b.at);
+    room.people = ppl; room.isHost = ppl.length && ppl[0].id === myId; if (room.isHost && !room.cfg) room.cfg = ppl[0].cfg;
+    $('wList').innerHTML = ''; ppl.forEach((p, i) => { const d = document.createElement('div'); d.textContent = (i === 0 ? '👑 ' : '👤 ') + (p.n || '?') + (p.id === myId ? T(' (you)', ' (انت)') : ''); $('wList').appendChild(d); });
+    const cf = (ppl[0] || {}).cfg || room.cfg || {};
+    $('wInfo').textContent = `${SIZE_N[cf.size] ? SIZE_N[cf.size][0] : ''} · ${Math.round((cf.time || 240) / 60)} ${T('min', 'دقيقة')} · ${cf.desc || T('garden', 'جنينة')} · ${cf.pub ? T('public', 'عامة') : T('private — send the code', 'خاصة — ابعت الكود')}`;
+    $('wStart').hidden = !room.isHost || ppl.length < 2;
+    if (room.isHost && window.HS_LOBBY && cf.pub) window.HS_LOBBY.track({ code, pub: true, host: myName(), size: cf.size, desc: cf.desc, n: ppl.length });
+  };
+  ch.on('presence', { event: 'sync' }, draw);
+  ch.on('broadcast', { event: 'start' }, ({ payload }) => go(payload));
+  ch.subscribe(st => { if (st === 'SUBSCRIBED') ch.track({ n: myName(), at: room.at, cfg: room.cfg }); });
+  $('wLeave').onclick = () => { try { ch.unsubscribe(); if (window.HS_LOBBY) window.HS_LOBBY.untrack(); } catch (e) {} wait.remove(); room = null; $('menu').hidden = false; };
+  $('wStart').onclick = () => {
+    const ppl = room.people, seekerId = ppl[Math.floor(Math.random() * ppl.length)].id;
+    const pay = { code, cfg: room.cfg || ppl[0].cfg, seeker: seekerId, t0: Date.now() + 1500, ids: ppl.map(p => p.id) };
+    ch.send({ type: 'broadcast', event: 'start', payload: pay }); go(pay);
+  };
+  function go(p) { try { if (window.HS_LOBBY) window.HS_LOBBY.untrack(); sessionStorage.setItem('hs_net', JSON.stringify(p)); } catch (e) {} location.reload(); }
+}
+
+// --- the online round ---
+const others = new Map();
+let net = null;
+if (NET) (function () {
+  const c = client(); if (!c) { sessionStorage.removeItem('hs_net'); showMenu(); return; }
+  const ch = c.channel('hs-' + NET.code, { config: { broadcast: { self: false }, presence: { key: myId } } });
+  net = { ch, role: NET.seeker === myId ? 'seek' : 'hide', found: false, send: 0, endAt: NET.t0 + (15 + (NET.cfg.time || 240)) * 1000 };
+  friends.forEach(f => { f.mesh.visible = false; }); seeker.mesh.visible = false;
+  ch.on('broadcast', { event: 'p' }, ({ payload: d }) => {
+    if (!d || d.id === myId) return; let o = others.get(d.id);
+    if (!o) { o = { mesh: makeChar({ shirt: d.role === 'seek' ? 0xdc2626 : 0x22c55e, hair: 0x3b2314 }), pos: { x: d.x, z: d.z }, d }; scene.add(o.mesh); others.set(d.id, o); }
+    if (o.d.role !== d.role) { scene.remove(o.mesh); o.mesh = makeChar({ shirt: d.role === 'seek' ? 0xdc2626 : 0x22c55e, hair: 0x3b2314 }); scene.add(o.mesh); }
+    o.d = d; o.seen = performance.now();
+  });
+  ch.on('broadcast', { event: 'found' }, ({ payload: d }) => { if (d.id === myId && net.role === 'hide') { net.role = 'seek'; net.found = true; if (player.hidden) { player.hidden.who = null; player.mesh.visible = true; place(player, player.back || player.pos); player.hidden = null; } toast(T('You were found! Now help seek', 'اتلقيت! دلوقتي دوّر معاهم'), 2200); retint(); } else { const o = others.get(d.id); toast((o ? o.d.n : '?') + T(' was found!', ' اتلقى!'), 1500); } });
+  ch.subscribe(st => { if (st === 'SUBSCRIBED') ch.track({ n: myName() }); });
+  function retint() { scene.remove(player.mesh); player.mesh = makeChar({ shirt: net.role === 'seek' ? 0xdc2626 : 0x2563eb, hair: 0x3b2314 }); scene.add(player.mesh); $('hMode').textContent = net.role === 'seek' ? T('You seek', 'انت بتدوّر') : T('You hide', 'انت بتستخبى'); $('actTxt').textContent = net.role === 'seek' ? T('Search', 'دوّر') : T('Hide', 'استخبى'); }
+  net.retint = retint;
+  // start the round as soon as the page is ready
+  mode = 'net'; state = 'play'; spots.forEach(s => { s.who = null; }); player.hidden = null; place(player, net.role === 'seek' ? base : startP);
+  $('menu').hidden = true; $('end').hidden = true; $('hud').hidden = false; retint();
+  toast(net.role === 'seek' ? T('You seek! Count to 15 with your eyes closed…', 'انت اللي بتدوّر! غمّض وعد لحد 15…') : T('Run and hide! You have 15 seconds', 'اجري واستخبى! معاك 15 ثانية'), 2600);
+  const blind = document.createElement('div'); blind.id = 'hsBlind'; blind.style.cssText = 'position:fixed;inset:0;z-index:20;background:#000;color:#fff;display:none;place-items:center;font:900 40px system-ui'; document.body.appendChild(blind);
+})();
+function stepNet(dt) {
+  const now = Date.now(), countLeft = (NET.t0 + 15000 - now) / 1000, left = (net.endAt - now) / 1000;
+  const inp = readInput(), frozen = net.role === 'seek' && !net.found && countLeft > 0;
+  const bl = $('hsBlind'); bl.style.display = frozen ? 'grid' : 'none'; if (frozen) bl.textContent = Math.ceil(countLeft);
+  if (!player.hidden && !frozen) {
+    const sp = (inp.run ? 5.6 : 3.6), mv = Math.hypot(inp.x, inp.z);
+    moveCircle(player.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38); if (mv > 0.05) player.dir = Math.atan2(inp.x, inp.z);
+    player.mesh.position.set(player.pos.x, 0, player.pos.z); player.mesh.rotation.y = player.dir; player.mesh.userData.anim(dt, mv * (inp.run ? 1.6 : 1));
+  }
+  const near = spots.filter(s => dist(s.p, player.pos) < 2.2).sort((a, b) => dist(a.p, player.pos) - dist(b.p, player.pos))[0];
+  const taken = new Map(); others.forEach((o, id) => { if (o.d.hid >= 0) taken.set(o.d.hid, id); });
+  if (hit('KeyE') && !frozen) {
+    if (net.role === 'hide') {
+      if (player.hidden) { player.mesh.visible = true; player.hidden = null; place(player, player.back); }
+      else if (near && !taken.has(spots.indexOf(near))) { player.back = { x: player.pos.x, z: player.pos.z }; player.hidden = near; player.mesh.visible = false; beep(300, 0.12, 'sine'); toast(T('Hidden. Stay quiet…', 'استخبيت. اسكت خالص…')); }
+      else if (near) toast(T('Someone is already there!', 'فيه حد هنا أصلاً!'), 1000);
+    } else if (near) {
+      const who = taken.get(spots.indexOf(near));
+      if (who) { net.ch.send({ type: 'broadcast', event: 'found', payload: { id: who } }); const o = others.get(who); if (o) o.d.hid = -1; beep(700, 0.1, 'triangle'); toast(T('Found ', 'لقيت ') + (o ? o.d.n : '') + '!'); }
+      else { near.wob = 0.4; beep(200, 0.08); toast(T('Nobody here', 'مفيش حد هنا'), 900); }
+    }
+  }
+  spots.forEach(s => { s.wob = Math.max(0, s.wob - dt); s.mesh.rotation.z = Math.sin(s.wob * 30) * 0.06 * s.wob; });
+  // seekers catch hiders walking in the open by touching them
+  if (net.role === 'seek' && !frozen) others.forEach((o, id) => { if (o.d.role === 'hide' && o.d.hid < 0 && dist(o.pos, player.pos) < 1.2) { net.ch.send({ type: 'broadcast', event: 'found', payload: { id } }); o.d.role = 'seek'; } });
+  // remote players
+  const nowP = performance.now(); let hiders = net.role === 'hide' ? 1 : 0;
+  others.forEach((o, id) => {
+    if (nowP - o.seen > 6000) { scene.remove(o.mesh); others.delete(id); return; }
+    if (o.d.role === 'hide') hiders++;
+    const dx = o.d.x - o.pos.x, dz = o.d.z - o.pos.z; o.pos.x += dx * 0.2; o.pos.z += dz * 0.2;
+    o.mesh.visible = o.d.hid < 0; o.mesh.position.set(o.pos.x, 0, o.pos.z); o.mesh.rotation.y = o.d.dir; o.mesh.userData.anim(dt, Math.min(2, Math.hypot(dx, dz) * 10));
+  });
+  net.send -= dt;
+  if (net.send <= 0) { net.send = 0.1; net.ch.send({ type: 'broadcast', event: 'p', payload: { id: myId, n: myName(), x: +player.pos.x.toFixed(2), z: +player.pos.z.toFixed(2), dir: +player.dir.toFixed(2), hid: player.hidden ? spots.indexOf(player.hidden) : -1, role: net.role } }); }
+  $('hTime').textContent = Math.max(0, Math.ceil(countLeft > 0 ? countLeft : left));
+  $('hInfo').textContent = T('Hiders left: ', 'اللي لسه مستخبيين: ') + hiders + ' · ' + T('Room ', 'أوضة ') + NET.code;
+  if (countLeft < -3 && hiders === 0) return endNet(T('The seekers found everyone!', 'اللي بيدوّروا لقوا الكل!'));
+  if (left <= 0) return endNet(T('Time is up — the hiders win!', 'الوقت خلص — اللي استخبوا كسبوا!'));
+  const focus = player.hidden ? player.back : player.pos;
+  follow(camera, focus, dt, 0, 0, player.hidden ? null : player.mesh);
+  sun.position.set(focus.x + 14, 28, focus.z + 10); sun.target.position.set(focus.x, 0, focus.z);
+}
+function endNet(msg) {
+  state = 'end'; try { sessionStorage.removeItem('hs_net'); net.ch.unsubscribe(); } catch (e) {}
+  $('eTitle').textContent = T('Round over', 'الجولة خلصت'); $('eText').textContent = msg; $('hud').hidden = true; $('end').hidden = false; $('hsBlind').style.display = 'none';
+  $('eAgain').onclick = () => location.reload(); $('eMenu').onclick = () => location.reload();
+}
+if (NET) addEventListener('pagehide', () => { try { if (state !== 'play') sessionStorage.removeItem('hs_net'); } catch (e) {} });
 
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (state === 'play') step(dt);
+  if (state === 'play') (mode === 'net' ? stepNet(dt) : step(dt));
   else { const a = now / 5000; camera.position.set(Math.sin(a) * 20, 18, Math.cos(a) * 20); camera.lookAt(0, 0, 0); }
   renderer.render(scene, camera); endFrame();
   requestAnimationFrame(frame);
@@ -317,6 +483,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V44" defer></script>
+<script src="../assets/js/game_admin.js?v=V45" defer></script>
 </body>
 </html>
