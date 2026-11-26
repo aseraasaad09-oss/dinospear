@@ -1,7 +1,7 @@
 // DINOSPEAR service worker V08
 // • every update of the site reaches the phone app by itself (new version = auto reload)
 // • works with no internet: offline page, article and the offline games stay saved
-const V = 'dinospear-v45';
+const V = 'dinospear-v46';
 const CORE = ['./', 'index.html', 'offline.html', 'article.html', 'manifest.webmanifest', 'favicon.svg',
   'assets/css/style.css', 'assets/js/home.js', 'assets/js/events.js', 'assets/js/translate.js', 'assets/js/pets.js', 'assets/js/game_admin.js', 'assets/js/only_chat.js', 'assets/js/changes.js', 'assets/js/ss_online.js', 'assets/js/aw_social.js', 'changes.json', 'assets/js/helper_kb.js', 'assets/vendor/supabase-2.45.4.js', 'assets/js/viewdist.js', 'games/models/dog.glb', 'games/models/cat.glb', 'games/models/dinopet.glb', 'assets/js/icons.js', 'assets/js/ds_auth.js', 'assets/js/config.js', 'key.js',
   'assets/img/logo_v02.svg', 'assets/img/dino_v03.svg', 'assets/img/dinospear.svg', 'assets/img/icon-192.png', 'assets/img/icon-512.png',

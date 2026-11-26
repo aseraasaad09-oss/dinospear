@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#000000">
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V45" defer></script>
+<script src="../assets/js/rotate.js?v=V46" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
@@ -42,7 +42,7 @@
 <div class="hud" id="hud" hidden>
  <div class="bar">
   <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-  <div class="chip" id="hMission" style="white-space:normal;max-width:min(58vw,440px)"></div>
+  <div class="chip" id="hMission" style="white-space:normal;max-width:min(58vw,440px)"></div><div class="chip" id="hTimer">⏱</div>
   <div class="chip" id="arrowTip"></div>
  </div>
  <div class="bars">
@@ -241,6 +241,7 @@ const body = new THREE.Group();
   [-0.13, 0.13].forEach(x => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.02), eye); e.position.set(x, 2.75, 0.28); body.add(e); });
   [-1, 1].forEach(s => { const a = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.1, 0.16), blk); a.position.set(s * 0.55, 1.4, 0); a.rotation.z = s * 0.08; body.add(a); for (let k = 0; k < 3; k++) { const cl = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.35, 6), blk); cl.position.set(s * 0.6 + (k - 1) * 0.06, 0.25, 0); cl.rotation.x = Math.PI; body.add(cl); } });
   [-0.22, 0.22].forEach(x => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.3, 0.2), blk); l.position.set(x, 0.65, 0); body.add(l); });
+  [-1, 1].forEach(s => { const a2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.6, 0.12), blk); a2.position.set(s * 0.48, 1.15, 0.12); a2.rotation.z = s * 0.18; body.add(a2); });   // V03: four arms in the mirror too
   body.traverse(o => { o.layers.set(1); }); scene.add(body);
 }
 const arms = new THREE.Group(); camera.add(arms);
@@ -252,6 +253,9 @@ const armL = new THREE.Group(), armR = new THREE.Group();
   const vein = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.01, 0.9), new THREE.MeshBasicMaterial({ color: 0x581c87 })); vein.position.set(0, 0.046, -0.6); a.add(vein);
   a.position.set(s * 0.32, -0.34, -0.05); a.rotation.y = -s * 0.12; arms.add(a);
 });
+// V03: the creature has FOUR arms — a second, thinner pair under the first one
+const armL2 = armL.clone(), armR2 = armR.clone();
+[armL2, armR2].forEach((a, i) => { const s = i ? 1 : -1; a.scale.set(0.8, 0.8, 0.85); a.position.set(s * 0.5, -0.43, -0.08); a.rotation.y = -s * 0.32; arms.add(a); });
 
 // ---------- serum, humans, keys ----------
 let serums = [];
@@ -329,14 +333,14 @@ const angDiff = (a, b) => Math.abs(((a - b) + Math.PI * 3) % (Math.PI * 2) - Mat
 // ---------- 50 missions inside the base ----------
 let seed = 1;
 const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-const TYPES = ['term', 'fetch', 'keys', 'reach', 'serum'];
-const NAMES = { term: ['Hack the terminal (hold Use)', 'اخترق الكمبيوتر (اضغط استخدم ودوس كتير)'], fetch: ['Find the energy cell', 'لاقي خلية الطاقة'], keys: ['Destroy the walking keys', 'دمّر المفاتيح الماشية'], reach: ['Reach the marked room', 'اوصل للأوضة المعلّمة'], serum: ['Grab 2 serum boxes', 'هات علبتين مصل'] };
+const TYPES = ['term', 'fetch', 'keys', 'reach', 'serum', 'pills', 'switch', 'thief', 'sprint'];   // V03: 9 kinds of missions, each one a race against the clock
+const NAMES = { pills: ['Grab 5 pills before they melt', 'لمّ 5 حبوب قبل ما يدوبوا'], switch: ['Turn on the 3 switches', 'شغّل الـ 3 مفاتيح كهربا'], thief: ['Catch the thief with the serum!', 'امسك الحرامي اللي سرق المصل!'], sprint: ['Sprint to the light — run on four!', 'اجري للنور — اجري على الأربعة!'], term: ['Hack the terminal (hold Use)', 'اخترق الكمبيوتر (اضغط استخدم ودوس كتير)'], fetch: ['Find the energy cell', 'لاقي خلية الطاقة'], keys: ['Destroy the walking keys', 'دمّر المفاتيح الماشية'], reach: ['Reach the marked room', 'اوصل للأوضة المعلّمة'], serum: ['Grab 2 serum boxes', 'هات علبتين مصل'] };
 let M = null, mObjs = [], holdT = 0;
 const QUESTS = [
  ['The big heist', 'السرقة الكبيرة'], ['Lights out', 'اطفي النور'], ['Find the doctor', 'لاقي الدكتورة'], ['The police files', 'ملفات البوليس'], ['Chase in the market', 'مطاردة في السوق'],
  ['Silent night', 'ليلة هادية'], ['The broken radio', 'الراديو العطلان'], ['Rooftop run', 'جري على الأسطح'], ['The key collector', 'جامع المفاتيح'], ['The hospital wing', 'جناح المستشفى'],
  ['Trap the hunters', 'فخ للصيادين'], ['Old friends', 'أصحاب قدام'], ['The last bus', 'آخر أتوبيس'], ['Under the city', 'تحت المدينة'], ['The memory lab', 'معمل الذكريات']];
-function quest(q) { seed = 5000 + q * 71; const n = 2 + Math.min(2, Math.floor(q / 25)), steps = []; for (let k = 0; k < n; k++) steps.push(TYPES[Math.floor(rnd() * 5)]); if (q % 10 === 9) steps[n - 1] = 'keys'; return { name: QUESTS[q % QUESTS.length], steps }; }
+function quest(q) { seed = 5000 + q * 71; const n = 2 + Math.min(2, Math.floor(q / 25)), steps = []; for (let k = 0; k < n; k++) steps.push(TYPES[Math.floor(rnd() * TYPES.length)]); if (q % 10 === 9) steps[n - 1] = 'keys'; return { name: QUESTS[q % QUESTS.length], steps }; }
 function questStep(i) { const q = quest(Math.floor(i / 10)); return q.steps[Math.min(i % 10, q.steps.length - 1)]; }
 function nextIndex(i) { const q = Math.floor(i / 10), s2 = i % 10; return s2 + 1 < quest(q).steps.length ? i + 1 : (q + 1) * 10; }
 const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 4, 14, 1, true), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
@@ -366,27 +370,35 @@ $('cJoin').onclick = () => { const c = $('cCode').value.trim().toUpperCase(); if
 $('cStart').onclick = () => { const sv = load(), m = sv ? sv.m : 0; net.send('start', { m }); store.set(SAVE, { m, x: bedP.x + 1.6, z: bedP.z, yaw: Math.PI / 2 }); begin(true); };
 function netTick(dt) {
   if (!net) return; net.acc += dt; if (net.acc > 0.1) { net.acc = 0; net.send('p', { id: myId, n: myName(), x: P.pos.x, z: P.pos.z, yaw: P.yaw }); }
-  const now = performance.now(); mates.forEach((m, id) => { if (now - m.seen > 6000) { scene.remove(m.g); mates.delete(id); return; } m.x += (m.tx - m.x) * 0.2; m.z += (m.tz - m.z) * 0.2; m.g.position.set(m.x, 0, m.z); m.g.rotation.y = m.yaw + Math.PI; });
+  const now = performance.now(); mates.forEach((m, id) => { if (now - m.seen > 6000) { scene.remove(m.g); mates.delete(id); return; } m.x += (m.tx - m.x) * 0.2; m.z += (m.tz - m.z) * 0.2; m.g.position.set(m.x, 0, m.z); m.g.rotation.y = m.yaw + Math.PI; const sp = Math.min(1, Math.hypot(m.tx - m.x, m.tz - m.z) * 8), ph = now / 110; if (!m.parts) m.parts = ['ArmL', 'ArmR', 'ArmL2', 'ArmR2', 'LegL', 'LegR'].map(n => m.g.getObjectByName(n)); m.parts.forEach((pt, k) => { if (pt) pt.rotation.x = Math.sin(ph + k * 1.7) * 0.7 * sp + Math.sin(now / 400 + k) * 0.05; }); });
 }
 function setupMission(i) {
   if (net && !remoteApply && M && i > M.i) net.send('step', { i });
   mObjs.forEach(o => scene.remove(o.mesh)); mObjs = []; keys.filter(k => k.mission).forEach(k => { scene.remove(k.m.g); k.alive = false; k.gone = true; }); keys = keys.filter(k => !k.gone); holdT = 0;
   if (i >= TOTAL) { M = { i, type: 'escape', x: GP.x, z: GP.z + 3 }; beacon.position.set(M.x, 2, M.z); hudMission(); return; }
-  const type = PART === 2 ? questStep(i) : (seed = 777 + i * 131, i < 2 ? ['reach', 'term'][i] : TYPES[Math.floor(rnd() * 5)]); seed = 777 + i * 131;
+  const type = PART === 2 ? questStep(i) : (seed = 777 + i * 131, i < 2 ? ['reach', 'term'][i] : TYPES[Math.floor(rnd() * TYPES.length)]); seed = 777 + i * 131;
   let p = floorCells[Math.floor(rnd() * floorCells.length)];
   if (type === 'term') { const t = TERM[Math.floor(rnd() * TERM.length)]; p = t.p; }
   M = { i, type, x: p.x, z: p.z, got: 0 };
   if (type === 'fetch') { const cg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.4), new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.9 })); cg.position.set(p.x, 0.8, p.z); scene.add(cg); mObjs.push({ mesh: cg, p }); }
   if (type === 'keys') for (let k = 0; k < 2 + Math.min(2, Math.floor(i / 15)); k++) spawnKey({ x: p.x + (k - 0.5) * 1.5, z: p.z + 1 }, true);
   if (type === 'serum') for (let k = 0; k < 2; k++) { const q = floorCells[Math.floor(rnd() * floorCells.length)]; const sm = makeSerum(q); sm.mesh.scale.setScalar(1.5); mObjs.push({ mesh: sm.mesh, p: q, box: true }); }
-  beacon.position.set(p.x, 2, p.z); beacon.visible = type !== 'serum';
+  const glow = (c) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 1.1 });
+  if (type === 'pills') for (let k = 0; k < 5; k++) { const q = floorCells[Math.floor(rnd() * floorCells.length)]; const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.25, 4, 8), glow(0x22c55e)); m.rotation.z = 1.2; m.position.set(q.x, 0.7, q.z); scene.add(m); mObjs.push({ mesh: m, p: q }); }
+  if (type === 'switch') for (let k = 0; k < 3; k++) { const q = floorCells[Math.floor(rnd() * floorCells.length)]; const m = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.2), new THREE.MeshStandardMaterial({ color: 0x334155 })); const l = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.35, 0.12), glow(0xef4444)); l.position.set(0, 0.1, 0.15); m.add(b, l); m.position.set(q.x, 1.1, q.z); scene.add(m); mObjs.push({ mesh: m, p: q, lever: l }); }
+  if (type === 'thief') { const th = humanModel(false); th.g.position.set(p.x, 0, p.z); mObjs.push({ mesh: th.g, p: { x: p.x, z: p.z }, thief: th, dir: rnd() * 6.28 }); }
+  if (type === 'sprint') { let far = p, best = 0; for (let k = 0; k < 20; k++) { const q = floorCells[Math.floor(rnd() * floorCells.length)], d = dist(q, P.pos); if (d > best) { best = d; far = q; } } M.x = far.x; M.z = far.z; p = far; }
+  M.limit = { term: 70, fetch: 60, keys: 80, reach: 55, serum: 75, pills: 60, switch: 75, thief: 50, sprint: 25 }[type] || 60;
+  if (PART !== 2 && i < 2) M.limit = 999;
+  M.until = performance.now() + M.limit * 1000;
+  beacon.position.set(p.x, 2, p.z); beacon.visible = type !== 'serum' && type !== 'pills' && type !== 'switch';
   hudMission();
 }
 function hudMission() {
   if (PART === 2 && M.type === 'escape') { $('hMission').textContent = T('All 100 quests done! Your hidden key opens the old lab — go in!', 'خلصت الـ 100 كويست! مفتاحك المستخبي بيفتح المعمل القديم — ادخل!'); return; }
-  if (PART === 2) { const q = Math.floor(M.i / 10), qq = quest(q), n2 = NAMES[M.type], ex = M.type === 'serum' ? ' (' + M.got + '/2)' : M.type === 'keys' ? ' (' + keys.filter(k => k.alive && k.mission).length + ')' : ''; $('hMission').textContent = T('Quest ', 'كويست ') + (q + 1) + '/100 «' + (L() === 'en' ? qq.name[0] : qq.name[1]) + '» · ' + T('step ', 'خطوة ') + (M.i % 10 + 1) + '/' + qq.steps.length + ': ' + (L() === 'en' ? n2[0] : n2[1]) + ex; return; }
+  if (PART === 2) { const q = Math.floor(M.i / 10), qq = quest(q), n2 = NAMES[M.type], ex = M.type === 'pills' ? ' (' + M.got + '/5)' : M.type === 'switch' ? ' (' + M.got + '/3)' : M.type === 'serum' ? ' (' + M.got + '/2)' : M.type === 'keys' ? ' (' + keys.filter(k => k.alive && k.mission).length + ')' : ''; $('hMission').textContent = T('Quest ', 'كويست ') + (q + 1) + '/100 «' + (L() === 'en' ? qq.name[0] : qq.name[1]) + '» · ' + T('step ', 'خطوة ') + (M.i % 10 + 1) + '/' + qq.steps.length + ': ' + (L() === 'en' ? n2[0] : n2[1]) + ex; return; }
   if (M.type === 'escape') { $('hMission').textContent = T('All 50 missions done! The hangar is open — run to the rocket!', 'خلصت الـ 50 مهمة! الهنجر اتفتح — اجري للصاروخ!'); return; }
-  const n = NAMES[M.type], extra = M.type === 'serum' ? ' (' + M.got + '/2)' : M.type === 'keys' ? ' (' + keys.filter(k => k.alive && k.mission).length + ')' : '';
+  const n = NAMES[M.type], extra = M.type === 'pills' ? ' (' + M.got + '/5)' : M.type === 'switch' ? ' (' + M.got + '/3)' : M.type === 'serum' ? ' (' + M.got + '/2)' : M.type === 'keys' ? ' (' + keys.filter(k => k.alive && k.mission).length + ')' : '';
   $('hMission').textContent = T('Mission ', 'مهمة ') + (M.i + 1) + '/' + TOTAL + ': ' + (L() === 'en' ? n[0] : n[1]) + extra;
 }
 
@@ -480,7 +492,15 @@ function step(dt) {
   $('hold').style.display = holdT > 0 ? 'block' : 'none'; $('holdC').setAttribute('stroke-dashoffset', 100.5 * (1 - holdT / 3));
   $('hint').style.display = hintTxt ? 'block' : 'none'; $('hint').textContent = hintTxt;
   // missions
-  if (M.type === 'reach' && dist(P.pos, M) < 2.2) completeMission();
+  // V03: the clock — be late and you lose mind, and the mission starts again somewhere else
+  if ($('hTimer')) $('hTimer').hidden = !(M.until && M.limit < 999 && M.type !== 'escape');
+  if (M.until && M.limit < 999 && M.type !== 'escape') { const leftS = (M.until - performance.now()) / 1000; $('hTimer') && ($('hTimer').textContent = '⏱ ' + Math.max(0, Math.ceil(leftS)), $('hTimer').style.background = leftS < 10 ? 'rgba(220,38,38,.85)' : '');
+    if (leftS <= 0 && !(window.DS_ADM || {}).powerful) { P.mind = Math.max(0, P.mind - 20); beep(150, 0.3, 'sawtooth'); toast(T('Too late! −20 mind. Try again — faster!', 'اتأخرت! −20 من عقلك. جرّب تاني — أسرع!'), 2200); seed += 999; setupMission(M.i); return; } }
+  if (M.type === 'pills' || M.type === 'switch') mObjs.forEach(o => { if (!o.got && dist(o.p, P.pos) < 1.4) { o.got = true; M.got++; beep(900 + M.got * 120, 0.08, 'sine'); if (M.type === 'pills') o.mesh.visible = false; else o.lever.material = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1.2 }); hudMission(); } });
+  if (M.type === 'pills' || M.type === 'switch') mObjs.forEach(o => { if (o.mesh.visible && M.type === 'pills') o.mesh.rotation.y += dt * 3; });
+  if (M.type === 'thief' && mObjs[0]) { const o = mObjs[0], d = dist(o.p, P.pos); const away = Math.atan2(o.p.x - P.pos.x, o.p.z - P.pos.z); o.dir += (((away - o.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * (d < 8 ? 3 : 0.6)) + (Math.random() - 0.5) * dt; const spd = d < 8 ? 4.4 : 1.6; const bx = o.p.x, bz = o.p.z; moveCircle(o.p, Math.sin(o.dir) * spd * dt, Math.cos(o.dir) * spd * dt, 0.35); if (Math.hypot(o.p.x - bx, o.p.z - bz) < spd * dt * 0.3) o.dir += 1.7; o.mesh.position.set(o.p.x, 0, o.p.z); o.mesh.rotation.y = o.dir; o.thief.legs.forEach((l, k) => l.rotation.x = Math.sin(performance.now() / 90 + k * 3) * 0.8); beacon.position.set(o.p.x, 2, o.p.z); M.x = o.p.x; M.z = o.p.z; if (d < 1.3) { scene.remove(o.mesh); completeMission(); return; } }
+  if ((M.type === 'pills' && M.got >= 5) || (M.type === 'switch' && M.got >= 3) || (M.type === 'sprint' && dist(P.pos, M) < 2.2)) completeMission();
+  else if (M.type === 'reach' && dist(P.pos, M) < 2.2) completeMission();
   else if (M.type === 'fetch' && mObjs[0] && dist(P.pos, mObjs[0].p) < 1.4) completeMission();
   else if (M.type === 'keys' && !keys.some(k => k.alive && k.mission)) completeMission();
   else if (M.type === 'serum') { mObjs.forEach(o => { if (!o.got && dist(o.p, P.pos) < 1.4) { o.got = true; o.mesh.visible = false; M.got++; P.mind = Math.min(100, P.mind + 30); beep(1100, 0.1, 'sine'); hudMission(); } }); if (M.got >= 2) completeMission(); }
@@ -625,6 +645,12 @@ function loop(now) {
   armR.rotation.x = P.atk > 0 ? -0.2 - Math.sin((0.42 - P.atk) / 0.42 * Math.PI) * 0.6 : Math.sin(P.bob) * 0.05;
   armR.rotation.y = P.atk > 0 ? -0.12 + Math.sin((0.42 - P.atk) / 0.42 * Math.PI) * 1.1 : -0.12;
   armL.rotation.x = -Math.sin(P.bob) * 0.05; arms.position.y = P.four ? -0.12 : 0;
+  // the lower arms walk like legs when you run on four, and twitch when you stand still
+  const tw = Math.sin(now / 260) * 0.04;
+  armL2.rotation.x = P.four ? -0.5 + Math.sin(P.bob) * 0.55 : -Math.sin(P.bob + 1.6) * 0.12 + tw;
+  armR2.rotation.x = P.four ? -0.5 - Math.sin(P.bob) * 0.55 : Math.sin(P.bob + 1.6) * 0.12 - tw;
+  armL2.rotation.z = P.atk > 0 ? 0.4 : 0; armR2.rotation.z = P.atk > 0 ? -0.4 : 0;
+  armL.rotation.z = Math.sin(now / 340) * 0.03;
   // you are only visible in the mirror
   body.position.set(P.pos.x, P.eye > 1.5 ? 0 : -1.3 + P.eye, P.pos.z); body.rotation.y = P.yaw + Math.PI;
   // ceiling lights follow you (only the 6 nearest are real lights)
@@ -665,6 +691,6 @@ requestAnimationFrame(loop);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V45" defer></script>
+<script src="../assets/js/game_admin.js?v=V46" defer></script>
 </body>
 </html>
