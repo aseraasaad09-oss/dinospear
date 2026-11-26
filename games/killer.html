@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#000000">
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V41" defer></script>
+<script src="../assets/js/rotate.js?v=V42" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
@@ -101,7 +101,7 @@
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, moveCircle, canSee, dist, readInput, input, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store , preload, model } from './engine.js';
-await preload(['person', 'key', 'creature', 'crate', 'shelf', 'table']);
+await preload(['person', 'key', 'creature', 'crate', 'shelf', 'table', 'knife', 'pistol', 'shotgun', 'lantern']);
 const $ = id => document.getElementById(id);
 const PART = new URLSearchParams(location.search).get('part') === '2' ? 2 : 1;   // Chapter 2 — Earth
 const SAVE = PART === 2 ? 'kw2_save' : 'kw_save';
@@ -269,7 +269,9 @@ function humanModel(gun) {
     if (head) { const v = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.2, 0.05), mat(0xf59e0b, { metalness: 0.8, roughness: 0.2 })); v.position.set(0, 0.03, 0.27); head.add(v); }
     const arm = pm.getObjectByName('ArmR'), legs = [pm.getObjectByName('LegL'), pm.getObjectByName('LegR')];
     const dark = mat(0x1e293b), wpn = new THREE.Group();
-    if (gun) { const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.42), dark); const gr = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.1), dark); gr.position.set(0, -0.14, 0.12); wpn.add(b2, gr); }
+    const bm = model(gun ? (Math.random() < 0.35 ? 'shotgun' : 'pistol') : 'knife');
+    if (bm) { bm.scale.setScalar(gun ? 1.5 : 1.6); wpn.add(bm); }
+    else if (gun) { const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.42), dark); const gr = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.1), dark); gr.position.set(0, -0.14, 0.12); wpn.add(b2, gr); }
     else { const bl = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.38), mat(0xe5e7eb, { metalness: 0.9, roughness: 0.15 })); bl.position.z = 0.2; const hd = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.08, 0.14), dark); wpn.add(bl, hd); }
     wpn.position.set(0, -0.62, 0.1); wpn.rotation.x = 1.3; if (arm) { arm.rotation.x = -1.3; arm.add(wpn); }
     scene.add(g); return { g, legs: legs.filter(Boolean), arm: arm || g };
@@ -496,7 +498,9 @@ function step(dt) {
     k.dir = Math.atan2(ddx, ddz); const t = performance.now() / 70;
     k.m.g.position.set(k.pos.x, Math.abs(Math.sin(t)) * 0.07, k.pos.z); k.m.g.rotation.y = k.dir;
     k.m.legs[0].rotation.x = Math.sin(t) * 0.7; k.m.legs[1].rotation.x = -Math.sin(t) * 0.7; k.m.arms[0].rotation.z = 0.3 + Math.sin(t * 2) * 0.5; k.m.arms[1].rotation.z = -0.3 - Math.sin(t * 2) * 0.5;
-    if (d < 0.95) lose('cut');
+    // V02: a key only hurts you when it is right next to you, and it takes two hits to kill you
+    k.cd = (k.cd || 0) - dt;
+    if (d < 1.05 && k.cd <= 0) { k.cd = 1.0; hurt(50, null); const pdx = P.pos.x - k.pos.x, pdz = P.pos.z - k.pos.z, pm = Math.hypot(pdx, pdz) || 1; moveCircle(P.pos, pdx / pm * 0.8, pdz / pm * 0.8, 0.3); }
   });
   keys = keys.filter(k => !k.gone);
   // humans: gun = keep distance and shoot, knife = run and stab
@@ -510,12 +514,12 @@ function step(dt) {
     let tx = null, tz = null, s = 1.6;
     if (h.st === 'hunt') {
       s = h.gun ? 2.4 : 3.9;
-      if (h.gun && sees && d < 13) { h.dir += (((a - h.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 6); h.cd -= dt; if (h.cd <= 0) { h.cd = 1.3; shoot(h); } }
+      if (h.gun && sees && d < 6) { h.dir += (((a - h.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 6); h.cd -= dt; if (h.cd <= 0) { h.cd = 1.3; shoot(h); } }
       else if (!sees) { if (!h.path.length) h.path = path(h.pos, h.last); }
       else { tx = P.pos.x; tz = P.pos.z; }
-      if (!h.gun && d < 1.25) { h.cd -= dt; if (h.cd <= 0) { h.cd = 0.9; hurt(28, h); } }
+      if (!h.gun && d < 1.1) { h.cd -= dt; if (h.cd <= 0) { h.cd = 1.0; hurt(50, h); } }
     } else if (!h.path.length) h.path = path(h.pos, floorCells[Math.floor(Math.random() * floorCells.length)]);
-    if (tx === null && h.path.length && !(h.gun && sees && d < 13)) { const n = h.path[0]; tx = n.x; tz = n.z; if (Math.hypot(n.x - h.pos.x, n.z - h.pos.z) < 0.5) h.path.shift(); }
+    if (tx === null && h.path.length && !(h.gun && sees && d < 6)) { const n = h.path[0]; tx = n.x; tz = n.z; if (Math.hypot(n.x - h.pos.x, n.z - h.pos.z) < 0.5) h.path.shift(); }
     let moving = false;
     if (tx !== null) { const ddx = tx - h.pos.x, ddz = tz - h.pos.z, m = Math.hypot(ddx, ddz); if (m > 0.2) { moveCircle(h.pos, ddx / m * s * dt, ddz / m * s * dt, 0.38); h.dir += (((Math.atan2(ddx, ddz) - h.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 8); moving = true; } }
     const t = performance.now() / 120;
@@ -540,12 +544,13 @@ function shoot(h) {
   const from = new THREE.Vector3(h.pos.x, 1.5, h.pos.z), to = new THREE.Vector3(P.pos.x, P.eye - 0.3, P.pos.z);
   const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
   const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xfde047, transparent: true, opacity: 1 })); scene.add(line); tracers.push({ mesh: line, t: 0.25 });
-  if (Math.random() < (P.four ? 0.4 : 0.62)) hurt(14, h);
+  const dd = Math.hypot(h.pos.x - P.pos.x, h.pos.z - P.pos.z);
+  if (Math.random() < (P.four ? 0.4 : 0.62) * Math.max(0.2, 1 - dd / 7)) hurt(14, h);
 }
 function hurt(n, h) {
   if ((window.DS_ADM || {}).powerful) return;
   P.life -= n; hurtT = 0.6; beep(110, 0.15, 'sawtooth', 0.06);
-  if (P.life <= 0) lose('human');
+  if (P.life <= 0) lose(h ? 'human' : 'cut');
 }
 
 // ---------- menu ----------
@@ -660,6 +665,6 @@ requestAnimationFrame(loop);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V41" defer></script>
+<script src="../assets/js/game_admin.js?v=V42" defer></script>
 </body>
 </html>

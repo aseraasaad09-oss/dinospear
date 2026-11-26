@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>KILLER KILLER WARS — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V41" defer></script>
+<script src="../assets/js/rotate.js?v=V42" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 #role{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.88);text-align:center;padding:20px}
@@ -66,7 +66,7 @@
 <script src="../key.js"></script>
 <script type="module">
 import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store, preload, model, view, follow, cycleView } from './engine.js';
-await preload(['person', 'sofa', 'table', 'shelf', 'lamp', 'crate']);
+await preload(['person', 'sofa', 'table', 'shelf', 'lamp', 'crate', 'knife', 'pistol']);
 const $ = id => document.getElementById(id);
 
 // ---------- the house: '#' wall, '.' floor, 'F' furniture, 'c' coin spot, 'S' start spots ----------
@@ -117,8 +117,10 @@ const knifeGeo = new THREE.BoxGeometry(0.06, 0.06, 0.55), gunGeo = new THREE.Box
 function makePerson(o) {
   const m = makeChar({ shirt: o.color, hair: [0x3b2314, 0x111111, 0x7c2d12][o.idx % 3], skin: [0xf2c49b, 0xc68642, 0x8d5524][o.idx % 3] });
   scene.add(m);
-  const knife = new THREE.Mesh(knifeGeo, mat(0xd1d5db, { metalness: 0.9, roughness: 0.2 })); knife.position.set(0.45, 0.9, 0.35); knife.visible = false; m.add(knife);
-  const gun = new THREE.Mesh(gunGeo, mat(0x111827, { metalness: 0.6 })); gun.position.set(0.45, 0.95, 0.3); gun.visible = false; m.add(gun);
+  // V02: knife and pistol made in Blender (fall back to boxes if the model is missing)
+  const wm = (n, sc, geo, mt) => { const b = model(n); if (!b) return new THREE.Mesh(geo, mt); const g = new THREE.Group(); b.scale.setScalar(sc); g.add(b); return g; };
+  const knife = wm('knife', 1.7, knifeGeo, mat(0xd1d5db, { metalness: 0.9, roughness: 0.2 })); knife.position.set(0.45, 0.9, 0.35); knife.visible = false; m.add(knife);
+  const gun = wm('pistol', 1.9, gunGeo, mat(0x111827, { metalness: 0.6 })); gun.position.set(0.45, 0.95, 0.3); gun.visible = false; m.add(gun);
   const tag = document.createElement('canvas'); tag.width = 128; tag.height = 32; const g = tag.getContext('2d'); g.font = 'bold 20px system-ui'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText(o.name, 64, 22);
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(tag), transparent: true, depthTest: false })); sp.scale.set(1.6, 0.4, 1); sp.position.y = 2.35; m.add(sp);
   return Object.assign(o, { mesh: m, knife, gun, alive: true, dir: 0, coins: 0, knows: null, ai: { t: 0, path: null, goal: null }, cd: 0, showKnife: 0, mv: 0 });
@@ -336,6 +338,6 @@ function frame(now) {
 window.DS_GAME = { name: 'KILLER KILLER WARS', cmds: [['who', 'Who is the murderer?', 'مين القاتل؟'], ['gun', 'Give me the gun', 'إديني المسدس'], ['end', 'End the round (innocents win)', 'خلّص الجولة (الأبرياء كسبوا)']], run: c => { if (!me || state !== 'play') return; if (c === 'who') { const m = people.find(p => p.role === 'murderer'); return (L() === 'en' ? 'Murderer: ' : 'القاتل: ') + m.name; } if (c === 'gun' && me.role !== 'murderer') { me.hasGun = true; me.gun.visible = true; } if (c === 'end') { finish('inn'); if (net) net.send('end', { w: 'inn' }); } } };
 requestAnimationFrame(frame);
 </script>
-<script src="../assets/js/game_admin.js?v=V41" defer></script>
+<script src="../assets/js/game_admin.js?v=V42" defer></script>
 </body>
 </html>

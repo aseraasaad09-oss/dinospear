@@ -7,7 +7,7 @@
 <title>THE TEXT — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script src="../assets/js/rotate.js?v=V41" data-noask defer></script>
+<script src="../assets/js/rotate.js?v=V42" data-noask defer></script>
 <style>
 /* THE TEXT V01 — write a story, answer a few questions, get your own game */
 body{touch-action:manipulation;overflow:auto}
@@ -645,6 +645,6 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   window.DS_GAME = { name: 'THE TEXT', cmds: [['skip', 'Finish this chapter', 'خلّص الفصل ده'], ['clear', 'Remove all enemies', 'شيل كل الأعداء']], run: function (c) { if (!G || !G.L) return; if (c === 'skip') chapterDone(); if (c === 'clear') G.L.enemies.forEach(function (e) { e.alive = false; }); } };
 })();
 </script>
-<script src="../assets/js/game_admin.js?v=V41" defer></script>
+<script src="../assets/js/game_admin.js?v=V42" defer></script>
 </body>
 </html>
