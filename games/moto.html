@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>MOTOR BIKE — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <script src="../assets/js/rotate.js" defer></script>
 <style>
 #cv{position:fixed;inset:0;width:100%;height:100%;display:block}
@@ -27,7 +28,7 @@ body.playing .lang{display:none}
 <div id="hudM" hidden>
  <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
  <button class="chip btn" id="bRestart" type="button" aria-label="Restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5"/></svg></button>
- <div class="chip" id="hLvl"></div><div class="chip" id="hTime">0.0</div><div class="chip" id="hFlip"></div><div class="chip" id="hProg"></div>
+ <div class="chip" id="hLvl"></div><div class="chip" id="hTime">0.0</div><div class="chip" id="hFlip"></div><div class="chip" id="hProg"></div><button class="chip btn" id="bCam" type="button" aria-label="Camera"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></button>
 </div>
 <div class="toast" id="toast" style="position:fixed;z-index:7"></div>
 <div class="pad l" id="padL" hidden>
@@ -173,7 +174,7 @@ body.playing .lang{display:none}
 
   // ---------- drawing ----------
   var cam = { x: 0, y: 0 };
-  function draw() {
+  function draw2d() {
     var W = innerWidth, Hh = innerHeight, S = Math.min(W, Hh * 1.6) / 15;
     if (W < Hh) S = W / 9.5;
     var bx = bike.b.x, by = bike.b.y;
@@ -228,6 +229,68 @@ body.playing .lang{display:none}
     }
   }
 
+  // ---------- 3D view (three.js + Blender models) ----------
+  var THREE = null, GLTF = null, R3 = null, camI = 0;
+  Promise.all([import('three'), import('three/addons/loaders/GLTFLoader.js')]).then(function (m) {
+    THREE = m[0]; GLTF = new m[1].GLTFLoader();
+    var need = ['bike', 'person'], got = {};
+    need.forEach(function (n) { GLTF.load('models/' + n + '.glb', function (g) { got[n] = g.scene; if (Object.keys(got).length === need.length) init3(got); }, undefined, function () {}); });
+  }).catch(function () {});
+  function init3(models) {
+    var r = new THREE.WebGLRenderer({ antialias: true }); r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.shadowMap.enabled = true; r.outputColorSpace = THREE.SRGBColorSpace;
+    r.domElement.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;display:block'; document.body.insertBefore(r.domElement, cv); cv.style.display = 'none';
+    var sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+    var hemi = new THREE.HemisphereLight(0xffffff, 0x334155, 1.1), sun = new THREE.DirectionalLight(0xffffff, 2);
+    sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, far: 80 }); sc.add(hemi, sun, sun.target);
+    var bike3 = new THREE.Group(), inner = models.bike; inner.position.y = -0.42; bike3.add(inner);
+    var wheels = ['WheelR', 'WheelF'].map(function (n) { var w = inner.getObjectByName(n), p = new THREE.Group(); p.position.copy(w.position); inner.add(p); w.position.set(0, 0, 0); p.add(w); return p; });
+    var rider = models.person; rider.scale.setScalar(0.8); rider.position.set(-0.25, 0.25, 0); rider.rotation.y = Math.PI / 2; inner.add(rider);
+    ['LegL', 'LegR'].forEach(function (n) { var l = rider.getObjectByName(n); if (l) l.rotation.x = -1.2; });
+    ['ArmL', 'ArmR'].forEach(function (n) { var a = rider.getObjectByName(n); if (a) a.rotation.x = -1.1; });
+    var body = rider.getObjectByName('Body'); if (body) body.rotation.x = 0.35;
+    inner.traverse(function (o) { if (o.isMesh) o.castShadow = true; }); sc.add(bike3);
+    var flag = new THREE.Group(), pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4), new THREE.MeshStandardMaterial({ color: 0xffffff })); pole.position.y = 2; flag.add(pole);
+    var cc = document.createElement('canvas'); cc.width = cc.height = 64; var g2 = cc.getContext('2d'); for (var a = 0; a < 4; a++) for (var b = 0; b < 4; b++) { g2.fillStyle = (a + b) % 2 ? '#111' : '#fff'; g2.fillRect(a * 16, b * 16, 16, 16); }
+    var fl = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cc), side: THREE.DoubleSide })); fl.position.set(0.72, 3.4, 0); flag.add(fl); sc.add(flag);
+    var dust = []; for (var i = 0; i < 40; i++) { var d = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 4), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true })); d.visible = false; sc.add(d); dust.push(d); }
+    R3 = { r: r, sc: sc, cam: cam, sun: sun, hemi: hemi, bike: bike3, wheels: wheels, rider: rider, flag: flag, dust: dust, built: null, world: null, snap: true };
+    function size() { r.setSize(innerWidth, innerHeight, false); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); }
+    addEventListener('resize', size); size();
+  }
+  function build3() {
+    var sc = R3.sc; if (R3.world) { sc.remove(R3.world); R3.world.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); }
+    var w = new THREE.Group(); R3.world = w; sc.add(w); R3.built = H;
+    sc.background = new THREE.Color(LV.sky[1]); sc.fog = new THREE.Fog(LV.sky[1], 40, 140);
+    var n = H.length, top = [], front = [], ti = [], fi = [];
+    for (var i = 0; i < n; i++) { var x = i * STEP, y = H[i]; top.push(x, y, -3, x, y, 3); front.push(x, y, 3, x, y - 40, 3); }
+    for (i = 0; i < n - 1; i++) { var a = i * 2; ti.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); fi.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    function mesh(p, idx, col, rough) { var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setIndex(idx); g.computeVertexNormals(); var m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: col, roughness: rough, side: THREE.DoubleSide, flatShading: true })); m.receiveShadow = true; w.add(m); return m; }
+    mesh(top, ti, LV.top, 0.8); mesh(front, fi, LV.ground, 0.95);
+    // far hills made of circles, squares and triangles
+    for (i = 0; i < 70; i++) {
+      var k = i % 3, geo = k === 0 ? new THREE.SphereGeometry(4 + (i % 5), 14, 10) : k === 1 ? new THREE.BoxGeometry(6, 6 + (i % 4) * 2, 6) : new THREE.ConeGeometry(5, 10 + (i % 4) * 3, 4);
+      var d = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(LV.sky[0]).lerp(new THREE.Color(LV.ground), 0.35 + (i % 4) * 0.1), roughness: 1, flatShading: true }));
+      d.position.set(i * LV.len / 60 - 20, gy(i * LV.len / 60) - 6 + (k === 1 ? 3 : 0), -18 - (i % 5) * 6); d.rotation.y = i; w.add(d);
+    }
+    R3.flag.position.set(LV.finish, gy(LV.finish), -1.5); R3.snap = true;
+  }
+  function draw() {
+    if (!R3) return draw2d();
+    if (R3.built !== H) build3();
+    var b = bike, mx = (b.r.x + b.f.x) / 2, my = (b.r.y + b.f.y) / 2, a = Math.atan2(b.f.y - b.r.y, b.f.x - b.r.x);
+    R3.bike.position.set(mx, my, 0); R3.bike.rotation.z = a;
+    R3.wheels[0].rotation.z = b.spinR; R3.wheels[1].rotation.z = b.spinF;
+    if (b.dead) { var t = b.deadT; R3.rider.position.set(-0.25 + t * 1.5, 0.25 + t * 2 - t * t * 6, 0); R3.rider.rotation.z = t * 8; }
+    else { R3.rider.position.set(-0.25, 0.25, 0); R3.rider.rotation.z = 0; }
+    particles.forEach(function (p, i) { var d = R3.dust[i]; if (!d) return; d.visible = true; d.position.set(p.x, p.y, 0.5); d.material.color.set(p.c); d.material.opacity = 1 - p.t / 0.8; });
+    for (var i = particles.length; i < R3.dust.length; i++) R3.dust[i].visible = false;
+    var want = new THREE.Vector3(), look = new THREE.Vector3(mx + 3, my + 0.5, 0), far = innerWidth < innerHeight ? 1.6 : 1;
+    if (camI === 0) want.set(mx + 3, my + 2, 13 * far); else if (camI === 1) want.set(mx - 6, my + 3.5, 8 * far); else want.set(mx + 4, my + 6, 24 * far);
+    if (R3.snap) { R3.cam.position.copy(want); R3.snap = false; } else R3.cam.position.lerp(want, 0.1);
+    R3.cam.lookAt(look);
+    R3.sun.position.set(mx + 8, my + 20, 12); R3.sun.target.position.set(mx, my, 0);
+    R3.r.render(R3.sc, R3.cam);
+  }
   // ---------- sound ----------
   var ac = null, osc = null, gain = null;
   function audio() { if (ac) return; try { ac = new (window.AudioContext || window.webkitAudioContext)(); osc = ac.createOscillator(); gain = ac.createGain(); osc.type = 'sawtooth'; osc.frequency.value = 60; gain.gain.value = 0; osc.connect(gain); gain.connect(ac.destination); osc.start(); } catch (e) {} }
@@ -262,6 +325,8 @@ body.playing .lang{display:none}
     $('eNext').textContent = last ? T('Play again', 'العب تاني') : T('Next level', 'المرحلة الجاية'); $('eNext').onclick = function () { start(last ? 0 : lvI + 1); };
     $('end').hidden = false;
   }
+  function cyc() { camI = (camI + 1) % 3; toast([T('Side', 'جنب'), T('Behind', 'ورا'), T('Far', 'بعيد')][camI], 800); }
+  $('bCam').onclick = cyc; addEventListener('keydown', function (e) { if (e.code === 'KeyC' && state === 'play') cyc(); });
   $('eAgain').onclick = function () { start(lvI); }; $('eMenu').onclick = menu; $('bBack').onclick = menu; $('bRestart').onclick = function () { start(lvI); };
   document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { setLang(b.dataset.l); menu(); }; });
   setLang(lang); build(0); reset(); menu();

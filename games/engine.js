@@ -1,7 +1,31 @@
 // DINOSPEAR mini-game engine V01 — shared by Zombie Lab and Hide & Seek
 // three.js scene, blocky characters, wall collision, line of sight, phone joystick + keyboard, AR/EN text
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 export { THREE };
+
+// ---------- models made in Blender (games/models/*.glb) ----------
+const MODELS = {};
+export async function preload(names) {
+  const l = new GLTFLoader();
+  await Promise.all(names.map(n => new Promise(res => {
+    if (MODELS[n]) return res();
+    l.load(new URL('models/' + n + '.glb', import.meta.url).href, g => { MODELS[n] = g.scene; res(); }, undefined, () => res());
+  })));
+}
+export const hasModel = n => !!MODELS[n];
+// a fresh copy; colours = { MaterialName: 0xrrggbb } (Skin, Shirt, Pants, Hair …)
+export function model(n, colours) {
+  if (!MODELS[n]) return null;
+  const m = MODELS[n].clone(true);
+  m.traverse(o => {
+    if (!o.isMesh) return;
+    o.castShadow = true; o.receiveShadow = true;
+    const nm = o.material && o.material.name;
+    if (colours && nm in colours) { o.material = o.material.clone(); o.material.color.set(colours[nm]); }
+  });
+  return m;
+}
 
 // ---------- language ----------
 let lang = 'ar';
@@ -81,6 +105,7 @@ export function floor(scene, w, d, color, tile) {
 // ---------- blocky character ----------
 export function makeChar(c) {
   c = Object.assign({ skin: 0xf2c49b, shirt: 0x2563eb, pants: 0x1e293b, hair: 0x3b2314, eyes: 0x111111, glow: null }, c || {});
+  if (MODELS.person) return charFromModel(c);
   const g = new THREE.Group();
   const part = (w, h, d, color, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color)); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
   const body = part(0.62, 0.72, 0.36, c.shirt, 0, 1.06, 0);
@@ -196,4 +221,25 @@ export function follow(camera, target, dt, height, back) {
   const z = view.zoom, want = new THREE.Vector3(target.x, (height || 9) * z, target.z + (back || 8) * z);
   camera.position.lerp(want, 1 - Math.pow(0.001, dt));
   camera.lookAt(target.x, 0.8, target.z - 1);
+}
+
+function charFromModel(c) {
+  const g = new THREE.Group(), m = model('person', { Skin: c.skin, Shirt: c.shirt, Pants: c.pants, Hair: c.hair });
+  g.add(m);
+  const part = n => m.getObjectByName(n);
+  const head = part('Head'), body = part('Body'), armL = part('ArmL'), armR = part('ArmR'), legL = part('LegL'), legR = part('LegR');
+  if (c.glow) m.traverse(o => { if (o.isMesh && o.material.name === 'Eye') o.material = new THREE.MeshBasicMaterial({ color: c.glow }); });
+  const sh = new THREE.Mesh(new THREE.CircleGeometry(0.42, 20), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: 0.25, depthWrite: false }));
+  sh.rotation.x = -Math.PI / 2; sh.position.y = 0.02; g.add(sh);
+  const by = body ? body.position.y : 1.06; let t = 0;
+  g.userData.anim = (dt, speed, zombie) => {
+    t += dt * (3 + speed * 2.2);
+    const a = Math.sin(t) * Math.min(1, speed) * 0.7;
+    if (legL) legL.rotation.x = a; if (legR) legR.rotation.x = -a;
+    if (zombie) { if (armL) armL.rotation.x = armR.rotation.x = -1.45 + Math.sin(t * 0.5) * 0.08; }
+    else { if (armL) armL.rotation.x = -a; if (armR) armR.rotation.x = a; }
+    if (body) body.position.y = by + Math.abs(Math.sin(t)) * 0.04 * Math.min(1, speed);
+  };
+  g.userData.head = head || g; g.userData.body = body || g;
+  return g;
 }

@@ -7,7 +7,7 @@
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script src="../assets/js/rotate.js" defer></script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
 .bars .b{display:flex;align-items:center;gap:8px;font-weight:900;font-size:12.5px;text-shadow:0 1px 3px #000}
@@ -92,7 +92,8 @@
 </div>
 
 <script type="module">
-import { THREE, makeWorld, mat, walls, moveCircle, canSee, dist, readInput, input, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store } from './engine.js';
+import { THREE, makeWorld, mat, walls, moveCircle, canSee, dist, readInput, input, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store , preload, model } from './engine.js';
+await preload(['person', 'key']);
 const $ = id => document.getElementById(id);
 const C = 4, TOTAL = 50, EYE = 2.45, EYE4 = 1.15;
 const MAP = [
@@ -252,6 +253,8 @@ function spawnHumans(level) {
   list.forEach(o => { const m = humanModel(o.gun); humans.push({ m, gun: o.gun, pos: { x: o.p.x, z: o.p.z }, home: o.p, dir: 0, path: [], st: 'patrol', cd: 1.5, stun: 0, lost: 0 }); });
 }
 function keyModel() {
+  const km = model('key'); // made in Blender
+  if (km) { km.scale.setScalar(1.1); const g = new THREE.Group(); g.add(km); scene.add(g); return { g, arms: [km.getObjectByName('ArmL'), km.getObjectByName('ArmR')].filter(Boolean), legs: [km.getObjectByName('LegL'), km.getObjectByName('LegR')].filter(Boolean) }; }
   const g = new THREE.Group(), gold = mat(0xfacc15, { metalness: 0.6, roughness: 0.3 }), brown = mat(0xa16207);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.13, 8, 18), gold); ring.position.y = 1.9; g.add(ring);
   const sh = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.1, 0.18), gold); sh.position.y = 1.05; g.add(sh);

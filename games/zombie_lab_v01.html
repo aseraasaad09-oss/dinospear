@@ -7,7 +7,7 @@
 <title>ZOMBIE LAB — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script src="../assets/js/rotate.js" defer></script>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 </head>
 <body>
 <div id="app"></div>
@@ -56,7 +56,8 @@
 </div>
 
 <script type="module">
-import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store } from './engine.js';
+import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store , preload, model } from './engine.js';
+await preload(['person']);
 
 // ---------- levels: '#' wall, '.' floor, 'P' start, 'V' vial, 'C' vaccine case, 'H' hiding spot, 'G' human guard ----------
 const LEVELS = [

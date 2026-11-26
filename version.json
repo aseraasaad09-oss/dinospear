@@ -1,12 +1,14 @@
 {
-  "v": "V15",
+  "v": "V16",
   "date": "2026-11-26",
   "ar": [
-    "لعبة جديدة: THE TEXT — اكتب قصتك وجاوب على كام سؤال وتتحوّل للعبة",
-    "ألعابك بتتحفظ وتقدر تحدّثها، والنشر والبحث بيتفتحوا قريب"
+    "THE TEXT بقت 3D: كاميرا تتغيّر (ورا / من فوق / بعيد) والأبطال دواير ومربعات ومثلثات 3D",
+    "MOTOR BIKE بقت 3D بموتوسيكل وسواق معمولين في Blender",
+    "شخصيات ومفاتيح وشجر وصخور جديدة معمولة في Blender في كل الألعاب"
   ],
   "en": [
-    "New game: THE TEXT — write your story, answer a few questions, get a game",
-    "Your games are saved and can be updated; publishing and search open soon"
+    "THE TEXT is now 3D: switch the camera (behind / top / far); 3D circle, square and triangle heroes",
+    "MOTOR BIKE is now 3D with a bike and rider made in Blender",
+    "New characters, keys, trees and rocks made in Blender in every game"
   ]
 }
