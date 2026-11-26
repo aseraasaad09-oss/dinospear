@@ -9,7 +9,7 @@
   var COLORS = [0x3b82f6, 0xef4444, 0x22c55e, 0xa855f7, 0xf59e0b];
   function css() {
     var st = document.createElement('style');
-    st.textContent = '.sso{display:grid;gap:8px;margin-top:10px}.sso .r{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.sso input{width:96px;text-align:center;font:800 18px system-ui;letter-spacing:3px;border-radius:12px;border:2px solid rgba(100,116,139,.4);padding:8px;text-transform:uppercase}.sso small{opacity:.8}.ssb{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(15,23,42,.75);color:#fff;border-radius:14px;padding:6px 12px;font:700 13px system-ui;display:flex;gap:12px;pointer-events:none}.ssb b{color:#fde047}';
+    st.textContent = '.sso{display:grid;gap:8px;margin-top:10px}.sso .r{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.sso input{width:96px;text-align:center;font:800 18px system-ui;letter-spacing:3px;border-radius:12px;border:2px solid rgba(100,116,139,.4);padding:8px;text-transform:uppercase}.sso small{opacity:.8}.ssb{position:fixed;top:auto;bottom:44px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(15,23,42,.75);color:#fff;border-radius:14px;padding:6px 12px;font:700 13px system-ui;display:flex;gap:12px;pointer-events:none}.ssb b{color:#fde047}';
     document.head.appendChild(st);
   }
   function code() { var c = '', A = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; for (var i = 0; i < 4; i++) c += A[(Math.random() * A.length) | 0]; return c; }
@@ -42,7 +42,7 @@
     var i = 0;
     others.forEach(function (o, id) {
       if (now - o.seen > 5000) { if (o.m) S.scene.remove(o.m); others.delete(id); return; }
-      if (!o.m) { o.m = S.t.person({ scale: 0.45, shirt: COLORS[(i + 1) % COLORS.length], pants: 0x1e293b, hair: 0x3b2314 }); var lb = S.t.label ? S.t.label(o.d.n || '?', '#fde047', 0.5) : null; if (lb) { lb.position.y = 2.6; o.m.add(lb); } S.scene.add(o.m); o.m.position.set(o.d.x, o.d.y, o.d.z); }
+      if (!o.m) { o.m = S.t.person({ scale: 0.45, shirt: COLORS[(i + 1) % COLORS.length], pants: 0x1e293b, hair: 0x3b2314 }); var lb = S.t.label ? S.t.label(o.d.n || '?', '#fde047', 0.28) : null; if (lb) { lb.scale.multiplyScalar(0.5); lb.position.y = 3.4; o.m.add(lb); } S.scene.add(o.m); o.m.position.set(o.d.x, o.d.y, o.d.z); }
       var p = o.m.position, dx = o.d.x - p.x, dz = o.d.z - p.z; p.x += dx * 0.25; p.y += (o.d.y - p.y) * 0.25; p.z += dz * 0.25; o.m.rotation.y = o.d.r;
       if (S.t.animate) S.t.animate(o.m, Math.hypot(dx, dz) * 30, 1 / 60);
       i++;

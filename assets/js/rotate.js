@@ -1,4 +1,4 @@
-// DINOSPEAR rotate V01 — on phones, every game asks once: turn the screen sideways, or keep it as it is
+// DINOSPEAR rotate V02 — on phones, every game asks once: turn the screen sideways, or keep it as it is
 (function () {
   var touch = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var me = document.currentScript, noAsk = me && me.hasAttribute('data-noask'), inFrame = window.top !== window;
@@ -14,6 +14,12 @@
   var set = function (v) { try { sessionStorage.setItem(KEY, v); } catch (e) {} };
 
   function lockLand() {
+    // V02: inside the app (an iframe) the page around us must go full screen and turn, or the phone ignores it
+    if (inFrame) return new Promise(function (res) {
+      var done = false, on = function (e) { if (e.data && e.data.ds === 'rotDone') { done = true; removeEventListener('message', on); res(!!e.data.ok); } };
+      addEventListener('message', on); try { parent.postMessage({ ds: 'rot' }, '*'); } catch (e) { res(false); }
+      setTimeout(function () { if (!done) { removeEventListener('message', on); res(false); } }, 1500);
+    });
     var el = document.documentElement, fs = el.requestFullscreen || el.webkitRequestFullscreen;
     var p = fs ? Promise.resolve(fs.call(el)).catch(function () {}) : Promise.resolve();
     return p.then(function () {

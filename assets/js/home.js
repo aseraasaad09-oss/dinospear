@@ -141,7 +141,24 @@
   }
   setInterval(fitFrames, 700);
   route();
-  $('townFull').onclick = function () { var f = $('townFrame'); (f.requestFullscreen || f.webkitRequestFullscreen || function () { location.href = 'town/'; }).call(f); };
+  // V05: full screen + sideways for the 3D town and every game inside the app (phones ignore this from inside a frame)
+  function fullLand(f) {
+    var fs = f.requestFullscreen || f.webkitRequestFullscreen;
+    if (!fs) return Promise.resolve(false);
+    return Promise.resolve(fs.call(f)).then(function () {
+      var touch = matchMedia('(pointer:coarse)').matches;
+      if (touch && screen.orientation && screen.orientation.lock) return screen.orientation.lock('landscape').then(function () { return true; }, function () { return false; });
+      return true;
+    }, function () { return false; });
+  }
+  $('townFull').onclick = function () { var f = $('townFrame'); fullLand(f).then(function (ok) { if (!ok && !document.fullscreenElement) location.href = 'town/'; }); };
+  addEventListener('message', function (e) {
+    if (!e.data || e.data.ds !== 'rot') return;
+    var f = [].slice.call(document.querySelectorAll('iframe')).filter(function (x) { return x.contentWindow === e.source; })[0];
+    if (!f) return;
+    fullLand(f).then(function (ok) { try { e.source.postMessage({ ds: 'rotDone', ok: ok }, '*'); } catch (er) {} });
+  });
+  document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement) try { screen.orientation.unlock(); } catch (e) {} });
 
   // ---------- day / night + settings ----------
   function themeNow() { var m = 'day'; try { m = localStorage.getItem('ds_theme') || 'day'; } catch (e) {} if (m === 'auto') { var h = new Date().getHours(); return (h >= 19 || h < 6) ? 'night' : 'day'; } return m; }
@@ -241,7 +258,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V38';
+  var APP_V = 'V39';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];

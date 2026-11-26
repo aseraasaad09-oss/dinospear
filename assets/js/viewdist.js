@@ -2,7 +2,7 @@
 // and is strong at the last chunk. Fewer chunks = fog comes sooner = phones stay fast.
 (function () {
   var CH = 48, n = 5;
-  try { n = parseInt(localStorage.getItem('ds_view_chunks') || '0', 10) || (matchMedia('(pointer:coarse)').matches ? 4 : 5); } catch (e) {}
+  try { n = parseInt(localStorage.getItem('ds_view_chunks') || '0', 10) || (matchMedia('(pointer:coarse)').matches ? 3 : 5); } catch (e) {}
   var en = false; try { en = localStorage.getItem('aser_lang') === 'en'; } catch (e) {}
   function apply() {
     var s = window.DS_SCENE, c = window.DS_CAM;
