@@ -8,7 +8,7 @@
     pc_rules: ['Be respectful. Bad words are hidden automatically (★★★) in every language; 100+ bad messages in a day = automatic 1-day ban.', 'خليك محترم. الشتايم بتتشفّر لوحدها (★★★) بكل اللغات، واللي يبعت أكتر من 100 رسالة فيها شتايم في يوم بيتبند يوم كامل أوتوماتيك.'],
     pc_ph: ['Write to everyone…', 'اكتب للكل…'], pc_send: ['Send', 'ابعت'], pc_banned: ['You are banned until', 'انت متبند لحد'],
     ad_h: ['Admin panel', 'لوحة الأدمن'], ad_user: ['Player name', 'اسم اللاعب'], ad_arg: ['Value (hours / amount / word / message)', 'القيمة (ساعات / عدد / كلمة / رسالة)'],
-    st_h: ['Settings', 'الإعدادات'], st_theme: ['Mode', 'الوضع'], st_day: ['Day', 'صباحي'], st_night: ['Night', 'ليلي'], st_auto: ['Auto', 'تلقائي'], st_lang: ['Language', 'اللغة'], st_motion: ['Animations', 'الحركة'], st_on: ['On', 'شغّال'], st_off: ['Off', 'مقفول'], st_acc: ['Account', 'الحساب'], n_video: ['Video', 'الفيديو'], t_k: ['Inside the app', 'جوه البرنامج'], t_h: ['TOWN DINOSPEAR 3D', 'المدينة ثلاثية الأبعاد'], t_p: ['Walk with your avatar, enter the houses, work and play — right here.', 'اتمشّى بالأفاتار بتاعك، وادخل البيوت، واشتغل والعب — هنا على طول.'], t_full: ['Full screen', 'الشاشة كلها'], v_k: ['Watch', 'اتفرج'], v_h: ['A tour of DINOSPEAR in 5 minutes', 'جولة في دينوسبير في 5 دقايق'], n_town: ['3D Town', 'المدينة 3D'], n_app: ['Chat & Chess', 'الشات والشطرنج'], n_demo: ['App games', 'ألعاب البرنامج'], st_ver: ['App version', 'إصدار البرنامج'], n_ideas: ['Your ideas', 'أفكاركم'], n_road: ['Roadmap', 'التطوير'], n_game: ['The game', 'اللعبة'], n_helper: ['Helper', 'المساعد'], n_comm: ['Community', 'المجتمع'],
+    st_h: ['Settings', 'الإعدادات'], st_theme: ['Mode', 'الوضع'], st_day: ['Day', 'صباحي'], st_night: ['Night', 'ليلي'], st_auto: ['Auto', 'تلقائي'], st_lang: ['Language', 'اللغة'], st_motion: ['Animations', 'الحركة'], st_on: ['On', 'شغّال'], st_off: ['Off', 'مقفول'], st_acc: ['Account', 'الحساب'], n_video: ['Video', 'الفيديو'], t_k: ['Inside the app', 'جوه البرنامج'], t_h: ['TOWN DINOSPEAR 3D', 'المدينة ثلاثية الأبعاد'], t_p: ['Walk with your avatar, enter the houses, work and play — right here.', 'اتمشّى بالأفاتار بتاعك، وادخل البيوت، واشتغل والعب — هنا على طول.'], t_full: ['Full screen', 'الشاشة كلها'], v_k: ['Watch', 'اتفرج'], v_h: ['A tour of DINOSPEAR in 5 minutes', 'جولة في دينوسبير في 5 دقايق'], n_town: ['3D Town', 'المدينة 3D'], n_app: ['Chat & Chess', 'الشات والشطرنج'], n_demo: ['App games', 'ألعاب البرنامج'], st_ver: ['App version', 'إصدار البرنامج'], st_rot: ['Turn-screen button', 'زرار قلب الشاشة'], n_ideas: ['Your ideas', 'أفكاركم'], n_road: ['Roadmap', 'التطوير'], n_game: ['The game', 'اللعبة'], n_helper: ['Helper', 'المساعد'], n_comm: ['Community', 'المجتمع'],
     signin: ['Sign in', 'تسجيل الدخول'], signup: ['New account', 'حساب جديد'], signout: ['Sign out', 'تسجيل الخروج'],
     uname: ['Username', 'اسم المستخدم'], pass: ['Password', 'الباسورد'], pass2: ['Repeat the password', 'اكتب الباسورد تاني'],
     g_sub: ['Sign in to see the site, the 3D town, the chat, chess and the demos.', 'سجّل دخول عشان تشوف الموقع والمدينة 3D والشات والشطرنج والديمو.'],
@@ -240,7 +240,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V12';
+  var APP_V = 'V13';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];
@@ -300,6 +300,22 @@
     };
     wrap.appendChild(vv); wrap.appendChild(bt); opt.appendChild(lb); opt.appendChild(wrap);
     acc.parentNode.parentNode.insertBefore(opt, acc.parentNode.nextSibling);
+  })();
+  // V13: settings switch for the movable "turn the screen" button (phones)
+  (function () {
+    var acc = $('stWho'); if (!acc || !matchMedia('(pointer:coarse)').matches) return;
+    var opt = document.createElement('div'); opt.className = 'opt';
+    var lb = document.createElement('b'); lb.setAttribute('data-i', 'st_rot'); lb.textContent = DSA.t('Turn-screen button', 'زرار قلب الشاشة');
+    var seg = document.createElement('div'); seg.className = 'seg';
+    var cur = 'off'; try { cur = localStorage.getItem('ds_rot_btn') || 'off'; } catch (e) {}
+    [['on', 'st_on'], ['off', 'st_off']].forEach(function (o) {
+      var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-i', o[1]); b.textContent = DSA.t(o[0] === 'on' ? 'On' : 'Off', o[0] === 'on' ? 'شغّال' : 'مقفول');
+      if (o[0] === cur) b.className = 'on';
+      b.onclick = function () { try { localStorage.setItem('ds_rot_btn', o[0]); } catch (e) {} seg.querySelectorAll('button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); window.DS_rotBtn && window.DS_rotBtn(); };
+      seg.appendChild(b);
+    });
+    opt.appendChild(lb); opt.appendChild(seg);
+    acc.parentNode.parentNode.insertBefore(opt, acc.parentNode);
   })();
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {

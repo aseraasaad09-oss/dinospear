@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>THE KILLER WINNER — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script src="../assets/js/rotate.js" defer></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+<style>
+.bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
+.bars .b{display:flex;align-items:center;gap:8px;font-weight:900;font-size:12.5px;text-shadow:0 1px 3px #000}
+.bars .m{flex:1;height:11px;border-radius:8px;background:rgba(255,255,255,.18);overflow:hidden;border:1px solid rgba(255,255,255,.25)}
+.bars .m i{display:block;height:100%;width:100%;transition:width .2s}
+#mind i{background:linear-gradient(90deg,#a855f7,#22d3ee)}#life i{background:linear-gradient(90deg,#ef4444,#f97316)}
+@media (pointer:coarse){.bars{bottom:auto;top:calc(max(10px,env(safe-area-inset-top)) + 48px);left:auto;right:12px;transform:none;width:min(220px,40vw)}}
+#cross{position:fixed;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:rgba(255,255,255,.75);z-index:4;pointer-events:none}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:3;box-shadow:inset 0 0 0 rgba(168,85,247,0);transition:box-shadow .3s}
+#hurt{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(circle,transparent 40%,rgba(220,38,38,.55));opacity:0;transition:opacity .25s}
+#scare{position:fixed;inset:0;z-index:50;background:#000;display:none;align-items:center;justify-content:center}
+#scare svg{width:min(96vw,96vh);height:min(96vw,96vh);animation:sc .55s ease-out}
+@keyframes sc{0%{transform:scale(.3) rotate(-12deg)}60%{transform:scale(1.15) rotate(4deg)}100%{transform:scale(1)}}
+#black{position:fixed;inset:0;z-index:45;background:#000;opacity:0;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:clamp(22px,4vw,40px);font-weight:900;letter-spacing:1px;text-align:center;padding:20px;transition:opacity .9s}
+#story{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:18px}
+#story[hidden]{display:none}
+#story svg.scene{width:min(92vw,680px);height:auto;max-height:58vh;border-radius:18px}
+#story .cap{max-width:640px;text-align:center;font-size:clamp(16px,2.4vw,20px);line-height:1.7;font-weight:700;min-height:3.4em}
+.flash{animation:fl .9s ease-out}@keyframes fl{0%{filter:brightness(4)}100%{filter:none}}
+#lookPad{position:absolute;top:0;bottom:0;right:0;width:55%;touch-action:none}
+@media (pointer:fine){#lookPad{display:none}}
+#hint{position:fixed;left:50%;top:58%;transform:translateX(-50%);z-index:5;font-weight:900;background:rgba(0,0,0,.6);padding:8px 14px;border-radius:12px;pointer-events:none;display:none}
+#hold{position:fixed;left:50%;top:50%;width:70px;height:70px;margin:-35px;z-index:5;pointer-events:none;display:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="fx"></div><div id="hurt"></div>
+<div id="black"></div>
+<div id="scare"><svg viewBox="0 0 200 200"><circle cx="100" cy="70" r="52" fill="none" stroke="#facc15" stroke-width="26"/><rect x="88" y="118" width="24" height="80" fill="#facc15"/><rect x="66" y="52" width="22" height="28" fill="#fff"/><rect x="112" y="52" width="22" height="28" fill="#fff"/><rect x="74" y="62" width="10" height="14" fill="#000"/><rect x="118" y="62" width="10" height="14" fill="#000"/><path d="M70 98 L80 90 L90 98 L100 90 L110 98 L120 90 L130 98" stroke="#7f1d1d" stroke-width="6" fill="none"/><rect x="20" y="100" width="58" height="12" fill="#a16207" transform="rotate(-25 50 106)"/><rect x="122" y="100" width="58" height="12" fill="#a16207" transform="rotate(25 150 106)"/></svg></div>
+
+<div class="hud" id="hud" hidden>
+ <div class="bar">
+  <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="chip" id="hMission" style="white-space:normal;max-width:min(58vw,440px)"></div>
+  <div class="chip" id="arrowTip"></div>
+ </div>
+ <div class="bars">
+  <div class="b" id="mind"><span data-en="Mind" data-ar="العقل"></span><div class="m"><i></i></div></div>
+  <div class="b" id="life"><span data-en="Life" data-ar="الحياة"></span><div class="m"><i></i></div></div>
+ </div>
+ <div id="lookPad"></div>
+ <div class="toast" id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+ <div class="acts">
+  <button class="act" id="bAtk" type="button" style="background:rgba(239,68,68,.9)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20L20 4M8 20L20 8M4 16L16 4"/></svg><span data-en="Slash" data-ar="اضرب"></span></button>
+  <button class="act alt" id="bUse" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5M12 10V4a1.5 1.5 0 0 1 3 0v6M15 10V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-3l-2-4a1.5 1.5 0 0 1 2.5-1.5L9 13"/></svg><span data-en="Use" data-ar="استخدم"></span></button>
+  <button class="act alt" id="bRun" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 17l4-6 4 3 4-6 6 9"/></svg><span data-en="On 4" data-ar="على 4"></span></button>
+ </div>
+ <div class="keys" data-en="Click to look with the mouse · WASD move · Shift run on 4 legs · Click / Space slash · E use · Esc menu" data-ar="دوس على الشاشة وبص بالماوس · WASD حركة · Shift اجري على 4 · كليك أو Space اضرب · E استخدم · Esc القايمة"></div>
+</div>
+<div id="cross" hidden></div>
+<div id="hint"></div>
+<svg id="hold" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="5"/><circle id="holdC" cx="20" cy="20" r="16" fill="none" stroke="#22d3ee" stroke-width="5" stroke-dasharray="100.5" stroke-dashoffset="100.5" transform="rotate(-90 20 20)"/></svg>
+
+<div id="story" hidden>
+ <svg class="scene" id="scene" viewBox="0 0 640 360"></svg>
+ <div class="cap" id="cap"></div>
+ <div class="row"><button class="big" id="sNext" type="button"></button><button class="big sec" id="sSkip" type="button" data-en="Skip" data-ar="تخطّي"></button></div>
+</div>
+
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+
+<div class="screen" id="menu" style="--c1:#3b0764">
+ <div class="card">
+  <h1>THE KILLER WINNER</h1>
+  <p data-en="Chapter 1 — Mars. You woke up as a monster. Keep your mind alive with the serum, escape the humans and reach the rocket." data-ar="الفصل 1 — المريخ. صحيت لقيت نفسك وحش. حافظ على عقلك بالمصل، اهرب من البشر، واوصل للصاروخ."></p>
+  <p id="mProg" style="font-weight:800"></p>
+  <div class="row">
+   <button class="big" id="mCont" type="button" data-en="Continue" data-ar="كمّل"></button>
+   <button class="big sec" id="mNew" type="button" data-en="New game (with the film)" data-ar="لعبة جديدة (بالفيلم)"></button>
+  </div>
+  <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
+ </div>
+</div>
+
+<div class="screen" id="end" hidden style="--c1:#450a0a">
+ <div class="card">
+  <h1 id="eTitle"></h1><p id="eText"></p>
+  <div class="row"><button class="big" id="eNext" type="button"></button><button class="big sec" id="eMenu" type="button" data-en="Menu" data-ar="القايمة"></button></div>
+ </div>
+</div>
+
+<script type="module">
+import { THREE, makeWorld, mat, walls, moveCircle, canSee, dist, readInput, input, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store } from './engine.js';
+const $ = id => document.getElementById(id);
+const C = 4, TOTAL = 50, EYE = 2.45, EYE4 = 1.15;
+const MAP = [
+ '########################',
+ '#B...#......#.....#....#',
+ '#....#..T...#..S..#..T.#',
+ '#M...D......D.....D....#',
+ '#....#..G...#.....#....#',
+ '###D######D####D###D####',
+ '#......................#',
+ '#..S.......Y.......K...#',
+ '#......................#',
+ '###D#####D#####D####D###',
+ '#....#.....#.....#.....#',
+ '#.T..#..S..#..T..#..S..#',
+ '#....D..K..D.....D..G..#',
+ '#..Y.#.....#..Y..#.....#',
+ '############D###########',
+ '#.........RRRR.........#',
+ '########################'];
+const H = MAP.length, Wd = MAP[0].length, grid = MAP.map(r => r.split(''));
+grid[14][12] = 'R'; // the hangar door cell: nobody walks through it until it opens
+const cell = (c, r) => ({ x: (c - Wd / 2) * C + C / 2, z: (r - H / 2) * C + C / 2 });
+const toCell = p => ({ c: Math.floor(p.x / C + Wd / 2), r: Math.floor(p.z / C + H / 2) });
+const free = (c, r) => { const ch = grid[r]?.[c]; return ch && ch !== '#'; };
+const spots = k => { const o = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === k) o.push(cell(c, r)); })); return o; };
+
+// ---------- the film: the experiment (drawn), then you wake up in 3D ----------
+const SCENES = [
+ { ar: 'كنت عالِم على المريخ، بتعمل تجارب على مصل يخلّي الإنسان أقوى.', en: 'You were a scientist on Mars, testing a serum to make people stronger.', svg: `<rect width="640" height="360" fill="#0f172a"/><rect y="250" width="640" height="110" fill="#1e293b"/><rect x="300" y="200" width="300" height="20" fill="#cbd5e1"/><rect x="340" y="140" width="26" height="60" rx="8" fill="#a855f7"/><rect x="390" y="120" width="26" height="80" rx="8" fill="#22d3ee"/><rect x="440" y="150" width="26" height="50" rx="8" fill="#4ade80"/><g transform="translate(200 110)"><rect x="0" y="40" width="64" height="96" rx="8" fill="#f8fafc"/><rect x="10" y="0" width="44" height="44" rx="6" fill="#f2c49b"/><rect x="10" y="-6" width="44" height="12" fill="#3b2314"/><rect x="18" y="14" width="10" height="8" fill="#111"/><rect x="36" y="14" width="10" height="8" fill="#111"/><rect x="0" y="136" width="26" height="44" fill="#1e293b"/><rect x="38" y="136" width="26" height="44" fill="#1e293b"/><rect x="60" y="60" width="70" height="14" fill="#f2c49b"/></g>` },
+ { ar: 'وانت بتجرّب… المزيج بدأ يغلي ويطلّع نور بنفسجي.', en: 'During the test… the mix began to boil and glow purple.', svg: `<rect width="640" height="360" fill="#1e1b4b"/><rect y="250" width="640" height="110" fill="#1e293b"/><rect x="260" y="210" width="140" height="18" fill="#cbd5e1"/><rect x="300" y="120" width="60" height="90" rx="14" fill="#a855f7"/><circle cx="330" cy="100" r="18" fill="#c084fc"/><circle cx="312" cy="70" r="12" fill="#d8b4fe"/><circle cx="350" cy="50" r="9" fill="#e9d5ff"/><circle cx="330" cy="160" r="90" fill="#a855f7" opacity=".18"/>` },
+ { ar: 'بوووم! الانفجار رماك على الأرض… وكل حاجة سوّدت.', en: 'BOOM! The blast threw you down… and everything went black.', flash: true, svg: `<rect width="640" height="360" fill="#faf5ff"/><polygon points="320,20 365,130 480,80 395,175 530,215 385,228 430,345 320,250 210,345 255,228 110,215 245,175 160,80 275,130" fill="#a855f7"/><polygon points="320,90 345,160 410,140 360,190 430,215 350,215 370,280 320,230 270,280 290,215 210,215 280,190 230,140 295,160" fill="#22d3ee"/><text x="320" y="205" fill="#3b0764" font-size="56" font-weight="900" text-anchor="middle">BOOM</text>` }
+];
+let sceneI = 0, afterStory = null;
+function showScene() {
+  const s = SCENES[sceneI];
+  $('scene').innerHTML = s.svg; $('cap').textContent = L() === 'en' ? s.en : s.ar;
+  $('scene').classList.remove('flash'); if (s.flash) { void $('scene').getBoundingClientRect(); $('scene').classList.add('flash'); beep(70, 0.8, 'sawtooth', 0.09); } else beep(420, 0.06, 'sine', 0.02);
+  $('sNext').textContent = T('Next', 'التالي');
+}
+function playStory(then) { afterStory = then; sceneI = 0; $('menu').hidden = true; $('end').hidden = true; $('story').hidden = false; showScene(); }
+function endStory() { $('story').hidden = true; const f = afterStory; afterStory = null; f && f(); }
+$('sNext').onclick = () => { if (sceneI < SCENES.length - 1) { sceneI++; showScene(); } else endStory(); };
+$('sSkip').onclick = endStory;
+
+// ---------- the base on Mars ----------
+const Wr = makeWorld({ sky: 0x050505, fog: 0x07060a, fogNear: 6, fogFar: 46, ambient: 0.28, sun: 0.0 });
+const { scene, camera, renderer, sun } = Wr;
+sun.visible = false;
+camera.fov = 75; camera.near = 0.05; camera.updateProjectionMatrix();
+addEventListener('resize', () => { camera.fov = innerWidth < innerHeight ? 85 : 75; camera.updateProjectionMatrix(); });
+scene.add(camera);
+setupJoystick(); bindButton('bAtk', 'KeyF'); bindButton('bUse', 'KeyE'); bindButton('bRun', 'Run');
+{ // floor, ceiling, walls
+  const fc = document.createElement('canvas'); fc.width = fc.height = 128; const g = fc.getContext('2d');
+  g.fillStyle = '#3f4652'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#2a2f38'; g.lineWidth = 6; g.strokeRect(0, 0, 128, 128);
+  g.fillStyle = '#4b5563'; [[20, 20], [108, 20], [20, 108], [108, 108]].forEach(p => { g.beginPath(); g.arc(p[0], p[1], 4, 0, 7); g.fill(); });
+  const ft = new THREE.CanvasTexture(fc); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(Wd * 2, H * 2); ft.colorSpace = THREE.SRGBColorSpace;
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(Wd * C, H * C), new THREE.MeshStandardMaterial({ map: ft, roughness: 0.6, metalness: 0.3 }));
+  fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; scene.add(fl);
+  const ce = new THREE.Mesh(new THREE.PlaneGeometry(Wd * C, H * C), mat(0x1f2329)); ce.rotation.x = Math.PI / 2; ce.position.y = 4; scene.add(ce);
+  const wc = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wc.push([c, r]); }));
+  const wcan = document.createElement('canvas'); wcan.width = 128; wcan.height = 128; const w = wcan.getContext('2d');
+  w.fillStyle = '#d4d8de'; w.fillRect(0, 0, 128, 128); w.fillStyle = '#b8bec7'; w.fillRect(0, 96, 128, 32); w.fillStyle = '#7c3aed'; w.fillRect(0, 92, 128, 4); w.strokeStyle = '#aab1bb'; w.lineWidth = 3; w.strokeRect(2, 2, 124, 90);
+  const wt = new THREE.CanvasTexture(wcan); wt.colorSpace = THREE.SRGBColorSpace;
+  const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(C, 4, C), new THREE.MeshStandardMaterial({ map: wt, roughness: 0.7 }), wc.length);
+  const m4 = new THREE.Matrix4(); wc.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 2, p.z); inst.setMatrixAt(i, m4); }); scene.add(inst);
+  grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const isW = row[c] === '#'; if (isW && s < 0) s = c; if (!isW && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - C / 2, x1: b.x + C / 2, z0: a.z - C / 2, z1: a.z + C / 2, tall: true }); s = -1; } } });
+}
+const lamps = [];
+for (let r = 1; r < H - 1; r += 2) for (let c = 1; c < Wd - 1; c += 3) {
+  if (!free(c, r)) continue; const p = cell(c, r);
+  const pan = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.08, 0.5), new THREE.MeshBasicMaterial({ color: 0xe0e7ff })); pan.position.set(p.x, 3.95, p.z); scene.add(pan);
+  lamps.push({ pan, p, flick: Math.random() < 0.3 });
+}
+const lights = [0, 1, 2, 3, 4, 5].map(() => { const l = new THREE.PointLight(0xc7d2fe, 14, 13, 1.6); l.position.y = 3.6; scene.add(l); return l; });
+// the hangar door + red warning
+const hangar = spots('R');
+const GP = cell(12, 14);
+const gate = new THREE.Mesh(new THREE.BoxGeometry(C, 4, 0.4), mat(0x7f1d1d, { emissive: 0x450a0a, emissiveIntensity: 0.8 }));
+gate.position.set(GP.x, 2, GP.z); scene.add(gate);
+const gateWall = { x0: GP.x - C / 2, x1: GP.x + C / 2, z0: GP.z - C / 2, z1: GP.z + C / 2, tall: true };
+{ // the rocket waiting in the hangar
+  const rk = new THREE.Group(), c0 = cell(11, 15), c1 = cell(12, 15);
+  const bd = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 2.6, 18), mat(0xf1f5f9, { metalness: 0.4, roughness: 0.3 })); bd.position.y = 1.5;
+  const ns = new THREE.Mesh(new THREE.ConeGeometry(0.9, 1.1, 18), mat(0xef4444)); ns.position.y = 3.35;
+  const wn = new THREE.Mesh(new THREE.CircleGeometry(0.35, 16), new THREE.MeshBasicMaterial({ color: 0x38bdf8 })); wn.position.set(0, 2, 0.95);
+  rk.add(bd, ns, wn); rk.position.set((c0.x + c1.x) / 2, 0, c0.z); scene.add(rk);
+  const glow = new THREE.PointLight(0xef4444, 8, 12, 1.5); glow.position.set(rk.position.x, 3, rk.position.z); scene.add(glow);
+}
+walls.push(gateWall);
+// terminals
+const TERM = spots('T').map(p => { const g = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.6), mat(0x334155, { metalness: 0.5 })); b.position.y = 0.65; const sc = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.6), new THREE.MeshBasicMaterial({ color: 0x0e7490 })); sc.position.set(0, 1.05, 0.31); g.add(b, sc); g.position.set(p.x, 0, p.z - 1.3); scene.add(g); return { p: { x: p.x, z: p.z - 0.5 }, sc }; });
+// bed + the mirror
+const bedP = spots('B')[0];
+{ const bed = new THREE.Group(); const f = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 3), mat(0x475569)); f.position.y = 0.4; const s = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.2, 2.9), mat(0xe2e8f0)); s.position.y = 0.75; bed.add(f, s); bed.position.set(bedP.x, 0, bedP.z); scene.add(bed); }
+const mirP = spots('M')[0], MX = mirP.x - C / 2 + 0.06;
+const rt = new THREE.WebGLRenderTarget(512, 640);
+const mirror = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 3), new THREE.MeshBasicMaterial({ map: rt.texture }));
+rt.texture.wrapS = THREE.RepeatWrapping; rt.texture.repeat.x = -1;
+mirror.position.set(MX, 1.9, mirP.z); mirror.rotation.y = Math.PI / 2; scene.add(mirror);
+const frame = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3.2, 2.6), mat(0x94a3b8, { metalness: 0.7 })); frame.position.set(MX - 0.06, 1.9, mirP.z); scene.add(frame);
+const mirCam = new THREE.PerspectiveCamera(60, 2.4 / 3, 0.05, 60); mirCam.layers.enable(1);
+
+// ---------- you: a tall black monster (seen only in the mirror) + long arms in front of your eyes ----------
+const body = new THREE.Group();
+{
+  const blk = mat(0x0b0b0f, { roughness: 0.5 }), eye = new THREE.MeshBasicMaterial({ color: 0xc084fc });
+  const tor = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.5), blk); tor.position.y = 1.8; body.add(tor);
+  const hd = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.62, 0.55), blk); hd.position.y = 2.7; body.add(hd);
+  [-0.13, 0.13].forEach(x => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.06, 0.02), eye); e.position.set(x, 2.75, 0.28); body.add(e); });
+  [-1, 1].forEach(s => { const a = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.1, 0.16), blk); a.position.set(s * 0.55, 1.4, 0); a.rotation.z = s * 0.08; body.add(a); for (let k = 0; k < 3; k++) { const cl = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.35, 6), blk); cl.position.set(s * 0.6 + (k - 1) * 0.06, 0.25, 0); cl.rotation.x = Math.PI; body.add(cl); } });
+  [-0.22, 0.22].forEach(x => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.3, 0.2), blk); l.position.set(x, 0.65, 0); body.add(l); });
+  body.traverse(o => { o.layers.set(1); }); scene.add(body);
+}
+const arms = new THREE.Group(); camera.add(arms);
+const armL = new THREE.Group(), armR = new THREE.Group();
+[armL, armR].forEach((a, i) => {
+  const s = i ? 1 : -1, blk = new THREE.MeshStandardMaterial({ color: 0x0c0c10, roughness: 0.45 });
+  const up = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.09, 1.25), blk); up.position.z = -0.62; a.add(up);
+  for (let k = 0; k < 3; k++) { const cl = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.22, 6), new THREE.MeshStandardMaterial({ color: 0x1f1f27, roughness: 0.3, metalness: 0.4 })); cl.rotation.x = -Math.PI / 2; cl.position.set((k - 1) * 0.035, 0, -1.33); a.add(cl); }
+  const vein = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.01, 0.9), new THREE.MeshBasicMaterial({ color: 0x581c87 })); vein.position.set(0, 0.046, -0.6); a.add(vein);
+  a.position.set(s * 0.32, -0.34, -0.05); a.rotation.y = -s * 0.12; arms.add(a);
+});
+
+// ---------- serum, humans, keys ----------
+let serums = [];
+function makeSerum(p) {
+  const g = new THREE.Group();
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.5, 12), new THREE.MeshStandardMaterial({ color: 0x67e8f9, emissive: 0x0891b2, emissiveIntensity: 1.1, transparent: true, opacity: 0.9 }));
+  const needle = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.25), mat(0xe5e7eb)); needle.position.y = -0.37;
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08), mat(0xf8fafc)); cap.position.y = 0.29;
+  g.add(tube, needle, cap); g.position.set(p.x, 1.1, p.z); scene.add(g); return { p, mesh: g };
+}
+function humanModel(gun) {
+  const g = new THREE.Group();
+  const suit = mat(0xf1f5f9), skin = mat([0xf2c49b, 0xc68642, 0x8d5524][Math.floor(Math.random() * 3)]), dark = mat(0x1e293b);
+  const t = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.75, 0.36), suit); t.position.y = 1.15; g.add(t);
+  const h = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.48), skin); h.position.y = 1.8; g.add(h);
+  const v = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.18, 0.03), mat(0xf59e0b, { metalness: 0.8, roughness: 0.2 })); v.position.set(0, 1.82, 0.25); g.add(v);
+  const legs = [-0.15, 0.15].map(x => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.75, 0.26), suit); l.geometry.translate(0, -0.37, 0); l.position.set(x, 0.76, 0); g.add(l); return l; });
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.66, 0.2), suit); arm.geometry.translate(0, -0.3, 0); arm.position.set(0.4, 1.45, 0); arm.rotation.x = -1.3; g.add(arm);
+  const arm2 = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.66, 0.2), suit); arm2.geometry.translate(0, -0.3, 0); arm2.position.set(-0.4, 1.45, 0); g.add(arm2);
+  let wpn;
+  if (gun) { wpn = new THREE.Group(); const b = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.42), dark); const gr = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.1), dark); gr.position.set(0, -0.14, 0.12); wpn.add(b, gr); }
+  else { wpn = new THREE.Group(); const bl = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.38), mat(0xe5e7eb, { metalness: 0.9, roughness: 0.15 })); bl.position.z = 0.2; const hd = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.16), mat(0x78350f)); wpn.add(bl, hd); }
+  wpn.position.set(0, -0.62, 0.1); wpn.rotation.x = 1.3; arm.add(wpn);
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  scene.add(g); return { g, legs, arm };
+}
+let humans = [], keys = [], tracers = [];
+function spawnHumans(level) {
+  humans.forEach(h => scene.remove(h.m.g)); humans = [];
+  const g = spots('G'), k = spots('K');
+  const list = g.map(p => ({ p, gun: true })).concat(k.map(p => ({ p, gun: false })));
+  if (level > 15) list.push({ p: cell(11, 7), gun: true }); if (level > 30) list.push({ p: cell(20, 11), gun: false }); if (level > 40) list.push({ p: cell(5, 7), gun: true });
+  list.forEach(o => { const m = humanModel(o.gun); humans.push({ m, gun: o.gun, pos: { x: o.p.x, z: o.p.z }, home: o.p, dir: 0, path: [], st: 'patrol', cd: 1.5, stun: 0, lost: 0 }); });
+}
+function keyModel() {
+  const g = new THREE.Group(), gold = mat(0xfacc15, { metalness: 0.6, roughness: 0.3 }), brown = mat(0xa16207);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.13, 8, 18), gold); ring.position.y = 1.9; g.add(ring);
+  const sh = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.1, 0.18), gold); sh.position.y = 1.05; g.add(sh);
+  [[0.16, 0.7], [0.13, 0.88]].forEach(t => { const b = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.1, 0.16), gold); b.position.set(t[0], t[1], 0); g.add(b); });
+  [-0.14, 0.14].forEach(x => { const e = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.05), new THREE.MeshBasicMaterial({ color: 0xffffff })); e.position.set(x, 1.93, 0.13); g.add(e); const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.02), mat(0x111111)); p.position.set(x, 1.93, 0.16); g.add(p); });
+  const arms = [-1, 1].map(s => { const a = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.09, 0.09), brown); a.geometry.translate(s * 0.3, 0, 0); a.position.set(s * 0.09, 1.3, 0); g.add(a); return a; });
+  const legs = [-1, 1].map(s => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.6, 0.1), brown); l.geometry.translate(0, -0.3, 0); l.position.set(s * 0.1, 0.6, 0); g.add(l); return l; });
+  scene.add(g); return { g, arms, legs };
+}
+function spawnKey(p, mission) { keys.push({ m: keyModel(), pos: { x: p.x, z: p.z }, dir: 0, alive: true, mission, scared: false, wander: Math.random() * 6 }); }
+
+// ---------- path finding ----------
+function path(from, to) {
+  const a = toCell(from), b = toCell(to), key = (c, r) => r * 1000 + c;
+  if (!free(b.c, b.r)) return [];
+  const prev = new Map([[key(a.c, a.r), null]]), q = [[a.c, a.r]];
+  while (q.length) { const [c, r] = q.shift(); if (c === b.c && r === b.r) break; for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nc = c + dc, nr = r + dr, k = key(nc, nr); if (!prev.has(k) && free(nc, nr) && grid[nr][nc] !== 'R') { prev.set(k, [c, r]); q.push([nc, nr]); } } }
+  if (!prev.has(key(b.c, b.r))) return [];
+  const out = []; let cur = [b.c, b.r]; while (cur) { out.unshift(cell(cur[0], cur[1])); cur = prev.get(key(cur[0], cur[1])); }
+  return out.slice(1);
+}
+const floorCells = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch !== '#' && ch !== 'R') floorCells.push(cell(c, r)); }));
+const angDiff = (a, b) => Math.abs(((a - b) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+
+// ---------- 50 missions inside the base ----------
+let seed = 1;
+const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+const TYPES = ['term', 'fetch', 'keys', 'reach', 'serum'];
+const NAMES = { term: ['Hack the terminal (hold Use)', 'اخترق الكمبيوتر (اضغط استخدم ودوس كتير)'], fetch: ['Find the energy cell', 'لاقي خلية الطاقة'], keys: ['Destroy the walking keys', 'دمّر المفاتيح الماشية'], reach: ['Reach the marked room', 'اوصل للأوضة المعلّمة'], serum: ['Grab 2 serum boxes', 'هات علبتين مصل'] };
+let M = null, mObjs = [], holdT = 0;
+const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 4, 14, 1, true), new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
+beacon.position.y = 2; scene.add(beacon);
+function setupMission(i) {
+  mObjs.forEach(o => scene.remove(o.mesh)); mObjs = []; keys.filter(k => k.mission).forEach(k => { scene.remove(k.m.g); k.alive = false; k.gone = true; }); keys = keys.filter(k => !k.gone); holdT = 0;
+  if (i >= TOTAL) { M = { i, type: 'escape', x: GP.x, z: GP.z + 3 }; beacon.position.set(M.x, 2, M.z); hudMission(); return; }
+  seed = 777 + i * 131; const type = i < 2 ? ['reach', 'term'][i] : TYPES[Math.floor(rnd() * 5)];
+  let p = floorCells[Math.floor(rnd() * floorCells.length)];
+  if (type === 'term') { const t = TERM[Math.floor(rnd() * TERM.length)]; p = t.p; }
+  M = { i, type, x: p.x, z: p.z, got: 0 };
+  if (type === 'fetch') { const cg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 0.4), new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xca8a04, emissiveIntensity: 0.9 })); cg.position.set(p.x, 0.8, p.z); scene.add(cg); mObjs.push({ mesh: cg, p }); }
+  if (type === 'keys') for (let k = 0; k < 2 + Math.min(2, Math.floor(i / 15)); k++) spawnKey({ x: p.x + (k - 0.5) * 1.5, z: p.z + 1 }, true);
+  if (type === 'serum') for (let k = 0; k < 2; k++) { const q = floorCells[Math.floor(rnd() * floorCells.length)]; const sm = makeSerum(q); sm.mesh.scale.setScalar(1.5); mObjs.push({ mesh: sm.mesh, p: q, box: true }); }
+  beacon.position.set(p.x, 2, p.z); beacon.visible = type !== 'serum';
+  hudMission();
+}
+function hudMission() {
+  if (M.type === 'escape') { $('hMission').textContent = T('All 50 missions done! The hangar is open — run to the rocket!', 'خلصت الـ 50 مهمة! الهنجر اتفتح — اجري للصاروخ!'); return; }
+  const n = NAMES[M.type], extra = M.type === 'serum' ? ' (' + M.got + '/2)' : M.type === 'keys' ? ' (' + keys.filter(k => k.alive && k.mission).length + ')' : '';
+  $('hMission').textContent = T('Mission ', 'مهمة ') + (M.i + 1) + '/' + TOTAL + ': ' + (L() === 'en' ? n[0] : n[1]) + extra;
+}
+
+// ---------- player ----------
+const P = { pos: { x: 0, z: 0 }, yaw: 0, pitch: 0, mind: 100, life: 100, atk: 0, bob: 0, eye: EYE, four: false };
+let state = 'menu', saveT = 0, hurtT = 0, scareT = 0, film = null, cut = null;
+const toast = (msg, ms) => { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1900); };
+function save() { if (M) store.set('kw_save', { m: M.i, x: P.pos.x, z: P.pos.z, yaw: P.yaw }); }
+const load = () => store.get('kw_save', null);
+
+// mouse / touch look
+const lockEl = renderer.domElement;
+lockEl.addEventListener('click', () => { if (state === 'play' && matchMedia('(pointer:fine)').matches && document.pointerLockElement !== lockEl) lockEl.requestPointerLock?.(); else if (state === 'play') input.pressed.add('KeyF'); });
+addEventListener('mousemove', e => { if (document.pointerLockElement === lockEl && state === 'play') { P.yaw -= e.movementX * 0.0024; P.pitch = Math.max(-1.2, Math.min(1.2, P.pitch - e.movementY * 0.0024)); } });
+{ let lt = null; const pad = $('lookPad');
+  pad.addEventListener('pointerdown', e => { lt = { id: e.pointerId, x: e.clientX, y: e.clientY }; pad.setPointerCapture(e.pointerId); });
+  pad.addEventListener('pointermove', e => { if (!lt || e.pointerId !== lt.id) return; P.yaw -= (e.clientX - lt.x) * 0.006; P.pitch = Math.max(-1.1, Math.min(1.1, P.pitch - (e.clientY - lt.y) * 0.005)); lt.x = e.clientX; lt.y = e.clientY; });
+  const end = () => { lt = null; }; pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end); }
+
+function begin(fromSave) {
+  const sv = fromSave ? load() : null, mi = sv ? sv.m : 0;
+  spawnHumans(mi); keys.forEach(k => scene.remove(k.m.g)); keys = [];
+  spots('Y').forEach(p => spawnKey(p, false));
+  serums.forEach(s => scene.remove(s.mesh)); serums = spots('S').map(makeSerum);
+  P.pos = sv ? { x: sv.x, z: sv.z } : { x: bedP.x + 1.6, z: bedP.z }; P.yaw = sv ? sv.yaw : Math.PI / 2; P.pitch = 0; P.mind = 100; P.life = 100;
+  gate.visible = true; if (!walls.includes(gateWall)) walls.push(gateWall);
+  setupMission(mi); if (mi >= TOTAL) openGate();
+  $('black').style.opacity = 0; $('black').textContent = '';
+  $('menu').hidden = true; $('end').hidden = true; $('hud').hidden = false; $('cross').hidden = false; state = 'play'; save();
+  toast(T('Find serum before your mind runs out!', 'دوّر على المصل قبل ما عقلك يخلص!'), 2600);
+}
+function openGate() { gate.visible = false; const i = walls.indexOf(gateWall); if (i >= 0) walls.splice(i, 1); }
+function completeMission() {
+  beep(660, 0.1, 'triangle'); setTimeout(() => beep(990, 0.2, 'triangle'), 120);
+  P.mind = Math.min(100, P.mind + 25);
+  const next = M.i + 1;
+  if (next >= TOTAL) { openGate(); toast(T('The hangar door is open!', 'باب الهنجر اتفتح!'), 2600); }
+  else toast(T('Mission done! ' + next + '/50 · +25 mind', 'المهمة خلصت! ' + next + '/50 · +25 للعقل'), 2000);
+  if (next === 16 || next === 31 || next === 41) spawnHumans(next);
+  setupMission(next); save();
+}
+function lose(kind) {
+  if (state !== 'play') return;
+  state = 'dying'; document.exitPointerLock?.();
+  $('hud').hidden = true; $('cross').hidden = true;
+  const msg = kind === 'mind' ? T('Your mind ran out. You lost control.', 'عقلك خلص. فقدت السيطرة.') : kind === 'cut' ? T('A walking key cut you in half!', 'مفتاح ماشي قطعك نصين!') : T('The humans got you.', 'البشر هزموك.');
+  cut = { t: 0, kind, msg };
+  beep(kind === 'cut' ? 900 : 120, 0.6, 'sawtooth', 0.08);
+}
+function deathDone() {
+  state = 'end'; $('black').style.opacity = 0; $('end').hidden = false;
+  $('eTitle').textContent = T('You lost', 'خسرت');
+  $('eText').textContent = cut.msg + ' ' + T('The game is saved — you go back to mission ' + Math.min(TOTAL, M.i + 1) + '.', 'اللعبة متحفظة — هترجع لمهمة ' + Math.min(TOTAL, M.i + 1) + '.');
+  $('eNext').textContent = T('Continue', 'كمّل'); $('eNext').onclick = () => begin(true);
+}
+function jumpScare() {
+  scareT = 0.75; $('scare').style.display = 'flex';
+  for (let k = 0; k < 6; k++) setTimeout(() => beep(300 + Math.random() * 900, 0.12, 'sawtooth', 0.12), k * 60);
+}
+
+function step(dt) {
+  const inp = readInput();
+  P.four = inp.run && Math.hypot(inp.x, inp.z) > 0.1;
+  P.eye += ((P.four ? EYE4 : EYE) - P.eye) * Math.min(1, dt * 8);
+  const sp = P.four ? 6.2 : 3.2, sin = Math.sin(P.yaw), cos = Math.cos(P.yaw);
+  const dx = (inp.x * cos + inp.z * sin) * sp * dt, dz = (-inp.x * sin + inp.z * cos) * sp * dt;
+  moveCircle(P.pos, dx, dz, 0.45);
+  const mv = Math.hypot(inp.x, inp.z); P.bob += dt * mv * (P.four ? 14 : 8);
+  // mind drains; serum fixes it
+  P.mind -= dt * (1.05 + Math.min(0.6, M.i / 80));
+  serums.forEach(s => { if (!s.got && dist(s.p, P.pos) < 1.3) { s.got = true; s.mesh.visible = false; s.back = 35; P.mind = Math.min(100, P.mind + 45); beep(880, 0.08, 'sine'); beep(1320, 0.12, 'sine'); toast(T('Serum! Your mind is clear again', 'مصل! عقلك رجع صافي'), 1400); } if (s.got) { s.back -= dt; if (s.back <= 0) { s.got = false; s.mesh.visible = true; } } s.mesh.rotation.y += dt * 2; });
+  if (P.mind <= 0) return lose('mind');
+  P.life = Math.min(100, P.life + dt * 2);
+  // slash
+  P.atk = Math.max(0, P.atk - dt);
+  if (hit('KeyF') || hit('Space')) if (P.atk <= 0) {
+    P.atk = 0.42; beep(220, 0.07, 'square', 0.05);
+    const tgt = (o) => { const d = dist(o.pos, P.pos), a = Math.atan2(-(o.pos.x - P.pos.x), -(o.pos.z - P.pos.z)); return d < 3 && angDiff(a, P.yaw) < 0.9; };
+    keys.forEach(k => { if (k.alive && tgt(k)) { k.alive = false; k.dieT = 0; beep(1000, 0.1, 'triangle'); } });
+    humans.forEach(h => { if (h.stun <= 0 && tgt(h)) { h.stun = 5; h.st = 'patrol'; beep(160, 0.15, 'square'); } });
+    hudMission();
+  }
+  // use / hold
+  const useHeld = input.keys.has('KeyE');
+  let hintTxt = '';
+  if (M.type === 'term' && dist(P.pos, M) < 2) { hintTxt = T('Hold Use to hack', 'اضغط على استخدم كتير'); if (useHeld) { holdT += dt; beep(500 + holdT * 300, 0.02, 'square', 0.015); if (holdT >= 3) { holdT = 0; completeMission(); } } else holdT = Math.max(0, holdT - dt * 2); }
+  else holdT = 0;
+  $('hold').style.display = holdT > 0 ? 'block' : 'none'; $('holdC').setAttribute('stroke-dashoffset', 100.5 * (1 - holdT / 3));
+  $('hint').style.display = hintTxt ? 'block' : 'none'; $('hint').textContent = hintTxt;
+  // missions
+  if (M.type === 'reach' && dist(P.pos, M) < 2.2) completeMission();
+  else if (M.type === 'fetch' && mObjs[0] && dist(P.pos, mObjs[0].p) < 1.4) completeMission();
+  else if (M.type === 'keys' && !keys.some(k => k.alive && k.mission)) completeMission();
+  else if (M.type === 'serum') { mObjs.forEach(o => { if (!o.got && dist(o.p, P.pos) < 1.4) { o.got = true; o.mesh.visible = false; M.got++; P.mind = Math.min(100, P.mind + 30); beep(1100, 0.1, 'sine'); hudMission(); } }); if (M.got >= 2) completeMission(); }
+  else if (M.type === 'escape' && P.pos.z > GP.z + C / 2 + 0.5) { state = 'launch'; film = { t: 0 }; document.exitPointerLock?.(); $('hud').hidden = true; $('cross').hidden = true; store.set('kw_save', null); store.set('kw_won', true); return; }
+  if (state !== 'play') return;
+  // keys: wander; the first time one sees you it jumps at your face
+  keys.forEach(k => {
+    if (!k.alive) { k.dieT += dt; k.m.g.rotation.z = Math.min(1.5, k.dieT * 4); k.m.g.position.y = -k.dieT; if (k.dieT > 1.4) { scene.remove(k.m.g); k.gone = true; } return; }
+    const d = dist(k.pos, P.pos), sees = d < 11 && canSee(k.pos, P.pos);
+    let tx, tz, s = 1.2;
+    if (sees) { if (!k.scared && d < 7) { k.scared = true; jumpScare(); } tx = P.pos.x; tz = P.pos.z; s = 3.6 + Math.min(1, M.i / 50); }
+    else { k.wander += (Math.random() - 0.5) * dt * 2; tx = k.pos.x + Math.sin(k.wander) * 3; tz = k.pos.z + Math.cos(k.wander) * 3; }
+    const ddx = tx - k.pos.x, ddz = tz - k.pos.z, m = Math.hypot(ddx, ddz) || 1;
+    moveCircle(k.pos, ddx / m * s * dt, ddz / m * s * dt, 0.35);
+    k.dir = Math.atan2(ddx, ddz); const t = performance.now() / 70;
+    k.m.g.position.set(k.pos.x, Math.abs(Math.sin(t)) * 0.07, k.pos.z); k.m.g.rotation.y = k.dir;
+    k.m.legs[0].rotation.x = Math.sin(t) * 0.7; k.m.legs[1].rotation.x = -Math.sin(t) * 0.7; k.m.arms[0].rotation.z = 0.3 + Math.sin(t * 2) * 0.5; k.m.arms[1].rotation.z = -0.3 - Math.sin(t * 2) * 0.5;
+    if (d < 0.95) lose('cut');
+  });
+  keys = keys.filter(k => !k.gone);
+  // humans: gun = keep distance and shoot, knife = run and stab
+  humans.forEach(h => {
+    if (h.stun > 0) { h.stun -= dt; h.m.g.rotation.x = -Math.min(1.5, (5 - h.stun) * 4) * (h.stun > 0.5 ? 1 : h.stun * 2); h.m.g.position.set(h.pos.x, 0.1, h.pos.z); return; }
+    h.m.g.rotation.x = 0;
+    const d = dist(h.pos, P.pos), a = Math.atan2(P.pos.x - h.pos.x, P.pos.z - h.pos.z);
+    const sees = (d < 16 && angDiff(a, h.dir) < 0.75 && canSee(h.pos, P.pos)) || d < 2.5;
+    if (sees) { h.st = 'hunt'; h.lost = 0; h.last = { x: P.pos.x, z: P.pos.z }; }
+    else if (h.st === 'hunt') { h.lost += dt; if (h.lost > 4) { h.st = 'patrol'; h.path = []; } }
+    let tx = null, tz = null, s = 1.6;
+    if (h.st === 'hunt') {
+      s = h.gun ? 2.4 : 3.9;
+      if (h.gun && sees && d < 13) { h.dir += (((a - h.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 6); h.cd -= dt; if (h.cd <= 0) { h.cd = 1.3; shoot(h); } }
+      else if (!sees) { if (!h.path.length) h.path = path(h.pos, h.last); }
+      else { tx = P.pos.x; tz = P.pos.z; }
+      if (!h.gun && d < 1.25) { h.cd -= dt; if (h.cd <= 0) { h.cd = 0.9; hurt(28, h); } }
+    } else if (!h.path.length) h.path = path(h.pos, floorCells[Math.floor(Math.random() * floorCells.length)]);
+    if (tx === null && h.path.length && !(h.gun && sees && d < 13)) { const n = h.path[0]; tx = n.x; tz = n.z; if (Math.hypot(n.x - h.pos.x, n.z - h.pos.z) < 0.5) h.path.shift(); }
+    let moving = false;
+    if (tx !== null) { const ddx = tx - h.pos.x, ddz = tz - h.pos.z, m = Math.hypot(ddx, ddz); if (m > 0.2) { moveCircle(h.pos, ddx / m * s * dt, ddz / m * s * dt, 0.38); h.dir += (((Math.atan2(ddx, ddz) - h.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 8); moving = true; } }
+    const t = performance.now() / 120;
+    h.m.legs[0].rotation.x = moving ? Math.sin(t) * 0.6 : 0; h.m.legs[1].rotation.x = moving ? -Math.sin(t) * 0.6 : 0;
+    h.m.arm.rotation.x = h.gun ? -1.45 : (h.st === 'hunt' ? -1.3 + Math.sin(t * 3) * 0.6 : -0.4);
+    h.m.g.position.set(h.pos.x, 0, h.pos.z); h.m.g.rotation.y = h.dir;
+  });
+  tracers = tracers.filter(tr => { tr.t -= dt; tr.mesh.material.opacity = tr.t * 4; if (tr.t <= 0) scene.remove(tr.mesh); return tr.t > 0; });
+  // HUD + effects
+  $('mind').querySelector('i').style.width = Math.max(0, P.mind) + '%';
+  $('life').querySelector('i').style.width = Math.max(0, P.life) + '%';
+  const low = P.mind < 30 ? (30 - P.mind) / 30 : 0;
+  $('fx').style.boxShadow = 'inset 0 0 ' + (60 + low * 160) + 'px rgba(168,85,247,' + (low * 0.85).toFixed(2) + ')';
+  if (low > 0 && Math.random() < dt * 2 * low) beep(60 + Math.random() * 60, 0.3, 'sine', 0.04);
+  hurtT = Math.max(0, hurtT - dt); $('hurt').style.opacity = Math.min(1, hurtT * 2);
+  const ax = M.x - P.pos.x, az = M.z - P.pos.z, rel = Math.atan2(-ax, -az) - P.yaw;
+  $('arrowTip').innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" style="transform:rotate(' + (-rel * 180 / Math.PI).toFixed(0) + 'deg)" fill="#22d3ee"><path d="M12 2l7 18-7-4-7 4z"/></svg>' + Math.round(Math.hypot(ax, az)) + 'm';
+  saveT += dt; if (saveT > 15) { saveT = 0; save(); }
+}
+function shoot(h) {
+  beep(1400, 0.05, 'square', 0.06);
+  const from = new THREE.Vector3(h.pos.x, 1.5, h.pos.z), to = new THREE.Vector3(P.pos.x, P.eye - 0.3, P.pos.z);
+  const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xfde047, transparent: true, opacity: 1 })); scene.add(line); tracers.push({ mesh: line, t: 0.25 });
+  if (Math.random() < (P.four ? 0.4 : 0.62)) hurt(14, h);
+}
+function hurt(n, h) {
+  P.life -= n; hurtT = 0.6; beep(110, 0.15, 'sawtooth', 0.06);
+  if (P.life <= 0) lose('human');
+}
+
+// ---------- menu ----------
+function showMenu() {
+  state = 'menu'; document.exitPointerLock?.();
+  $('hud').hidden = true; $('cross').hidden = true; $('end').hidden = true; $('story').hidden = true; $('menu').hidden = false;
+  const sv = load(); $('mCont').hidden = !sv;
+  $('mProg').textContent = sv ? T('Saved: mission ' + Math.min(TOTAL, sv.m + 1) + ' of 50', 'متحفظ: مهمة ' + Math.min(TOTAL, sv.m + 1) + ' من 50') : '';
+  if (store.get('kw_won', false)) $('mProg').textContent += ' ' + T('· You escaped Mars!', '· هربت من المريخ!');
+}
+// the wake-up film in 3D: black → "10 years later" → eyes open → look at your hands → stand up tall → the mirror
+function startFilm() {
+  state = 'film'; film = { t: 0 }; $('menu').hidden = true;
+  P.pos = { x: bedP.x, z: bedP.z + 0.6 }; P.yaw = 0; P.pitch = -1.0; P.eye = 1.35;
+  spawnHumans(0); keys.forEach(k => scene.remove(k.m.g)); keys = [];
+  const b = $('black'); b.style.transition = 'none'; b.style.opacity = 1; b.textContent = T('10 years later…', 'بعد 10 سنين بالظبط…');
+  beep(55, 2.5, 'sine', 0.06);
+}
+function filmStep(dt) {
+  film.t += dt; const t = film.t, b = $('black');
+  b.style.transition = 'opacity .9s';
+  if (t < 2.6) { b.style.opacity = 1; return; }
+  if (t < 4.6) { b.textContent = ''; b.style.opacity = (Math.sin((t - 2.6) * 6) > 0.4 && t < 4) ? 0.85 : 0; P.pitch = -1.0 + (t - 2.6) * 0.1; return; }
+  b.style.opacity = 0; b.textContent = '';
+  if (t < 4.7) toast(T('My hands… they are black…', 'إيديا… سودا…'), 2200);
+  if (t < 7) { P.pitch = -0.75; arms.rotation.x = Math.min(0.75, (t - 4.6) * 0.8); arms.position.y = Math.sin(t * 2) * 0.03; return; }
+  arms.rotation.x = Math.max(0, arms.rotation.x - dt * 2);
+  if (t < 9.5) { P.eye = Math.min(EYE, 1.35 + (t - 7) * 0.5); P.pitch = Math.min(0, -0.95 + (t - 7) * 0.4); if (t > 8.6 && !film.tall) { film.tall = true; toast(T('Why am I so tall?', 'أنا ليه طويل كده؟'), 2000); } return; }
+  if (t < 13) { const k = Math.min(1, (t - 9.5) / 2.5); P.pos.x = bedP.x + (mirP.x - bedP.x + 0.4) * k; P.pos.z = bedP.z + (mirP.z - bedP.z) * k; P.yaw = Math.PI / 2 * k + 0 * (1 - k); P.pitch = 0; P.bob += dt * 8; return; }
+  if (t < 13.1 && !film.mir) { film.mir = true; beep(80, 1.4, 'sawtooth', 0.09); beep(160, 1.4, 'square', 0.04); toast(T('…I became a monster.', '…أنا بقيت وحش.'), 3000); }
+  if (t < 17) { P.yaw = Math.PI / 2; return; }
+  film = null; begin(false);
+}
+$('mCont').onclick = () => begin(true);
+$('mNew').onclick = () => { store.set('kw_save', null); playStory(startFilm); };
+$('eMenu').onclick = showMenu; $('bBack').onclick = () => { save(); showMenu(); };
+addEventListener('keydown', e => { if (e.code === 'Escape' && state === 'play') { save(); showMenu(); } });
+addEventListener('pagehide', () => { if (state === 'play') save(); });
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); if (state === 'menu') showMenu(); if (!$('story').hidden) showScene(); if (M && state === 'play') hudMission(); });
+setLang(L()); P.pos = { x: bedP.x + 2, z: bedP.z }; setupMission(0); showMenu();
+if (!store.get('kw_seen', false)) { store.set('kw_seen', true); playStory(startFilm); }
+
+if (location.hostname === 'localhost') window.__kw = { get film() { return film; }, P, get state() { return state; } };
+// ---------- render loop ----------
+let last = performance.now();
+const tmpV = new THREE.Vector3();
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (state === 'play') step(dt);
+  else if (state === 'film') filmStep(dt);
+  if (scareT > 0) { scareT -= dt; if (scareT <= 0) $('scare').style.display = 'none'; }
+  // camera from your eyes
+  const wob = P.mind < 30 ? (30 - P.mind) / 30 : 0;
+  camera.position.set(P.pos.x, P.eye + Math.sin(P.bob) * (P.four ? 0.09 : 0.05), P.pos.z);
+  camera.rotation.set(P.pitch + Math.sin(now / 700) * 0.04 * wob, P.yaw + Math.sin(now / 900) * 0.05 * wob, Math.sin(now / 1100) * 0.06 * wob, 'YXZ');
+  // arms: sway when walking, swipe when you slash, lower when running on four
+  armR.rotation.x = P.atk > 0 ? -0.2 - Math.sin((0.42 - P.atk) / 0.42 * Math.PI) * 0.6 : Math.sin(P.bob) * 0.05;
+  armR.rotation.y = P.atk > 0 ? -0.12 + Math.sin((0.42 - P.atk) / 0.42 * Math.PI) * 1.1 : -0.12;
+  armL.rotation.x = -Math.sin(P.bob) * 0.05; arms.position.y = P.four ? -0.12 : 0;
+  // you are only visible in the mirror
+  body.position.set(P.pos.x, P.eye > 1.5 ? 0 : -1.3 + P.eye, P.pos.z); body.rotation.y = P.yaw + Math.PI;
+  // ceiling lights follow you (only the 6 nearest are real lights)
+  lamps.sort((a, b) => dist(a.p, P.pos) - dist(b.p, P.pos));
+  lights.forEach((l, i) => { const lp = lamps[i]; if (!lp) return; l.position.x = lp.p.x; l.position.z = lp.p.z; const on = !lp.flick || Math.sin(now / 90 + i * 7) > -0.6 || Math.random() > 0.2; l.intensity = on ? 14 : 2; lp.pan.material.color.set(on ? 0xe0e7ff : 0x334155); });
+  if (M) { beacon.material.opacity = 0.15 + Math.sin(now / 300) * 0.08; mObjs.forEach(o => o.mesh.rotation.y += dt * 1.5); }
+  TERM.forEach((t, i) => t.sc.material.color.setHSL(0.52, 0.8, 0.3 + 0.1 * Math.sin(now / 400 + i)));
+  // the mirror: a second camera on the other side of the glass
+  if (Math.abs(P.pos.x - MX) < 14 && Math.abs(P.pos.z - mirP.z) < 10 && (state === 'film' || state === 'play')) {
+    mirCam.position.set(2 * MX - camera.position.x, camera.position.y, camera.position.z);
+    camera.getWorldDirection(tmpV); tmpV.x = -tmpV.x;
+    mirCam.lookAt(mirCam.position.clone().add(tmpV));
+    mirror.visible = false; frame.visible = false; renderer.setRenderTarget(rt); renderer.render(scene, mirCam); renderer.setRenderTarget(null); mirror.visible = true; frame.visible = true;
+  }
+  if (state === 'dying') {
+    cut.t += dt; const b = $('black');
+    if (cut.kind === 'cut') { camera.rotation.z = Math.min(0.9, cut.t * 2); camera.position.y = Math.max(0.3, P.eye - cut.t * 2); }
+    else if (cut.kind === 'mind') { camera.rotation.z = Math.sin(cut.t * 8) * 0.2; }
+    b.textContent = ''; b.style.opacity = Math.min(1, cut.t);
+    if (cut.t > 1.8) deathDone();
+  }
+  if (state === 'launch') {
+    film.t += dt; const b = $('black');
+    if (film.t < 1) b.style.opacity = film.t;
+    else if (film.t < 6) { b.style.opacity = 1; b.textContent = T('The rocket takes off… goodbye, Mars.', 'الصاروخ طار… مع السلامة يا مريخ.'); if (film.t < 1.1) beep(60, 3, 'sawtooth', 0.07); }
+    else { b.style.opacity = 0; state = 'end'; $('end').hidden = false; $('eTitle').textContent = T('Chapter 1 done!', 'الفصل الأول خلص!');
+      $('eText').textContent = T('You escaped Mars. Chapter 2 — Earth: 100+ long quests, online with up to 4 friends, your hidden key and the last serum… comes in a next update.', 'هربت من المريخ. الفصل التاني — الأرض: أكتر من 100 كويست طويلة، أونلاين مع لحد 4 أصحاب، المفتاح اللي كنت مخبّيه، والمصل الأخير… جاي في تحديث قريب.');
+      $('eNext').textContent = T('Play again', 'العب تاني'); $('eNext').onclick = () => { store.set('kw_save', null); playStory(startFilm); }; }
+  }
+  if (state === 'menu') { const a = now / 7000; camera.position.set(Math.sin(a) * 6, 2.2, Math.cos(a) * 6 - 4); camera.rotation.set(-0.1, a, 0, 'YXZ'); }
+  arms.visible = state === 'play' || state === 'film';
+  renderer.render(scene, camera); endFrame();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

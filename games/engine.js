@@ -179,9 +179,21 @@ export function beep(f, d, type, vol) {
   } catch (e) {}
 }
 
+// ---------- camera zoom: pinch with two fingers on phones, mouse wheel on PC (a player idea picked by the admin) ----------
+export const view = { zoom: store.get('ds_zoom', 1) };
+const clampZoom = z => Math.max(0.45, Math.min(1.6, z));
+addEventListener('wheel', e => { view.zoom = clampZoom(view.zoom * (e.deltaY > 0 ? 1.08 : 0.93)); store.set('ds_zoom', view.zoom); }, { passive: true });
+{
+  const pts = new Map(); let d0 = 0, z0 = 1;
+  addEventListener('pointerdown', e => { if (e.target.tagName !== 'CANVAS') return; pts.set(e.pointerId, e); if (pts.size === 2) { const [a, b] = [...pts.values()]; d0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); z0 = view.zoom; } });
+  addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e); if (pts.size === 2 && d0 > 0) { const [a, b] = [...pts.values()]; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); view.zoom = clampZoom(z0 * d0 / Math.max(20, d)); } });
+  const up = e => { if (pts.delete(e.pointerId) && pts.size < 2 && d0) { d0 = 0; store.set('ds_zoom', view.zoom); } };
+  addEventListener('pointerup', up); addEventListener('pointercancel', up);
+}
+
 // ---------- camera follow (third person, a bit above) ----------
 export function follow(camera, target, dt, height, back) {
-  const want = new THREE.Vector3(target.x, (height || 9), target.z + (back || 8));
+  const z = view.zoom, want = new THREE.Vector3(target.x, (height || 9) * z, target.z + (back || 8) * z);
   camera.position.lerp(want, 1 - Math.pow(0.001, dt));
   camera.lookAt(target.x, 0.8, target.z - 1);
 }

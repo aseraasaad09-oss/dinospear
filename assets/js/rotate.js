@@ -1,6 +1,8 @@
 // DINOSPEAR rotate V01 — on phones, every game asks once: turn the screen sideways, or keep it as it is
 (function () {
   var touch = matchMedia('(pointer:coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var me = document.currentScript, noAsk = me && me.hasAttribute('data-noask'), inFrame = window.top !== window;
+  window.DS_rotBtn = function () {};
   if (!touch) return;
   var KEY = 'ds_rotate_choice'; // 'land' | 'keep' — remembered for this visit only
   var en = (document.documentElement.lang || 'ar').indexOf('en') === 0;
@@ -57,6 +59,35 @@
     box.appendChild(b1); box.appendChild(b2); w.appendChild(box); document.body.appendChild(w);
   }
   window.DS_askRotate = ask;
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(ask, 400); });
-  else setTimeout(ask, 400);
+  // V13: a round button you can drag anywhere; one tap turns the screen (turn it on in Settings)
+  function unlock() {
+    try { screen.orientation && screen.orientation.unlock && screen.orientation.unlock(); } catch (e) {}
+    var ex = document.exitFullscreen || document.webkitExitFullscreen; if (document.fullscreenElement || document.webkitFullscreenElement) try { ex.call(document); } catch (e) {}
+  }
+  function rotBtn() {
+    var on = false; try { on = localStorage.getItem('ds_rot_btn') === 'on'; } catch (e) {}
+    var b = document.getElementById('dsRotBtn');
+    if (!on || inFrame) { if (b) b.remove(); return; }
+    if (b) return;
+    b = document.createElement('button'); b.id = 'dsRotBtn'; b.type = 'button'; b.setAttribute('aria-label', T('اقلب الشاشة', 'Turn the screen'));
+    b.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="9" rx="2"/><path d="M8 4h3l-1.5-1.5M8 4l1.5 1.5M16 20h-3l1.5 1.5M16 20l-1.5-1.5"/></svg>';
+    var pos = { x: innerWidth - 74, y: innerHeight * 0.45 };
+    try { var sp = JSON.parse(localStorage.getItem('ds_rot_pos') || 'null'); if (sp) pos = sp; } catch (e) {}
+    b.style.cssText = 'position:fixed;z-index:99990;width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(34,197,94,.85);box-shadow:0 8px 22px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;touch-action:none;padding:0';
+    var place = function () { pos.x = Math.max(6, Math.min(innerWidth - 62, pos.x)); pos.y = Math.max(6, Math.min(innerHeight - 62, pos.y)); b.style.left = pos.x + 'px'; b.style.top = pos.y + 'px'; };
+    place(); addEventListener('resize', place);
+    var drag = null;
+    b.addEventListener('pointerdown', function (e) { drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: pos.x, oy: pos.y, moved: false }; b.setPointerCapture(e.pointerId); });
+    b.addEventListener('pointermove', function (e) { if (!drag) return; var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy; if (Math.abs(dx) + Math.abs(dy) > 8) drag.moved = true; if (drag.moved) { pos.x = drag.ox + dx; pos.y = drag.oy + dy; place(); } });
+    b.addEventListener('pointerup', function () {
+      if (!drag) return; var moved = drag.moved; drag = null;
+      if (moved) { try { localStorage.setItem('ds_rot_pos', JSON.stringify(pos)); } catch (e) {} return; }
+      if (!portrait() || document.fullscreenElement || document.webkitFullscreenElement) { unlock(); set('keep'); }
+      else { set('land'); lockLand().then(function (ok) { if (!ok && portrait()) hint(); }); }
+    });
+    document.body.appendChild(b);
+  }
+  window.DS_rotBtn = rotBtn;
+  function boot() { rotBtn(); if (!noAsk) setTimeout(ask, 400); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
