@@ -1,9 +1,9 @@
 // DINOSPEAR service worker V08
 // • every update of the site reaches the phone app by itself (new version = auto reload)
 // • works with no internet: offline page, article and the offline games stay saved
-const V = 'dinospear-v31';
+const V = 'dinospear-v32';
 const CORE = ['./', 'index.html', 'offline.html', 'article.html', 'manifest.webmanifest', 'favicon.svg',
-  'assets/css/style.css', 'assets/js/home.js', 'assets/js/events.js', 'assets/js/translate.js', 'assets/js/pets.js', 'assets/js/game_admin.js', 'assets/vendor/supabase-2.45.4.js', 'assets/js/viewdist.js', 'games/models/dog.glb', 'games/models/cat.glb', 'games/models/dinopet.glb', 'assets/js/icons.js', 'assets/js/ds_auth.js', 'assets/js/config.js', 'key.js',
+  'assets/css/style.css', 'assets/js/home.js', 'assets/js/events.js', 'assets/js/translate.js', 'assets/js/pets.js', 'assets/js/game_admin.js', 'assets/js/only_chat.js', 'assets/vendor/supabase-2.45.4.js', 'assets/js/viewdist.js', 'games/models/dog.glb', 'games/models/cat.glb', 'games/models/dinopet.glb', 'assets/js/icons.js', 'assets/js/ds_auth.js', 'assets/js/config.js', 'key.js',
   'assets/img/logo_v02.svg', 'assets/img/dino_v03.svg', 'assets/img/dinospear.svg', 'assets/img/icon-192.png', 'assets/img/icon-512.png',
   'demo/index.html', 'games/engine.js', 'games/ui.css', 'games/killer.html', 'games/hide.html', 'games/moto.html', 'games/mm.html', 'games/models/person.glb', 'games/models/key.glb', 'games/models/creature.glb', 'games/models/tree.glb', 'games/models/rock.glb', 'games/models/bush.glb', 'games/models/bike.glb', 'games/models/sofa.glb', 'games/models/table.glb', 'games/models/shelf.glb', 'games/models/bed.glb', 'games/models/wardrobe.glb', 'games/models/crate.glb', 'games/models/lamp.glb', 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/environments/RoomEnvironment.js', 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js', 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/utils/BufferGeometryUtils.js', 'games/text.html', 'games/zombie.html', 'assets/js/rotate.js',
   'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js'];

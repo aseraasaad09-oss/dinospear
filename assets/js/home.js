@@ -4,7 +4,7 @@
   // V08: any link ending in ?update (e.g. from the Framer site) clears the old copy first
   if (/[?&]update\b/.test(location.search)) { location.replace('update.html'); return; }
   var S = {
-    n_home: ['Home', 'الرئيسية'], n_art: ['Article', 'المقال'], n_pchat: ['Public chat', 'الشات العام'], n_admin: ['Admin', 'لوحة الأدمن'], close: ['Close', 'اقفل'],
+    n_home: ['Home', 'الرئيسية'], n_art: ['Article', 'المقال'], n_pchat: ['Public chat', 'الشات العام'], n_wa: ['WhatsApp', 'واتساب'], n_admin: ['Admin', 'لوحة الأدمن'], close: ['Close', 'اقفل'],
     pc_rules: ['Be respectful. Bad words are hidden automatically (★★★) in every language; 100+ bad messages in a day = automatic 1-day ban.', 'خليك محترم. الشتايم بتتشفّر لوحدها (★★★) بكل اللغات، واللي يبعت أكتر من 100 رسالة فيها شتايم في يوم بيتبند يوم كامل أوتوماتيك.'],
     pc_ph: ['Write to everyone…', 'اكتب للكل…'], pc_send: ['Send', 'ابعت'], pc_banned: ['You are banned until', 'انت متبند لحد'],
     ad_h: ['Admin panel', 'لوحة الأدمن'], ad_user: ['Player name', 'اسم اللاعب'], ad_arg: ['Value (hours / amount / word / message)', 'القيمة (ساعات / عدد / كلمة / رسالة)'],
@@ -108,13 +108,13 @@
   } else show(null);
 
   // ---------- views (one screen at a time) ----------
-  var VIEWS = ['home', 'town3d', 'app', 'pchat', 'demo', 'ideas', 'helper', 'admin'];
+  var VIEWS = ['home', 'town3d', 'app', 'wa', 'pchat', 'demo', 'ideas', 'helper', 'admin'];
   function setHH() { document.documentElement.style.setProperty('--hh', document.querySelector('header').offsetHeight + 'px'); }
   addEventListener('resize', setHH);
   function route() {
     var h = (location.hash || '#home').slice(1), v = VIEWS.indexOf(h) >= 0 ? h : 'home', anchor = v === 'home' && h !== 'home' ? h : null;
     VIEWS.forEach(function (x) { document.body.classList.toggle('v-' + x, x === v); });
-    var scrollV = ['app', 'ideas', 'helper', 'pchat', 'admin'].indexOf(v) >= 0;   // V04: these scroll with the whole page (no box inside a box)
+    var scrollV = ['app', 'wa', 'ideas', 'helper', 'pchat', 'admin'].indexOf(v) >= 0;   // V04: these scroll with the whole page (no box inside a box)
     document.body.classList.toggle('v-full', v !== 'home' && !scrollV);
     document.body.classList.toggle('v-scroll', scrollV);
     document.querySelectorAll('nav.main a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + (anchor || v)); });
@@ -240,7 +240,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V31';
+  var APP_V = 'V32';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];

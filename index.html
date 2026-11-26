@@ -115,7 +115,7 @@ footer{padding:36px 0 60px;color:var(--muted);text-align:center;font-size:14px}
 
 /* views: one screen at a time, iframes fill the screen (no double scrolling) */
 section[data-v]{display:none}body.v-home section[data-v="home"]{display:block}
-body.v-pchat #pchat,body.v-admin #admin,body.v-town3d #town3d,body.v-app #app,body.v-demo #demo,body.v-ideas #ideas,body.v-helper #helper{display:block}
+body.v-pchat #pchat,body.v-wa #wa,body.v-admin #admin,body.v-town3d #town3d,body.v-app #app,body.v-demo #demo,body.v-ideas #ideas,body.v-helper #helper{display:block}
 section.full{padding:8px 0 0}section.full .wrap{max-width:none;padding:0 8px}
 section.full .kicker,section.full h2,section.full .lead{display:none}#admin h2{display:block!important}
 section.full .frame{margin-top:0;border-radius:16px}
@@ -165,7 +165,7 @@ body.v-scroll .pc{height:auto;min-height:calc(100dvh - var(--hh,64px) - 24px)}bo
 body.v-scroll .pc form{position:sticky;bottom:0;background:var(--card);z-index:2}
 body.v-scroll .admin-wrap{height:auto;overflow:visible}
 body.v-scroll #app,body.v-scroll #ideas,body.v-scroll #helper,body.v-scroll #pchat,body.v-scroll #admin{display:none}
-body.v-app #app,body.v-ideas #ideas,body.v-helper #helper,body.v-pchat #pchat,body.v-admin #admin{display:block}
+body.v-app #app,body.v-wa #wa,body.v-ideas #ideas,body.v-helper #helper,body.v-pchat #pchat,body.v-admin #admin{display:block}
 @media (max-width:760px){
  header .wrap{gap:6px;padding-top:6px;padding-bottom:6px}
  .brand{font-size:18px}.brand img{width:30px;height:30px}
@@ -174,13 +174,13 @@ body.v-app #app,body.v-ideas #ideas,body.v-helper #helper,body.v-pchat #pchat,bo
  nav.main a{white-space:nowrap;padding:8px 12px;font-size:14.5px}
 }
 @media (min-width:1500px){.wrap{max-width:1400px}}
-</style><script src="assets/js/icons.js?v=V31" defer></script></head>
+</style><script src="assets/js/icons.js?v=V32" defer></script></head>
 <body>
 <header>
  <div class="wrap">
   <a class="brand" href="#top" aria-label="DINOSPEAR"><img src="assets/img/logo_v02.svg" alt="">DINOSPEAR</a>
   <nav class="main" id="nav" hidden>
-   <a href="#home" data-i="n_home"></a><a href="#town3d" data-i="n_town"></a><a href="#app" data-i="n_app"></a><a href="#pchat" data-i="n_pchat"></a><a href="#demo" data-i="n_demo"></a><a href="#ideas" data-i="n_ideas"></a><a href="#helper" data-i="n_helper"></a><a href="#video" data-i="n_video"></a><a href="article.html" data-i="n_art"></a><a href="#roadmap" data-i="n_road"></a><a href="#community" data-i="n_comm"></a><a href="#admin" id="navAdmin" hidden data-i="n_admin"></a>
+   <a href="#home" data-i="n_home"></a><a href="#town3d" data-i="n_town"></a><a href="#app" data-i="n_app"></a><a href="#pchat" data-i="n_pchat"></a><a href="#wa" data-i="n_wa"></a><a href="#demo" data-i="n_demo"></a><a href="#ideas" data-i="n_ideas"></a><a href="#helper" data-i="n_helper"></a><a href="#video" data-i="n_video"></a><a href="article.html" data-i="n_art"></a><a href="#roadmap" data-i="n_road"></a><a href="#community" data-i="n_comm"></a><a href="#admin" id="navAdmin" hidden data-i="n_admin"></a>
   </nav>
   <div class="acct">
    <div class="lang"><button type="button" data-l="ar">ع</button><button type="button" data-l="en">EN</button></div>
@@ -250,6 +250,9 @@ body.v-app #app,body.v-ideas #ideas,body.v-helper #helper,body.v-pchat #pchat,bo
   <div class="frame"><iframe data-src="demo/index.html" title="ASER demos" allow="fullscreen; autoplay" allowfullscreen></iframe></div>
  </div></section>
 
+ <section id="wa" data-v="wa" class="full"><div class="wrap">
+  <div class="frame"><iframe data-src="app/city.html?only=chat" title="WhatsApp" loading="lazy" allow="clipboard-write"></iframe></div>
+ </div></section>
  <section id="pchat" data-v="pchat" class="full"><div class="wrap">
   <div class="pc"><div class="feed" id="pcFeed" aria-live="polite"></div>
    <div class="note" data-i="pc_rules"></div>
@@ -310,9 +313,9 @@ body.v-app #app,body.v-ideas #ideas,body.v-helper #helper,body.v-pchat #pchat,bo
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="key.js"></script>
-<script src="assets/js/rotate.js?v=V31" data-noask></script>
-<script src="assets/js/ds_auth.js?v=V31"></script>
-<script src="assets/js/home.js?v=V31"></script><script src="assets/js/events.js?v=V31" defer></script><script src="assets/js/translate.js?v=V31" defer></script>
+<script src="assets/js/rotate.js?v=V32" data-noask></script>
+<script src="assets/js/ds_auth.js?v=V32"></script>
+<script src="assets/js/home.js?v=V32"></script><script src="assets/js/events.js?v=V32" defer></script><script src="assets/js/translate.js?v=V32" defer></script>
 <div class="sheet" id="offSheet" hidden><div class="box" style="text-align:center">
 <h3 id="offH">مفيش نت</h3><p id="offP" style="line-height:1.8;color:var(--muted)">تحب تدخل الوضع الأوفلاين؟ فيه الألعاب اللي بتشتغل من غير نت والمقال عن اللعبة.</p>
 <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px"><a class="btn" id="offGo" href="offline.html">أيوه، ادخل الأوفلاين</a><button class="btn ghost" id="offNo" type="button">لأ، استنى النت</button></div></div></div>
