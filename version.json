@@ -1,14 +1,12 @@
 {
-  "v": "V17",
+  "v": "V18",
   "date": "2026-11-26",
   "ar": [
-    "THE TEXT: اختار النوع الأساسي (قصصية أو أكشن) و2D أو 3D",
-    "THE TEXT: أنواع لعب جديدة — اصمد قدام موجات الأعداء، وسباق مع الوقت",
-    "THE TEXT: تحكم أكتر — حجم الجويستيك، زراير الكيبورد، اندفاع، ونطة مزدوجة، ووصف للعبتك"
+    "لعبة جديدة: MURDER MYSTERY (زي MM2) — قاتل وشريف وأبرياء، مع بوتات أو أونلاين مع 2 لـ 4 من صحابك",
+    "الإيفنتات: الأدمن يضيف إيفنت أسبوعي أو شهري واللاعيبة بيشوفوه فوق في الصفحة الرئيسية"
   ],
   "en": [
-    "THE TEXT: pick the main kind (story or action) and 2D or 3D",
-    "THE TEXT: new ways to play — survive enemy waves, race the clock",
-    "THE TEXT: more controls — joystick size, keyboard keys, dash, double jump, and a line about your game"
+    "New game: MURDER MYSTERY (like MM2) — murderer, sheriff and innocents, with bots or online with 2 to 4 friends",
+    "Events: the admin adds weekly or monthly events and players see them on the home page"
   ]
 }

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>MURDER MYSTERY — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script src="../assets/js/rotate.js" defer></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<style>
+#role{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.88);text-align:center;padding:20px}
+#role[hidden]{display:none}
+#role h1{font-size:clamp(34px,8vw,64px);margin:0}#role p{font-size:18px;max-width:520px;line-height:1.6}
+.lobby input{background:#0f172a;color:#fff;border:2px solid #334155;border-radius:14px;padding:12px;font:800 20px system-ui;text-align:center;letter-spacing:4px;width:180px;text-transform:uppercase}
+.plist{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}.plist span{background:rgba(255,255,255,.1);border-radius:999px;padding:6px 12px;font-weight:800}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="hud" id="hud" hidden>
+ <div class="bar">
+  <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="chip" id="hRole"></div><div class="chip" id="hAlive"></div><div class="chip" id="hCoins"></div><div class="chip" id="hTime"></div>
+  <button class="chip btn" id="bCam" type="button" aria-label="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></button>
+ </div>
+ <div class="toast" id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+ <div class="acts">
+  <button class="act" id="bAct" type="button" style="background:rgba(239,68,68,.9)"><span id="actTxt"></span></button>
+  <button class="act alt" id="bAct2" type="button"><span id="act2Txt"></span></button>
+  <button class="act alt" id="bRun" type="button"><span data-en="Run" data-ar="اجري"></span></button>
+ </div>
+ <div class="keys" id="keys"></div>
+</div>
+<div id="role" hidden><div><h1 id="roleH"></h1><p id="roleP"></p></div></div>
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+
+<div class="screen" id="menu" style="--c1:#450a0a">
+ <div class="card">
+  <h1>MURDER MYSTERY</h1>
+  <p data-en="8 people in a big house. One is the murderer, one is the sheriff with a gun, everyone else is innocent. Find out who it is before it is too late!" data-ar="8 أشخاص في بيت كبير. واحد فيهم القاتل، وواحد الشريف ومعاه مسدس، والباقي أبرياء. اعرف مين القاتل قبل ما يبقى متأخر!"></p>
+  <div class="row"><button class="big" id="mSolo" type="button" data-en="Play (with bots)" data-ar="العب (مع بوتات)"></button><button class="big sec" id="mOnline" type="button" data-en="Play online with friends (2–4)" data-ar="العب أونلاين مع صحابك (2–4)"></button></div>
+  <p id="mStats" style="opacity:.75"></p>
+  <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
+ </div>
+</div>
+<div class="screen lobby" id="lobby" hidden style="--c1:#1e3a8a">
+ <div class="card">
+  <h1 data-en="Online room" data-ar="أوضة أونلاين"></h1>
+  <p data-en="Make a room and send the code to your friends, or type their code. 2 to 4 players; bots fill the rest." data-ar="اعمل أوضة وابعت الكود لصحابك، أو اكتب الكود بتاعهم. من 2 لـ 4 لاعيبة، والبوتات بتكمّل الباقي."></p>
+  <div class="row"><button class="big" id="lMake" type="button" data-en="Make a room" data-ar="اعمل أوضة"></button></div>
+  <div class="row"><input id="lCode" maxlength="4" placeholder="ABCD"><button class="big sec" id="lJoin" type="button" data-en="Join" data-ar="ادخل"></button></div>
+  <h2 id="lRoom" style="letter-spacing:6px"></h2>
+  <div class="plist" id="lPlayers"></div>
+  <p id="lMsg" style="opacity:.85"></p>
+  <div class="row"><button class="big" id="lStart" type="button" hidden data-en="Start" data-ar="ابدأ"></button><button class="big sec" id="lLeave" type="button" data-en="Back" data-ar="رجوع"></button></div>
+ </div>
+</div>
+<div class="screen" id="end" hidden style="--c1:#1e3a8a">
+ <div class="card"><h1 id="eTitle"></h1><p id="eText"></p>
+  <div class="row"><button class="big" id="eAgain" type="button" data-en="Play again" data-ar="العب تاني"></button><button class="big sec" id="eMenu" type="button" data-en="Menu" data-ar="القايمة"></button></div></div>
+</div>
+
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script type="module">
+import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store, preload, model, view } from './engine.js';
+await preload(['person']);
+const $ = id => document.getElementById(id);
+
+// ---------- the house: '#' wall, '.' floor, 'F' furniture, 'c' coin spot, 'S' start spots ----------
+const MAP = [
+ '##########################',
+ '#S..c..#S....c...#S..c...#',
+ '#.FF...#..FF.....#...FF..#',
+ '#....c.....c..........c..#',
+ '#..c...#.....FF..#.c.....#',
+ '###.#######.###.###.###.##',
+ '#S.......c...........c..S#',
+ '#..FFF....c....FFF.......#',
+ '#.........S...........c..#',
+ '###.#######.###.###.###.##',
+ '#.c....#..c......#....c..#',
+ '#..FF..#.....FF..#..FF...#',
+ '#S...c......c.......c...S#',
+ '##########################'];
+const Hh = MAP.length, Wd = MAP[0].length, grid = MAP.map(r => r.split(''));
+const cell = (c, r) => ({ x: (c - Wd / 2) * 2 + 1, z: (r - Hh / 2) * 2 + 1 });
+const W = makeWorld({ sky: 0x111827, fog: 0x111827, fogNear: 30, fogFar: 80, ambient: 0.75, sun: 1.1 });
+const { scene, camera, renderer, sun } = W;
+setupJoystick(); bindButton('bAct', 'KeyF'); bindButton('bAct2', 'KeyG'); bindButton('bRun', 'Run');
+floor(scene, Wd * 2, Hh * 2, 0x8b5e3c, 1.5);
+const starts = [], coinSpots = [];
+{
+  const wc = []; grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === '#') wc.push([c, r]); }));
+  const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 2.2, 2), mat(0xe7d8c9), wc.length), m4 = new THREE.Matrix4();
+  wc.forEach(([c, r], i) => { const p = cell(c, r); m4.setPosition(p.x, 1.1, p.z); inst.setMatrixAt(i, m4); }); inst.castShadow = inst.receiveShadow = true; scene.add(inst);
+  grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const w = row[c] === '#'; if (w && s < 0) s = c; if (!w && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: true }); s = -1; } } });
+  grid.forEach((row, r) => row.forEach((ch, c) => {
+    const p = cell(c, r);
+    if (ch === 'F') { const col = [0x7c2d12, 0x1e40af, 0x166534, 0x6b21a8][(c + r) % 4]; box(scene, p.x, p.z, 1.8, 1.8, 0.9, col); const top = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 1.9), mat(0xfef3c7)); top.position.set(p.x, 0.96, p.z); scene.add(top); }
+    if (ch === 'S') starts.push(p); if (ch === 'c') coinSpots.push(p);
+  }));
+  for (let i = 0; i < 10; i++) { const l = new THREE.PointLight(0xffe4b5, 8, 12, 1.6); const p = cell(3 + (i % 5) * 5, 3 + Math.floor(i / 5) * 6); l.position.set(p.x, 2.7, p.z); scene.add(l); }
+}
+
+// ---------- people ----------
+const COLORS = [0x2563eb, 0xec4899, 0xf59e0b, 0x10b981, 0x8b5cf6, 0x06b6d4, 0xef4444, 0x84cc16];
+const NAMES = ['Rex', 'Mona', 'Omar', 'Lina', 'Yusuf', 'Sara', 'Ali', 'Nour'];
+let people = [], coins = [], gunDrop = null, state = 'menu', timeLeft = 0, me = null, camI = 0, net = null, isHost = true;
+const knifeGeo = new THREE.BoxGeometry(0.06, 0.06, 0.55), gunGeo = new THREE.BoxGeometry(0.12, 0.18, 0.4);
+function makePerson(o) {
+  const m = makeChar({ shirt: o.color, hair: [0x3b2314, 0x111111, 0x7c2d12][o.idx % 3], skin: [0xf2c49b, 0xc68642, 0x8d5524][o.idx % 3] });
+  scene.add(m);
+  const knife = new THREE.Mesh(knifeGeo, mat(0xd1d5db, { metalness: 0.9, roughness: 0.2 })); knife.position.set(0.45, 0.9, 0.35); knife.visible = false; m.add(knife);
+  const gun = new THREE.Mesh(gunGeo, mat(0x111827, { metalness: 0.6 })); gun.position.set(0.45, 0.95, 0.3); gun.visible = false; m.add(gun);
+  const tag = document.createElement('canvas'); tag.width = 128; tag.height = 32; const g = tag.getContext('2d'); g.font = 'bold 20px system-ui'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText(o.name, 64, 22);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(tag), transparent: true, depthTest: false })); sp.scale.set(1.6, 0.4, 1); sp.position.y = 2.35; m.add(sp);
+  return Object.assign(o, { mesh: m, knife, gun, alive: true, dir: 0, coins: 0, knows: null, ai: { t: 0, path: null, goal: null }, cd: 0, showKnife: 0, mv: 0 });
+}
+function place(p, s) { p.pos = { x: s.x, z: s.z }; p.mesh.position.set(s.x, 0, s.z); }
+function clearRound() { people.forEach(p => scene.remove(p.mesh)); people = []; coins.forEach(c => scene.remove(c.mesh)); coins = []; if (gunDrop) scene.remove(gunDrop.mesh); gunDrop = null; }
+function spawnCoins() { coinSpots.forEach(p => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.08, 18), mat(0xfacc15, { metalness: 0.8, roughness: 0.25, emissive: 0x92400e, emissiveIntensity: 0.3 })); m.rotation.x = Math.PI / 2; m.position.set(p.x, 0.6, p.z); scene.add(m); coins.push({ p, mesh: m, on: true }); }); }
+
+// ---------- a round (roster comes from the host, the same on every screen) ----------
+function rnd(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function makeRoster(humans, seed) {
+  const R = rnd(seed), list = [];
+  for (let i = 0; i < 8; i++) { const h = humans[i]; list.push({ id: h ? h.id : 'bot' + i, name: h ? h.name : NAMES[i], human: !!h, idx: i, color: COLORS[i] }); }
+  const order = list.map((x, i) => i).sort(() => R() - 0.5);
+  list.forEach(x => x.role = 'innocent'); list[order[0]].role = 'murderer'; list[order[1]].role = 'sheriff';
+  return list;
+}
+function startRound(roster, seed) {
+  clearRound(); spawnCoins();
+  const R = rnd(seed + 7), sp = starts.slice().sort(() => R() - 0.5);
+  roster.forEach((o, i) => { const p = makePerson(Object.assign({}, o)); place(p, sp[i % sp.length]); people.push(p); });
+  me = people.find(p => p.id === myId) || people[0];
+  me.local = true; timeLeft = 180; state = 'role';
+  people.forEach(p => { p.gun.visible = p.role === 'sheriff'; p.hasGun = p.role === 'sheriff'; });
+  ['menu', 'lobby', 'end'].forEach(id => $(id).hidden = true); $('hud').hidden = false;
+  const R2 = { murderer: [T('MURDERER', 'القاتل'), T('Eliminate everyone before time runs out. Don\'t let the sheriff see you!', 'خلّص على الكل قبل الوقت ما يخلص. ماتخليش الشريف يشوفك!'), '#ef4444'],
+    sheriff: [T('SHERIFF', 'الشريف'), T('Find the murderer and shoot. Shoot an innocent and you lose your life!', 'لاقي القاتل واضرب. لو ضربت بريء هتموت انت!'), '#3b82f6'],
+    innocent: [T('INNOCENT', 'بريء'), T('Collect coins, stay alive, and pick up the gun if the sheriff falls.', 'لمّ العملات وفضل عايش، ولو الشريف وقع خد المسدس.'), '#22c55e'] }[me.role];
+  $('roleH').textContent = R2[0]; $('roleH').style.color = R2[2]; $('roleP').textContent = R2[1]; $('role').hidden = false;
+  $('actTxt').textContent = me.role === 'murderer' ? T('Stab', 'اطعن') : me.role === 'sheriff' ? T('Shoot', 'اضرب') : T('—', '—');
+  $('act2Txt').textContent = me.role === 'murderer' ? T('Throw', 'ارمي') : T('Hide', 'وطّي');
+  $('keys').textContent = T('Move: WASD · Run: Shift · Act: F / Space · ' + (me.role === 'murderer' ? 'Throw knife: G' : 'Crouch: G') + ' · Camera: C', 'الحركة: WASD · الجري: Shift · الفعل: F أو Space · ' + (me.role === 'murderer' ? 'رمي السكينة: G' : 'توطّي: G') + ' · الكاميرا: C');
+  setTimeout(() => { $('role').hidden = true; if (state === 'role') state = 'play'; }, 3200);
+  beep(220, 0.4, 'sine');
+}
+function hudUpd() {
+  const alive = people.filter(p => p.alive).length;
+  $('hRole').textContent = !me.alive ? T('Watching', 'بتتفرج') : me.role === 'murderer' ? T('Murderer', 'القاتل') : me.hasGun ? T('Sheriff', 'الشريف') : T('Innocent', 'بريء');
+  $('hAlive').textContent = T('Alive ', 'عايشين ') + alive; $('hCoins').textContent = '🪙 ' + me.coins; $('hTime').textContent = Math.max(0, Math.ceil(timeLeft)) + 's';
+}
+const toast = (m, ms) => { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), ms || 1600); };
+
+// ---------- actions (the same rules for players and bots; online they are sent to everyone) ----------
+function kill(by, target, how, remote) {
+  if (!target.alive || !by.alive) return;
+  target.alive = false; target.mesh.rotation.x = -Math.PI / 2; target.mesh.position.y = 0.3; target.gun.visible = target.knife.visible = false;
+  beep(how === 'shot' ? 90 : 160, 0.3, 'sawtooth');
+  people.forEach(w => { if (w.alive && w !== by && dist(w.pos, by.pos) < 14 && canSee(w.pos, by.pos) && by.role === 'murderer') w.knows = by; });
+  if (target.hasGun) { target.hasGun = false; dropGun(target.pos); }
+  if (target === me) toast(how === 'shot' ? T('You were shot!', 'اتضربت بالنار!') : T('The murderer got you!', 'القاتل خلّص عليك!'), 2200);
+  if (!remote && net) net.send('kill', { by: by.id, t: target.id, how });
+  check();
+}
+function dropGun(p) { const m = new THREE.Mesh(gunGeo, mat(0x111827, { metalness: 0.6, emissive: 0x1d4ed8, emissiveIntensity: 0.6 })); m.position.set(p.x, 0.3, p.z); scene.add(m); gunDrop = { p: { x: p.x, z: p.z }, mesh: m }; if (me.alive) toast(T('The gun dropped! An innocent can pick it up', 'المسدس وقع! أي بريء يقدر ياخده'), 2200); }
+function pickGun(p, remote) { if (!gunDrop || p.role === 'murderer' || !p.alive) return; scene.remove(gunDrop.mesh); gunDrop = null; p.hasGun = true; p.gun.visible = true; if (p === me) toast(T('You have the gun — you are the hero now!', 'المسدس معاك — انت البطل دلوقتي!'), 2000); if (!remote && net) net.send('gun', { id: p.id }); }
+function shoot(by, remote, targetId) {
+  if (!by.hasGun || by.cd > 0 || !by.alive) return; by.cd = 2.5; beep(900, 0.08, 'square'); beep(120, 0.15, 'sawtooth');
+  let target = targetId ? people.find(p => p.id === targetId) : null;
+  if (!target) { let best = 99; people.forEach(p => { if (p === by || !p.alive) return; const d = dist(p.pos, by.pos), a = Math.atan2(p.pos.x - by.pos.x, p.pos.z - by.pos.z), da = Math.abs(((a - by.dir) + Math.PI * 3) % (Math.PI * 2) - Math.PI); if (d < 25 && da < 0.22 && canSee(by.pos, p.pos) && d < best) { best = d; target = p; } }); }
+  const tracer = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1, 6), new THREE.MeshBasicMaterial({ color: 0xfde047 })); const end = target ? target.pos : { x: by.pos.x + Math.sin(by.dir) * 20, z: by.pos.z + Math.cos(by.dir) * 20 };
+  const len = Math.hypot(end.x - by.pos.x, end.z - by.pos.z); tracer.scale.y = len; tracer.position.set((by.pos.x + end.x) / 2, 1.1, (by.pos.z + end.z) / 2); tracer.rotation.set(Math.PI / 2, 0, -Math.atan2(end.x - by.pos.x, end.z - by.pos.z)); scene.add(tracer); setTimeout(() => scene.remove(tracer), 120);
+  if (!remote && net) net.send('shoot', { by: by.id, t: target ? target.id : null });
+  if (!target) return;
+  if (target.role === 'murderer') kill(by, target, 'shot', true);
+  else { kill(by, target, 'shot', true); kill(target, by, 'shot', true); if (by === me) toast(T('That was an innocent… you lost your life too.', 'ده كان بريء… وانت كمان مت.'), 2400); }
+  if (!remote) check();
+}
+function stab(by, remote, targetId) {
+  if (by.role !== 'murderer' || by.cd > 0 || !by.alive) return; by.cd = 0.8; by.showKnife = 0.8;
+  let target = targetId ? people.find(p => p.id === targetId) : people.filter(p => p !== by && p.alive && dist(p.pos, by.pos) < 1.9).sort((a, b) => dist(a.pos, by.pos) - dist(b.pos, by.pos))[0];
+  if (!remote && net) net.send('stab', { by: by.id, t: target ? target.id : null });
+  if (target) kill(by, target, 'knife', true);
+}
+function throwKnife(by, remote) {
+  if (by.role !== 'murderer' || by.cd > 0 || !by.alive) return; by.cd = 3; by.showKnife = 0.5;
+  const k = new THREE.Mesh(knifeGeo, mat(0xd1d5db, { metalness: 0.9 })); k.position.set(by.pos.x, 1, by.pos.z); scene.add(k);
+  flying.push({ m: k, x: by.pos.x, z: by.pos.z, vx: Math.sin(by.dir) * 18, vz: Math.cos(by.dir) * 18, t: 0, by, remote });
+  if (!remote && net) net.send('throw', { by: by.id, dir: by.dir });
+}
+const flying = [];
+function check() {
+  if (state !== 'play' && state !== 'role') return;
+  const m = people.find(p => p.role === 'murderer');
+  const others = people.filter(p => p.role !== 'murderer' && p.alive).length;
+  if (!m.alive) return finish('inn'); if (others === 0) return finish('mur');
+}
+function finish(w) {
+  if (state === 'end') return; state = 'end'; $('hud').hidden = true;
+  const mur = people.find(p => p.role === 'murderer'), won = (w === 'mur') === (me.role === 'murderer');
+  const st = store.get('mm_stats', { w: 0, l: 0 }); won ? st.w++ : st.l++; store.set('mm_stats', st);
+  $('eTitle').textContent = w === 'mur' ? T('The murderer wins', 'القاتل كسب') : T('The innocents win', 'الأبرياء كسبوا');
+  $('eText').textContent = T('The murderer was ', 'القاتل كان ') + mur.name + '. ' + (won ? T('You won! ', 'انت كسبت! ') : T('You lost. ', 'انت خسرت. ')) + T('Coins: ', 'العملات: ') + me.coins;
+  $('end').hidden = false; beep(won ? 660 : 180, 0.4, won ? 'triangle' : 'sawtooth');
+}
+
+// ---------- bots (run by the host only) ----------
+const free = (c, r) => { const ch = grid[r]?.[c]; return ch && ch !== '#' && ch !== 'F'; };
+const toCell = p => ({ c: Math.round((p.x - 1) / 2 + Wd / 2), r: Math.round((p.z - 1) / 2 + Hh / 2) });
+function path(a, b) {
+  const A = toCell(a), B = toCell(b), key = (c, r) => r * 100 + c, prev = new Map([[key(A.c, A.r), null]]), q = [[A.c, A.r]];
+  while (q.length) { const [c, r] = q.shift(); if (c === B.c && r === B.r) break; for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nc = c + dc, nr = r + dr, k = key(nc, nr); if (!prev.has(k) && free(nc, nr)) { prev.set(k, [c, r]); q.push([nc, nr]); } } }
+  if (!prev.has(key(B.c, B.r))) return []; const out = []; let cur = [B.c, B.r]; while (cur) { out.unshift(cell(cur[0], cur[1])); cur = prev.get(key(cur[0], cur[1])); } return out.slice(1);
+}
+function randomSpot() { for (let i = 0; i < 50; i++) { const c = 1 + (Math.random() * (Wd - 2) | 0), r = 1 + (Math.random() * (Hh - 2) | 0); if (free(c, r)) return cell(c, r); } return { x: 0, z: 0 }; }
+function bot(p, dt) {
+  const ai = p.ai; ai.t -= dt; let target = null, sp = 2.6;
+  if (p.role === 'murderer') {
+    const witnesses = q => people.filter(w => w.alive && w !== p && w !== q && dist(w.pos, p.pos) < 12 && canSee(w.pos, p.pos)).length;
+    const prey = people.filter(x => x.alive && x !== p && canSee(p.pos, x.pos) && dist(x.pos, p.pos) < 14).sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos))[0];
+    if (prey && (witnesses(prey) === 0 || timeLeft < 60)) { target = prey.pos; sp = 4.2; if (dist(prey.pos, p.pos) < 1.7) stab(p); }
+  } else {
+    if (p.hasGun && p.knows && p.knows.alive && canSee(p.pos, p.knows.pos) && dist(p.pos, p.knows.pos) < 22) { p.dir = Math.atan2(p.knows.pos.x - p.pos.x, p.knows.pos.z - p.pos.z); shoot(p); }
+    else if (p.knows && p.knows.alive && dist(p.pos, p.knows.pos) < 10) { target = { x: p.pos.x * 2 - p.knows.pos.x, z: p.pos.z * 2 - p.knows.pos.z }; sp = 4; ai.path = null; }
+    else if (gunDrop && !p.hasGun && dist(p.pos, gunDrop.p) < 14) target = gunDrop.p;
+    else { const c = coins.filter(c => c.on).sort((a, b) => dist(a.p, p.pos) - dist(b.p, p.pos))[0]; if (c && dist(c.p, p.pos) < 12 && !ai.path) ai.path = path(p.pos, c.p); }
+  }
+  if (!target) { if (!ai.path || !ai.path.length || ai.t < 0) { ai.path = path(p.pos, randomSpot()); ai.t = 8; } target = ai.path[0]; if (target && dist(target, p.pos) < 0.4) { ai.path.shift(); target = ai.path[0]; } }
+  if (target) { const dx = target.x - p.pos.x, dz = target.z - p.pos.z, m = Math.hypot(dx, dz) || 1; moveCircle(p.pos, dx / m * sp * dt, dz / m * sp * dt, 0.35); if (!(p.hasGun && p.knows)) p.dir = Math.atan2(dx, dz); p.mv = sp / 2.6; } else p.mv = 0;
+}
+
+// ---------- the loop ----------
+function step(dt) {
+  timeLeft -= dt; if (timeLeft <= 0 && isHost) { finish('inn'); if (net) net.send('end', { w: 'inn' }); return; }
+  const inp = readInput();
+  if (me.alive) {
+    const sp = (inp.run ? 5 : 3.2) * (me.crouch ? 0.5 : 1), mv = Math.hypot(inp.x, inp.z);
+    moveCircle(me.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38); if (mv > 0.05) me.dir = Math.atan2(inp.x, inp.z); me.mv = mv * (inp.run ? 1.6 : 1);
+    if (hit('KeyF') || hit('Space')) { if (me.role === 'murderer') stab(me); else if (me.hasGun) shoot(me); }
+    if (hit('KeyG')) { if (me.role === 'murderer') throwKnife(me); else { me.crouch = !me.crouch; toast(me.crouch ? T('Crouching — quieter and harder to see', 'موطّي — أهدى وأصعب تتشاف') : T('Standing', 'واقف'), 900); } }
+    coins.forEach(c => { if (c.on && dist(c.p, me.pos) < 1) { c.on = false; c.mesh.visible = false; me.coins++; beep(1200, 0.06, 'sine'); if (net) net.send('coin', { i: coins.indexOf(c) }); } });
+    if (gunDrop && dist(gunDrop.p, me.pos) < 1.2) pickGun(me);
+  }
+  if (isHost) people.forEach(p => { if (!p.human && p.alive) { bot(p, dt); coins.forEach((c, ci) => { if (c.on && dist(c.p, p.pos) < 0.9) { c.on = false; c.mesh.visible = false; p.coins++; if (net) net.send('coin', { i: ci }); } }); if (gunDrop && dist(gunDrop.p, p.pos) < 1.2) pickGun(p); } });
+  people.forEach(p => {
+    p.cd = Math.max(0, p.cd - dt); p.showKnife = Math.max(0, p.showKnife - dt);
+    if (!p.alive) return;
+    if (p.net) { p.pos.x += (p.net.x - p.pos.x) * 0.25; p.pos.z += (p.net.z - p.pos.z) * 0.25; p.dir = p.net.dir; p.mv = p.net.mv; }
+    p.mesh.position.set(p.pos.x, 0, p.pos.z); p.mesh.rotation.y = p.dir; p.mesh.scale.y = p.crouch ? 0.75 : 1;
+    p.mesh.userData.anim(dt, p.mv || 0, false); p.knife.visible = p.showKnife > 0 || (p === me && p.role === 'murderer');
+  });
+  for (let i = flying.length - 1; i >= 0; i--) { const f = flying[i]; f.t += dt; const nx = f.x + f.vx * dt, nz = f.z + f.vz * dt;
+    const hitWall = walls.some(w => w.tall && nx > w.x0 && nx < w.x1 && nz > w.z0 && nz < w.z1); f.x = nx; f.z = nz; f.m.position.set(nx, 1, nz); f.m.rotation.y += dt * 20;
+    const victim = people.find(p => p !== f.by && p.alive && Math.hypot(p.pos.x - nx, p.pos.z - nz) < 0.6);
+    if (victim && !f.remote) { kill(f.by, victim, 'knife'); }
+    if (victim || hitWall || f.t > 1.5) { scene.remove(f.m); flying.splice(i, 1); } }
+  coins.forEach(c => { c.mesh.rotation.z += dt * 3; });
+  if (net && net.tick(dt)) net.sendPos();
+  hudUpd();
+  const f = me.alive ? me.pos : (people.find(p => p.alive) || me).pos, far = (innerWidth < innerHeight ? 1.35 : 1) * (view.zoom || 1);
+  const want = camI === 0 ? new THREE.Vector3(f.x, 15 * far, f.z + 6 * far) : camI === 1 ? new THREE.Vector3(f.x - Math.sin(me.dir) * 5, 3.2, f.z - Math.cos(me.dir) * 5) : new THREE.Vector3(f.x, 24 * far, f.z + 3);
+  camera.position.lerp(want, 1 - Math.pow(0.002, dt)); camera.lookAt(f.x, camI === 1 ? 1.3 : 0.5, f.z);
+  sun.position.set(f.x + 10, 26, f.z + 8); sun.target.position.set(f.x, 0, f.z);
+}
+
+// ---------- online rooms (Supabase Realtime: no data is saved) ----------
+const myId = 'p' + Math.random().toString(36).slice(2, 8);
+function myName() { try { return (localStorage.getItem('ds_name') || '').slice(0, 12) || T('Player', 'لاعب') + myId.slice(-2); } catch (e) { return 'Player'; } }
+function makeNet(code) {
+  if (!window.supabase || !window.ASER_KEY) return null;
+  const sb = window.supabase.createClient('https://djpgranztcqxyfehynux.supabase.co', window.ASER_KEY);
+  const ch = sb.channel('mm-' + code, { config: { broadcast: { self: false }, presence: { key: myId } } });
+  let acc = 0; const n = { code, ch, members: [], host: false };
+  n.send = (ev, payload) => ch.send({ type: 'broadcast', event: ev, payload });
+  n.tick = dt => { acc += dt; if (acc > 0.1) { acc = 0; return true; } return false; };
+  n.sendPos = () => { n.send('p', { id: me.id, x: me.pos.x, z: me.pos.z, dir: me.dir, mv: me.mv, cr: !!me.crouch }); if (isHost) n.send('b', people.filter(p => !p.human).map(p => ({ id: p.id, x: p.pos.x, z: p.pos.z, dir: p.dir, mv: p.mv }))); };
+  const by = id => people.find(p => p.id === id);
+  ch.on('broadcast', { event: 'p' }, ({ payload: d }) => { const p = by(d.id); if (p && !p.local) { p.net = d; p.crouch = d.cr; } });
+  ch.on('broadcast', { event: 'b' }, ({ payload: list }) => { if (isHost) return; list.forEach(d => { const p = by(d.id); if (p) p.net = d; }); });
+  ch.on('broadcast', { event: 'kill' }, ({ payload: d }) => { const a = by(d.by), t = by(d.t); if (a && t) kill(a, t, d.how, true); });
+  ch.on('broadcast', { event: 'stab' }, ({ payload: d }) => { const a = by(d.by), t = d.t && by(d.t); if (a) { a.cd = 0; a.showKnife = 0.8; if (t) kill(a, t, 'knife', true); } });
+  ch.on('broadcast', { event: 'shoot' }, ({ payload: d }) => { const a = by(d.by); if (a) { a.cd = 0; shoot(a, true, d.t); } });
+  ch.on('broadcast', { event: 'throw' }, ({ payload: d }) => { const a = by(d.by); if (a) { a.cd = 0; a.dir = d.dir; throwKnife(a, true); } });
+  ch.on('broadcast', { event: 'gun' }, ({ payload: d }) => { const p = by(d.id); if (p) pickGun(p, true); });
+  ch.on('broadcast', { event: 'coin' }, ({ payload: d }) => { const c = coins[d.i]; if (c) { c.on = false; c.mesh.visible = false; } });
+  ch.on('broadcast', { event: 'end' }, ({ payload: d }) => finish(d.w));
+  ch.on('broadcast', { event: 'start' }, ({ payload: d }) => { isHost = false; startRound(d.roster, d.seed); });
+  ch.on('presence', { event: 'sync' }, () => {
+    const st = ch.presenceState(); n.members = Object.keys(st).map(k => ({ id: k, name: st[k][0].name, at: st[k][0].at })).sort((a, b) => a.at - b.at);
+    n.host = n.members[0] && n.members[0].id === myId; lobbyDraw();
+  });
+  ch.subscribe(s => { if (s === 'SUBSCRIBED') ch.track({ name: myName(), at: Date.now() }); if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') $('lMsg').textContent = T('Could not connect. Check the internet.', 'ما قدرتش أوصل. شوف النت.'); });
+  return n;
+}
+function lobbyDraw() {
+  if (!net) return; $('lRoom').textContent = net.code;
+  const box = $('lPlayers'); box.innerHTML = ''; net.members.slice(0, 4).forEach((m, i) => { const s = document.createElement('span'); s.textContent = (i === 0 ? '👑 ' : '') + m.name + (m.id === myId ? T(' (you)', ' (انت)') : ''); box.appendChild(s); });
+  const full = net.members.length > 4; $('lStart').hidden = !net.host || net.members.length < 2 || full;
+  $('lMsg').textContent = full ? T('The room is full (4).', 'الأوضة مليانة (4).') : net.host ? (net.members.length < 2 ? T('Waiting for friends… send them the code', 'مستني صحابك… ابعتلهم الكود') : T('Ready! Press Start.', 'جاهزين! دوس ابدأ.')) : T('Waiting for the room owner to start…', 'مستنيين صاحب الأوضة يبدأ…');
+}
+function leave() { if (net) { try { net.ch.unsubscribe(); } catch (e) {} } net = null; isHost = true; }
+$('mOnline').onclick = () => { $('menu').hidden = true; $('lobby').hidden = false; $('lRoom').textContent = ''; $('lPlayers').innerHTML = ''; $('lMsg').textContent = navigator.onLine ? '' : T('You need internet for online play.', 'اللعب أونلاين محتاج نت.'); };
+$('lMake').onclick = () => { leave(); const code = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random() * 24 | 0]).join(''); net = makeNet(code); lobbyDraw(); };
+$('lJoin').onclick = () => { const c = $('lCode').value.trim().toUpperCase(); if (c.length !== 4) return; leave(); net = makeNet(c); lobbyDraw(); };
+$('lStart').onclick = () => { if (!net || !net.host) return; const humans = net.members.slice(0, 4).map(m => ({ id: m.id, name: m.name })); const seed = Date.now() % 1e9, roster = makeRoster(humans, seed); isHost = true; net.send('start', { roster, seed }); startRound(roster, seed); };
+$('lLeave').onclick = () => { leave(); showMenu(); };
+
+// ---------- menu ----------
+function showMenu() { state = 'menu'; ['hud', 'lobby', 'end', 'role'].forEach(id => $(id).hidden = true); $('menu').hidden = false; const st = store.get('mm_stats', { w: 0, l: 0 }); $('mStats').textContent = T('Wins ' + st.w + ' · Losses ' + st.l, 'فوز ' + st.w + ' · خسارة ' + st.l); }
+$('mSolo').onclick = () => { leave(); const seed = Date.now() % 1e9; startRound(makeRoster([{ id: myId, name: myName() }], seed), seed); };
+$('eAgain').onclick = () => { if (net && net.host) $('lStart').onclick(); else if (net) { $('end').hidden = true; $('lobby').hidden = false; lobbyDraw(); } else $('mSolo').onclick(); };
+$('eMenu').onclick = () => { leave(); showMenu(); }; $('bBack').onclick = () => { leave(); showMenu(); };
+$('bCam').onclick = () => { camI = (camI + 1) % 3; toast([T('Above', 'من فوق'), T('Behind', 'ورا'), T('Far', 'بعيد')][camI], 800); };
+addEventListener('keydown', e => { if (e.code === 'KeyC' && state === 'play') $('bCam').onclick(); if (e.code === 'Escape' && state === 'play') { leave(); showMenu(); } });
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => { setLang(b.dataset.l); if (state === 'menu') showMenu(); });
+setLang(L()); showMenu();
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if ((state === 'play' || state === 'role') && me) { if (state === 'play') step(dt); else { people.forEach(p => p.mesh.userData.anim(dt, 0)); const f = me.pos; camera.position.lerp(new THREE.Vector3(f.x, 6, f.z + 5), 0.08); camera.lookAt(f.x, 1, f.z); } }
+  else { const a = now / 7000; camera.position.set(Math.sin(a) * 26, 20, Math.cos(a) * 20); camera.lookAt(0, 0, 0); }
+  renderer.render(scene, camera); endFrame();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
