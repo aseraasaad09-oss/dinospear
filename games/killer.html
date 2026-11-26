@@ -93,7 +93,7 @@
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, moveCircle, canSee, dist, readInput, input, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store , preload, model } from './engine.js';
-await preload(['person', 'key']);
+await preload(['person', 'key', 'creature', 'crate', 'shelf', 'table']);
 const $ = id => document.getElementById(id);
 const C = 4, TOTAL = 50, EYE = 2.45, EYE4 = 1.15;
 const MAP = [
@@ -229,6 +229,17 @@ function makeSerum(p) {
   g.add(tube, needle, cap); g.position.set(p.x, 1.1, p.z); scene.add(g); return { p, mesh: g };
 }
 function humanModel(gun) {
+  const pm = model('person', { Shirt: 0xf1f5f9, Pants: 0xcbd5e1, Hair: 0xe2e8f0, Collar: 0xf59e0b, ShirtDark: 0x94a3b8, Skin: [0xf2c49b, 0xc68642, 0x8d5524][Math.floor(Math.random() * 3)] });
+  if (pm) { // made in Blender: a person in a white space suit with an orange visor
+    const g = new THREE.Group(); g.add(pm); const head = pm.getObjectByName('Head');
+    if (head) { const v = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.2, 0.05), mat(0xf59e0b, { metalness: 0.8, roughness: 0.2 })); v.position.set(0, 0.03, 0.27); head.add(v); }
+    const arm = pm.getObjectByName('ArmR'), legs = [pm.getObjectByName('LegL'), pm.getObjectByName('LegR')];
+    const dark = mat(0x1e293b), wpn = new THREE.Group();
+    if (gun) { const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.42), dark); const gr = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.2, 0.1), dark); gr.position.set(0, -0.14, 0.12); wpn.add(b2, gr); }
+    else { const bl = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.38), mat(0xe5e7eb, { metalness: 0.9, roughness: 0.15 })); bl.position.z = 0.2; const hd = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.08, 0.14), dark); wpn.add(bl, hd); }
+    wpn.position.set(0, -0.62, 0.1); wpn.rotation.x = 1.3; if (arm) { arm.rotation.x = -1.3; arm.add(wpn); }
+    scene.add(g); return { g, legs: legs.filter(Boolean), arm: arm || g };
+  }
   const g = new THREE.Group();
   const suit = mat(0xf1f5f9), skin = mat([0xf2c49b, 0xc68642, 0x8d5524][Math.floor(Math.random() * 3)]), dark = mat(0x1e293b);
   const t = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.75, 0.36), suit); t.position.y = 1.15; g.add(t);
