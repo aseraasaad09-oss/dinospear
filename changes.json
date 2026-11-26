@@ -1,0 +1,342 @@
+[
+ {
+  "v": "V37",
+  "date": "2026-11-26",
+  "ar": [
+   "القايمة على الموبايل بقت كلها باينة (مش هتتحبس في مكان تاني)",
+   "SILENT SLIPPER: الفرن الحديد والمدخنة القديمة بقوا ماكينة واحدة، والكاميرا بقت ورا اللاعب مش من فوق",
+   "في القايمة «🆕 اللي نزل»: كل النسخ وكل حاجة نزلت",
+   "الألعاب مكتوب عليها «نسخة تجريبية»"
+  ],
+  "en": [
+   "The phone menu now shows every place (no more getting stuck)",
+   "SILENT SLIPPER: the iron oven and old chimney are now one machine, camera behind the player, not from the top",
+   "New menu item «🆕 What came out»: every version and what it added",
+   "Games are labelled «Trial version»"
+  ]
+ },
+ {
+  "v": "V36",
+  "date": "2026-11-26",
+  "ar": [
+   "لعبة THE KILLER WINNER (اللي بتبقى فيها مخلوق) كانت مش بتفتح — اتصلحت",
+   "THE TEXT: كل قصة بتعمل عالم مختلف (المكان، الحاجات، الأعداء، المهمات) وتختار شكل الخريطة",
+   "THE TEXT: كل لعبة تقدر تفتحها كموقع لوحدها أو تنزّلها كملف، وتقدر ترفع لعبة جوه الموقع",
+   "الكاميرا: شخص تالت / ورا الكتف / من عينيك — مفيش من فوق تاني، واسحب بصباعك عشان تلف",
+   "17 موديل جديد من Blender",
+   "زرار اللغة ما بقاش فوق زرار الرجوع، والحيوانات بتتحمل صح على الموبايلات القديمة"
+  ],
+  "en": [
+   "THE KILLER WINNER (where you become the creature) did not open — fixed",
+   "THE TEXT: every story makes a different world (places, things, enemies, quests) and you pick the map shape",
+   "THE TEXT: open any game as its own site or download it as a file, and upload games back",
+   "Camera: 3rd person / over the shoulder / 1st person — no more top view, drag to turn",
+   "17 new Blender models",
+   "Language switch no longer covers the back button; pets load right on older phones"
+  ]
+ },
+ {
+  "v": "V35",
+  "date": "2026-11-26",
+  "ar": [
+   "المساعد بقى فاهم كل الألعاب: THE KILLER WINNER، KILLER KILLER WARS، THE TEXT، الموتوسيكل، الزومبي، الاستغماية، الحيوانات، واتساب، الكاميرا والتحديثات"
+  ],
+  "en": [
+   "The helper now knows every game: THE KILLER WINNER, KILLER KILLER WARS, THE TEXT, Motor Bike, Zombie, Hide & Seek, pets, WhatsApp, camera and updates"
+  ]
+ },
+ {
+  "v": "V34",
+  "date": "2026-11-26",
+  "ar": [
+   "زرار 🎥 في ZOMBIE MARS والاستغماية: 3 كاميرات (عادي، قريب، من فوق) — أو زرار V",
+   "فكرة البتات (الحيوانات) اتعلمت ✅"
+  ],
+  "en": [
+   "🎥 button in ZOMBIE MARS and Hide & Seek: 3 cameras (normal, close, top) — or the V key",
+   "Pets idea marked ✅"
+  ]
+ },
+ {
+  "v": "V33",
+  "date": "2026-11-26",
+  "ar": [
+   "واتساب: الشات بقى مالي الصفحة (صحابك يمين والرسايل شمال) وعلى الموبايل كمان"
+  ],
+  "en": [
+   "WhatsApp: chat now fills the page (friends and messages), on phones too"
+  ]
+ },
+ {
+  "v": "V32",
+  "date": "2026-11-26",
+  "ar": [
+   "واتساب بقى ليه مكان لوحده في القايمة: صحابك ورسايلك والستيكرز بس"
+  ],
+  "en": [
+   "WhatsApp now has its own place in the menu: just your friends, messages and stickers"
+  ]
+ },
+ {
+  "v": "V31",
+  "date": "2026-11-26",
+  "ar": [
+   "📣 قناة أخبار الأدمن: الأدمن بيكتب الأخبار (عربي، والإنجليزي بيتترجم لوحده) والكل بيشوفها في الصفحة الرئيسية، وفيه تثبيت"
+  ],
+  "en": [
+   "📣 Admin news channel: the admin posts news (Arabic; English is translated automatically) and everyone sees it on the home page, with pinning"
+  ]
+ },
+ {
+  "v": "V30",
+  "date": "2026-11-26",
+  "ar": [
+   "الأرض في THE KILLER WINNER بقى ليها شكلها: حيطان طوب وأسفلت ونور دهبي دافي"
+  ],
+  "en": [
+   "Earth in THE KILLER WINNER has its own look: brick walls, asphalt and warm golden lights"
+  ]
+ },
+ {
+  "v": "V29",
+  "date": "2026-11-26",
+  "ar": [
+   "THE KILLER WINNER الفصل 2: العبوا أونلاين سوا من 2 لـ 4 — بتشوفوا بعض كوحوش، وأي حد يخلّص خطوة بتتحسب للكل"
+  ],
+  "en": [
+   "THE KILLER WINNER chapter 2: play online together, 2 to 4 — you see each other as monsters, and any step one finishes counts for everyone"
+  ]
+ },
+ {
+  "v": "V28",
+  "date": "2026-11-26",
+  "ar": [
+   "THE KILLER WINNER — الفصل 2 الأرض: 100 كويست طويلة كل واحدة فيها كذا خطوة، بشر أقوى، مفتاحك المستخبي، وفي الآخر تختار: تدي آخر جرعة للطفل ولا لنفسك (نهايتين)"
+  ],
+  "en": [
+   "THE KILLER WINNER — Chapter 2 Earth: 100 long quests with several steps each, stronger humans, your hidden key, and a final choice: the last dose for the child or for you (two endings)"
+  ]
+ },
+ {
+  "v": "V27",
+  "date": "2026-11-26",
+  "ar": [
+   "الأدمن في كل لعبة: زرار ADMIN بيظهر للأدمن بس — وضع POWERFUL، سرعة ×2، تخطي المهمة/الفصل، ومميزات لكل لعبة"
+  ],
+  "en": [
+   "Admin in every game: an ADMIN button only admins see — POWERFUL mode, speed x2, skip mission/chapter, and special powers per game"
+  ]
+ },
+ {
+  "v": "V26",
+  "date": "2026-11-26",
+  "ar": [
+   "كل صفحات البرنامج بقت بتاخد آخر نسخة من ملفاتها على طول — مفيش ملفات قديمة عالقة"
+  ],
+  "en": [
+   "Every page now always gets the newest copy of its files — no stuck old files"
+  ]
+ },
+ {
+  "v": "V25",
+  "date": "2026-11-26",
+  "ar": [
+   "إصلاح: الحيوانات الأليفة بقت بتظهر في المدينة (زرار G)، ومسافة الرؤية بتشتغل طول الوقت"
+  ],
+  "en": [
+   "Fix: pets now show in the town (key G), and view distance always applies"
+  ]
+ },
+ {
+  "v": "V24",
+  "date": "2026-11-26",
+  "ar": [
+   "حيوانات أليفة في المدينة 3D (فكرة من أفكاركم): كلاب وقطط وداينو صغيرة — دلّعها وأكّلها واتبناها، أو اسرقها من صاحبها وهو يجري وراك!",
+   "البشر في THE KILLER WINNER بقوا شخصيات Blender ببدل فضاء"
+  ],
+  "en": [
+   "Pets in the 3D town (an idea from your comments): dogs, cats and baby dinos — pet, feed and adopt them, or steal one from its owner while they chase you!",
+   "The humans in THE KILLER WINNER are now Blender characters in space suits"
+  ]
+ },
+ {
+  "v": "V23",
+  "date": "2026-11-26",
+  "ar": [
+   "إصلاح صغير في الترجمة"
+  ],
+  "en": [
+   "Small translation fix"
+  ]
+ },
+ {
+  "v": "V22",
+  "date": "2026-11-26",
+  "ar": [
+   "الترجمة بقت بتفهم الكلام المصري والخليجي (زي «جامد اوي» و«عايز» و«شلونك») قبل ما تترجمه"
+  ],
+  "en": [
+   "Translation now understands Egyptian and Gulf chat words (like “gamed awi”, “3ayez”, “shlonak”) before translating"
+  ]
+ },
+ {
+  "v": "V21",
+  "date": "2026-11-26",
+  "ar": [
+   "التحديث بقى بيسألك: «تحب تحدّث دلوقتي؟» أيوه أو لأ — ومفيش إعادة تشغيل لوحده تاني",
+   "إشعار على الموبايل أو الكمبيوتر أول ما يطلع تحديث جديد (فعّله من كارت التحديث)",
+   "الترجمة بقت أقوى وطبيعية أكتر",
+   "جرافيك أحلى: أثاث وشخصيات جديدة معمولة في Blender وإضاءة أنعم"
+  ],
+  "en": [
+   "Updates now ask: “Do you want to update now?” Yes or No — no more restarting by itself",
+   "A phone/PC notification when a new update is out (turn it on from the update card)",
+   "Stronger, more natural translation",
+   "Nicer graphics: new furniture and characters made in Blender, softer lighting"
+  ]
+ },
+ {
+  "v": "V20",
+  "date": "2026-11-26",
+  "ar": [
+   "THE TEXT: الشتايم والتحرش بيتعلّم عليهم بخط أحمر ورسالة إنك ممكن تتبند، ومش بيتحفظوا",
+   "الرسايل بتتترجم لوحدها: اللي كاتب عربي واللي بيقرا إنجليزي بيشوفها إنجليزي (والعكس)، وفيه زرار يورّي الأصل"
+  ],
+  "en": [
+   "THE TEXT: bad words and harassment get a red underline and a ban warning, and can't be saved",
+   "Messages translate by themselves: Arabic messages show in English for English players (and the other way), with an Original button"
+  ]
+ },
+ {
+  "v": "V19",
+  "date": "2026-11-26",
+  "ar": [
+   "لعبة القاتل والشريف اسمها بقى KILLER KILLER WARS"
+  ],
+  "en": [
+   "The murderer and sheriff game is now called KILLER KILLER WARS"
+  ]
+ },
+ {
+  "v": "V18",
+  "date": "2026-11-26",
+  "ar": [
+   "لعبة جديدة: MURDER MYSTERY (زي MM2) — قاتل وشريف وأبرياء، مع بوتات أو أونلاين مع 2 لـ 4 من صحابك",
+   "الإيفنتات: الأدمن يضيف إيفنت أسبوعي أو شهري واللاعيبة بيشوفوه فوق في الصفحة الرئيسية"
+  ],
+  "en": [
+   "New game: MURDER MYSTERY (like MM2) — murderer, sheriff and innocents, with bots or online with 2 to 4 friends",
+   "Events: the admin adds weekly or monthly events and players see them on the home page"
+  ]
+ },
+ {
+  "v": "V17",
+  "date": "2026-11-26",
+  "ar": [
+   "THE TEXT: اختار النوع الأساسي (قصصية أو أكشن) و2D أو 3D",
+   "THE TEXT: أنواع لعب جديدة — اصمد قدام موجات الأعداء، وسباق مع الوقت",
+   "THE TEXT: تحكم أكتر — حجم الجويستيك، زراير الكيبورد، اندفاع، ونطة مزدوجة، ووصف للعبتك"
+  ],
+  "en": [
+   "THE TEXT: pick the main kind (story or action) and 2D or 3D",
+   "THE TEXT: new ways to play — survive enemy waves, race the clock",
+   "THE TEXT: more controls — joystick size, keyboard keys, dash, double jump, and a line about your game"
+  ]
+ },
+ {
+  "v": "V16",
+  "date": "2026-11-26",
+  "ar": [
+   "THE TEXT بقت 3D: كاميرا تتغيّر (ورا / من فوق / بعيد) والأبطال دواير ومربعات ومثلثات 3D",
+   "MOTOR BIKE بقت 3D بموتوسيكل وسواق معمولين في Blender",
+   "شخصيات ومفاتيح وشجر وصخور جديدة معمولة في Blender في كل الألعاب"
+  ],
+  "en": [
+   "THE TEXT is now 3D: switch the camera (behind / top / far); 3D circle, square and triangle heroes",
+   "MOTOR BIKE is now 3D with a bike and rider made in Blender",
+   "New characters, keys, trees and rocks made in Blender in every game"
+  ]
+ },
+ {
+  "v": "V15",
+  "date": "2026-11-26",
+  "ar": [
+   "لعبة جديدة: THE TEXT — اكتب قصتك وجاوب على كام سؤال وتتحوّل للعبة",
+   "ألعابك بتتحفظ وتقدر تحدّثها، والنشر والبحث بيتفتحوا قريب"
+  ],
+  "en": [
+   "New game: THE TEXT — write your story, answer a few questions, get a game",
+   "Your games are saved and can be updated; publishing and search open soon"
+  ]
+ },
+ {
+  "v": "V14",
+  "date": "2026-11-26",
+  "ar": [
+   "لعبة جديدة: MOTOR BIKE — 8 مراحل وشقلبات وويلي",
+   "واجهة أوفلاين جديدة فيها كل الألعاب اللي بتشتغل من غير نت وتقدمك المحفوظ",
+   "المدينة 3D: مسافة الرؤية بالشنكات والضباب بيزيد شنك ورا شنك"
+  ],
+  "en": [
+   "New game: MOTOR BIKE — 8 levels, flips and wheelies",
+   "New offline home with every game that works without internet and your saved progress",
+   "3D town: view distance in chunks, fog grows chunk by chunk"
+  ]
+ },
+ {
+  "v": "V13",
+  "date": "2026-11-26",
+  "ar": [
+   "THE KILLER WINNER: لعبة الوحش الجديدة من عينك، بفيلم في الأول وشريط العقل والمصل",
+   "SILENT SLIPPER: أهداف بدل الروبوتات، وماكينة الفرن في INFINITE بترمي قطع حديد",
+   "زرار قلب الشاشة: شغّله من الإعدادات واسحبه لأي مكان",
+   "زوم بصباعين على الموبايل أو بعجلة الماوس (فكرة من أفكاركم)"
+  ],
+  "en": [
+   "THE KILLER WINNER: the new first-person monster game with a film, a mind bar and serum",
+   "SILENT SLIPPER: targets instead of robots; the oven machine drops metal parts in INFINITE",
+   "Turn-screen button: switch it on in Settings and drag it anywhere",
+   "Pinch or mouse-wheel zoom (an idea from your comments)"
+  ]
+ },
+ {
+  "v": "V12",
+  "date": "2026-11-25",
+  "ar": [
+   "لعبة الزومبي الجديدة على المريخ: قصة، 50 مهمة، صاروخ، وحفظ تلقائي",
+   "المفاتيح الماشية: اضربها قبل ما تقطعك نصين"
+  ],
+  "en": [
+   "New Zombie Mars: story, 50 missions, a rocket and autosave",
+   "Walking keys: hit them before they cut you in half"
+  ]
+ },
+ {
+  "v": "V11",
+  "date": "2026-11-25",
+  "ar": [
+   "كل لعبة على الموبايل بتسألك: تقلب الشاشة بالعرض ولا تسيبها",
+   "التحديثات بقت من جوّه البرنامج بزرار واحد"
+  ],
+  "en": [
+   "Every game on phones asks: turn the screen sideways or keep it",
+   "Updates now happen inside the app with one tap"
+  ]
+ },
+ {
+  "v": "V10",
+  "date": "2026-11-25",
+  "ar": [
+   "تحديثات البرنامج بقت من جوّه البرنامج نفسه — زرار «حدّث دلوقتي»",
+   "لعبة الزومبي: 3 مراحل بقصة",
+   "لعبة الاستغماية: دوّر أو استخبى",
+   "قايمة «ألعاب البرنامج» فيها كل الألعاب"
+  ],
+  "en": [
+   "Updates now happen inside the app — one tap on “Update now”",
+   "Zombie Lab: 3 story levels",
+   "Hide & Seek: seek or hide",
+   "“App games” menu with every game"
+  ]
+ }
+]

@@ -118,6 +118,7 @@
     document.body.classList.toggle('v-full', v !== 'home' && !scrollV);
     document.body.classList.toggle('v-scroll', scrollV);
     document.querySelectorAll('nav.main a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + (anchor || v)); });
+    var onA = document.querySelector('nav.main a.on'); if (onA && onA.scrollIntoView) try { onA.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (e) {}   // V05: the open place is always visible in the menu
     var sec = document.getElementById(v);
     if (sec) sec.querySelectorAll('iframe[data-src]').forEach(function (f) { if (!f.getAttribute('src')) f.setAttribute('src', f.getAttribute('data-src')); });
     setHH();
@@ -240,7 +241,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V36';
+  var APP_V = 'V37';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];
