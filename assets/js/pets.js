@@ -6,7 +6,7 @@ const en = () => { try { return localStorage.getItem('aser_lang') === 'en'; } ca
 const T = (a, e) => en() ? e : a;
 const KINDS = { dog: ['كلب', 'Dog'], cat: ['قطة', 'Cat'], dinopet: ['داينو صغير', 'Baby dino'] };
 const NAMES = ['بوبي', 'لولي', 'ريكس', 'ميشو', 'سنو', 'توتو', 'كوكي', 'زيزو'];
-const base = new URL('../games/models/', import.meta.url).href, loader = new GLTFLoader(), M = {};
+const base = new URL('../../games/models/', import.meta.url).href, loader = new GLTFLoader(), M = {};
 const load = n => new Promise(r => loader.load(base + n + '.glb', g => { M[n] = g.scene; r(); }, undefined, () => r()));
 const wait = () => new Promise(r => { const t = setInterval(() => { if (window.DS_SCENE && window.DS_ME) { clearInterval(t); r(); } }, 300); });
 await Promise.all(['dog', 'cat', 'dinopet', 'person'].map(load)); await wait();
@@ -50,7 +50,7 @@ function drawUi() {
   else if (p.owner) btn(T('اسرقه!', 'Steal!'), '#ef4444', () => { adopt(p); p.owner.angry = 6; toast(T('صاحبه بيجري وراك! اجري!', 'The owner is chasing you! Run!')); shown = null; });
   else btn(T('اتبنّاه', 'Adopt'), '#22c55e', () => { if (p.love < 40) return toast(T('لسه مش واثق فيك — دلّعه أو أكّله الأول', 'Not sure about you yet — pet or feed it first')); adopt(p); shown = null; });
 }
-addEventListener('keydown', e => { if (e.code === 'KeyP' && near) { const b = ui.querySelectorAll('button')[0]; b && b.click(); } });
+addEventListener('keydown', e => { if (e.code === 'KeyG' && near) { const b = ui.querySelectorAll('button')[0]; b && b.click(); } });
 
 // ---------- loop ----------
 let last = performance.now();

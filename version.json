@@ -1,12 +1,10 @@
 {
-  "v": "V24",
+  "v": "V25",
   "date": "2026-11-26",
   "ar": [
-    "حيوانات أليفة في المدينة 3D (فكرة من أفكاركم): كلاب وقطط وداينو صغيرة — دلّعها وأكّلها واتبناها، أو اسرقها من صاحبها وهو يجري وراك!",
-    "البشر في THE KILLER WINNER بقوا شخصيات Blender ببدل فضاء"
+    "إصلاح: الحيوانات الأليفة بقت بتظهر في المدينة (زرار G)، ومسافة الرؤية بتشتغل طول الوقت"
   ],
   "en": [
-    "Pets in the 3D town (an idea from your comments): dogs, cats and baby dinos — pet, feed and adopt them, or steal one from its owner while they chase you!",
-    "The humans in THE KILLER WINNER are now Blender characters in space suits"
+    "Fix: pets now show in the town (key G), and view distance always applies"
   ]
 }

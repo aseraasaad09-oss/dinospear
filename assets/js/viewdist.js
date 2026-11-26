@@ -18,7 +18,7 @@
     lab(); w.appendChild(l); w.appendChild(r); document.body.appendChild(w);
     var hide = setTimeout(function () { w.style.opacity = '.35'; }, 5000); w.onpointerenter = w.ontouchstart = function () { w.style.opacity = '1'; };
   }
-  var tries = 0, t = setInterval(function () { if (window.DS_SCENE || ++tries > 100) { clearInterval(t); apply(); } }, 200);
+  setInterval(apply, 1500); // the town can change its fog (day / night), so keep it in step
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ui); else ui();
   window.DS_applyView = apply;
 })();
