@@ -71,6 +71,7 @@
     dispatchEvent(new Event('resize'));
   }
   function soft(v) {
+    if (!inFrame && window.DS_frameLand && window.DS_frameLand(v !== false)) { softOn = v !== false; return; }   // the app: turn only the open game/town
     patchOnce(); softOn = v !== false; softApply();
     try { sessionStorage.setItem('ds_soft' + location.pathname, softOn ? '1' : ''); } catch (e) {}
   }
@@ -122,7 +123,7 @@
     var ex = document.exitFullscreen || document.webkitExitFullscreen; if (document.fullscreenElement || document.webkitFullscreenElement) try { ex.call(document); } catch (e) {}
   }
   function rotBtn() {
-    var on = false; try { on = localStorage.getItem('ds_rot_btn') === 'on'; } catch (e) {}
+    var on = true; try { on = localStorage.getItem('ds_rot_btn') !== 'off'; } catch (e) {}
     var b = document.getElementById('dsRotBtn');
     if (!on || inFrame) { if (b) b.remove(); return; }
     if (b) return;
@@ -145,6 +146,6 @@
     document.body.appendChild(b);
   }
   window.DS_rotBtn = rotBtn;
-  function boot() { rotBtn(); var sv = ''; try { sv = sessionStorage.getItem('ds_soft' + location.pathname); } catch (e) {} if (sv && portrait()) { soft(true); return; } if (!noAsk) setTimeout(ask, 400); }
+  function boot() { rotBtn(); var sv = ''; try { sv = sessionStorage.getItem('ds_soft' + location.pathname); } catch (e) {} if (sv && portrait()) soft(true); }   // V04: never pops up a question — the round button turns the screen any time
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

@@ -1,5 +1,19 @@
 [
  {
+  "v": "V41",
+  "date": "2026-11-26",
+  "ar": [
+   "المدينة 3D: الهيت بوكس اتظبط — تقدر تمشي بين النافورة والكراسي، وحوالين التمثال والورد اللي في القلعة، وبين الشجر (الحاجات المدورة بقى ليها هيت بوكس مدور، واللاعب أنحف)",
+   "اقلب الشاشة: زرار أخضر موجود على طول في أي مكان في البرنامج، من غير رسالة تسألك — دوسة تقلبها بالعرض ودوسة ترجعها",
+   "الموبايل اللي مش بيلف: اللعبة أو المدينة نفسها بتلف جوه البرنامج"
+  ],
+  "en": [
+   "3D Town hitboxes fixed — walk between the fountain and the benches, around the castle statue and flowers, and between trees (round things get round hitboxes, slimmer player)",
+   "Turn the screen: a green button is always there anywhere in the app, no popup question — one tap sideways, one tap back",
+   "Phones that will not turn: the game or town itself turns inside the app"
+  ]
+ },
+ {
   "v": "V40",
   "date": "2026-11-26",
   "ar": [

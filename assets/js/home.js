@@ -151,12 +151,28 @@
       return true;
     }, function () { return false; });
   }
+  // V06: turn the open game/town sideways inside the app when the phone itself will not turn
+  var landF = null, landX = null;
+  window.DS_frameLand = function (on) {
+    if (!on) { if (landF) { landF.style.cssText = landF.dataset.css || ''; landF = null; } if (landX) { landX.remove(); landX = null; } return true; }
+    var sec = document.querySelector('section[data-v]:not([data-v="home"])'), f = null;
+    [].slice.call(document.querySelectorAll('section iframe')).forEach(function (x) { if (!f && x.offsetParent && x.getBoundingClientRect().height > 200) f = x; });
+    if (!f) return false;
+    var W = document.documentElement.clientWidth, H = document.documentElement.clientHeight;
+    landF = f; f.dataset.css = f.style.cssText;
+    f.style.cssText = ('position:fixed;top:0;left:0;right:auto;bottom:auto;min-height:0;max-height:none;max-width:none;width:' + H + 'px;height:' + W + 'px;transform-origin:0 0;transform:translateX(' + W + 'px) rotate(90deg);z-index:9000;border:0;border-radius:0;background:#000').replace(/;/g, '!important;') + '!important';
+    landX = document.createElement('button'); landX.type = 'button'; landX.textContent = '↩'; landX.setAttribute('aria-label', DSA.t('Back to upright', 'رجّعها عمودي'));
+    landX.style.cssText = 'position:fixed;z-index:9001;left:8px;bottom:8px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(15,23,42,.8);color:#fff;font:900 20px system-ui';
+    landX.onclick = function () { window.DS_frameLand(false); try { window.DS_softLand && window.DS_softLand(false); } catch (e) {} };
+    return true;   // the green turn button brings it back upright
+  };
+  addEventListener('hashchange', function () { if (landF) window.DS_frameLand(false); });
   $('townFull').onclick = function () { var f = $('townFrame'); fullLand(f).then(function (ok) { if (!ok && !document.fullscreenElement) location.href = 'town/'; }); };
   addEventListener('message', function (e) {
     if (!e.data || e.data.ds !== 'rot') return;
     var f = [].slice.call(document.querySelectorAll('iframe')).filter(function (x) { return x.contentWindow === e.source; })[0];
     if (!f) return;
-    fullLand(f).then(function (ok) { try { e.source.postMessage({ ds: 'rotDone', ok: ok }, '*'); } catch (er) {} });
+    fullLand(f).then(function (ok) { if (!ok && window.DS_softLand) { window.DS_softLand(true); ok = true; } try { e.source.postMessage({ ds: 'rotDone', ok: ok }, '*'); } catch (er) {} });
   });
   document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement) try { screen.orientation.unlock(); } catch (e) {} });
 
@@ -292,7 +308,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V40';
+  var APP_V = 'V41';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];
@@ -382,7 +398,7 @@
     var opt = document.createElement('div'); opt.className = 'opt';
     var lb = document.createElement('b'); lb.setAttribute('data-i', 'st_rot'); lb.textContent = DSA.t('Turn-screen button', 'زرار قلب الشاشة');
     var seg = document.createElement('div'); seg.className = 'seg';
-    var cur = 'off'; try { cur = localStorage.getItem('ds_rot_btn') || 'off'; } catch (e) {}
+    var cur = 'off'; try { cur = localStorage.getItem('ds_rot_btn') || 'on'; } catch (e) {}
     [['on', 'st_on'], ['off', 'st_off']].forEach(function (o) {
       var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-i', o[1]); b.textContent = DSA.t(o[0] === 'on' ? 'On' : 'Off', o[0] === 'on' ? 'شغّال' : 'مقفول');
       if (o[0] === cur) b.className = 'on';
