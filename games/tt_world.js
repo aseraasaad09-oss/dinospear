@@ -2,7 +2,10 @@
 // Turns a story + the player's choices into a real 3D game you play in 3rd or 1st person (never from the top).
 // The story decides the places, the things in the world, the enemies, the friends and the quests of every chapter;
 // the choices decide the map shape, time of day, weather, enemies, attack, difficulty and controls.
-import { THREE, preload, model, hasModel, makeChar, beep, T, store, view, cycleView, camDir } from './engine.js';
+import { THREE, preload, model, hasModel, makeChar, beep as beep0, T, store, view, cycleView, camDir } from './engine.js';
+let SND = 1; const beep = (f, d, t, v) => { if (SND > 0) beep0(f, d, t, (v || 0.05) * SND); };
+const COLORS = { red: '#ef4444', 'أحمر': '#ef4444', 'احمر': '#ef4444', blue: '#3b82f6', 'أزرق': '#3b82f6', 'ازرق': '#3b82f6', green: '#22c55e', 'أخضر': '#22c55e', 'اخضر': '#22c55e', yellow: '#facc15', 'أصفر': '#facc15', 'اصفر': '#facc15', black: '#111827', 'أسود': '#111827', 'اسود': '#111827', white: '#f8fafc', 'أبيض': '#f8fafc', 'ابيض': '#f8fafc', purple: '#a855f7', 'بنفسجي': '#a855f7', 'موف': '#a855f7', orange: '#f97316', 'برتقالي': '#f97316', pink: '#ec4899', 'بمبي': '#ec4899', 'وردي': '#ec4899', gold: '#eab308', 'دهبي': '#eab308', 'ذهبي': '#eab308', grey: '#9ca3af', gray: '#9ca3af', 'رمادي': '#9ca3af', brown: '#92400e', 'بني': '#92400e' };
+const colorWord = w => { w = String(w || '').toLowerCase(); const k = Object.keys(COLORS).find(c => w.indexOf(c) >= 0); return k ? COLORS[k] : null; };
 
 // ---------- 1) reading the story ----------
 const has = (t, re) => re.test(t);
@@ -50,18 +53,22 @@ function names(story) {
   Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).forEach(w => { if (out.indexOf(w) < 0) out.push(w); });
   return out.slice(0, 6);
 }
+const WORD_KEYS = ['w_ground', 'w_sky', 'w_tree', 'w_build', 'w_water', 'w_wx', 'w_item', 'w_treasure', 'w_weapon', 'w_power', 'w_food', 'w_animal', 'w_vehicle', 'w_enemy1', 'w_enemy2', 'w_bossk', 'w_friendk', 'w_mood', 'w_time', 'w_extra1', 'w_extra2', 'w_extra3', 'w_goal'];
 export function analyse(story, title, ans) {
   story = String(story || ''); ans = ans || {};
+  const W = WORD_KEYS.map(k => ans[k] || '').filter(Boolean).join(' . ');   // V03: the player's own words change every chapter's world
   let paras = story.split(/\n\s*\n|\n(?=\s*(?:الفصل|فصل|chapter|part)\b)/i).map(p => p.trim()).filter(p => p.length > 3);
   if (paras.length < 2) { const sent = story.split(/(?<=[.!?؟])\s+/).filter(Boolean); const n = Math.min(6, Math.max(1, Math.ceil(sent.length / 3))); paras = []; for (let c = 0; c < n; c++) paras.push(sent.slice(Math.floor(c * sent.length / n), Math.floor((c + 1) * sent.length / n)).join(' ')); }
   if (paras.length > 8) { const m = []; for (let k = 0; k < 8; k++) m.push(paras.slice(Math.floor(k * paras.length / 8), Math.floor((k + 1) * paras.length / 8)).join(' ')); paras = m; }
-  const nm = names(story), hero = nm[0] || title || T('Hero', 'البطل'), friends = nm.slice(1, 4);
+  const nm = names(story), hero = ans.n_hero || nm[0] || title || T('Hero', 'البطل'), friends = [ans.n_friend1, ans.n_friend2, ans.n_friend3].filter(Boolean).concat(nm.slice(1, 4)).slice(0, 3);
   const score = t => Object.keys(THEMES).map(k => [k, (t.match(new RegExp(THEMES[k].re.source, 'gi')) || []).length]).sort((a, b) => b[1] - a[1]);
-  const whole = score(story), mainTheme = whole[0][1] ? whole[0][0] : ['forest', 'city', 'castle', 'sea', 'space'][hash(story) % 5];
-  let foe = Object.keys(FOES).find(k => FOES[k].test(story)) || null;
+  const whole = score(story + ' ' + W), mainTheme = whole[0][1] ? whole[0][0] : ['forest', 'city', 'castle', 'sea', 'space'][hash(story) % 5];
+  let foe = Object.keys(FOES).find(k => FOES[k].test((ans.w_enemy1 || '') + ' ' + (ans.w_bossk || ''))) || Object.keys(FOES).find(k => FOES[k].test(story + ' ' + W)) || null;
   const quotes = (story.match(/[«"“]([^»"”]{4,90})[»"”]/g) || []).map(q => q.slice(1, -1));
-  const chapters = paras.map((p, i) => {
-    const sc = score(p), theme = sc[0][1] ? sc[0][0] : mainTheme, last = i === paras.length - 1;
+  if (ans.x_chap && ans.x_chap !== 'all') paras = paras.slice(0, +ans.x_chap);
+  const chapters = paras.map((p0, i) => {
+    const place = ans['w_place' + (i + 1)] || '', p = p0 + ' ' + W + ' ' + place + ' ' + place;
+    const sc = score(place ? place : p), theme = sc[0][1] ? sc[0][0] : mainTheme, last = i === paras.length - 1;
     const things = THINGS.filter(t => t[1].test(p)).map(t => t[0]);
     const item = ITEMS.find(t => t[1].test(p));
     const q = [];
@@ -75,7 +82,7 @@ export function analyse(story, title, ans) {
     if (!q.length || VERBS.travel.test(p)) q.push({ k: 'reach' });
     const seen = {}; const quests = q.filter(x => !seen[x.k] && (seen[x.k] = 1)).slice(0, 3);
     const night = /(ليل|ظلام|مظلم|نجوم|قمر|night|dark|moon|midnight)/i.test(p), rain = /(مطر|عاصف[ةه]|rain|storm)/i.test(p), snow = /(تلج|ثلج|snow)/i.test(p);
-    return { text: p, seed: hash(p + i + (ans.map || '')), theme, things, quests, night, rain, snow, line: quotes[i] || '' };
+    return { text: p0, title: ans['l_ch' + (i + 1)] || '', seed: hash(p + i + (ans.map || '')), theme, things, quests, night, rain, snow, line: quotes[i] || '' };
   });
   return { v: 2, hero, friends, foe, chapters, theme: mainTheme };
 }
@@ -88,6 +95,16 @@ export async function playWorld(g, opts) {
   opts = opts || {};
   const ans = Object.assign({ genre: 'story', type: 'adv', map: 'auto', time: 'auto', weather: 'auto', enemy: 'auto', attack: 'sword', level: '2', color: '#22c55e', hand: 'r', joy: 'm', dash: 'yes', djump: 'no', cam: '3rd' }, g.ans || {});
   const spec = (g.spec && g.spec.v === 2) ? g.spec : analyse(g.story, g.title, ans);
+  // V03: every one of the 100 answers changes something
+  const pick = (k, m, d) => (m[ans[k]] !== undefined ? m[ans[k]] : d);
+  const X = { size: pick('x_size', { s: 0.75, l: 1.35 }, 1), speed: pick('x_speed', { slow: 0.7, fast: 1.35, super: 1.8 }, 1), jump: pick('x_jump', { low: 0.8, high: 1.3, moon: 1.75 }, 1), hp: +ans.x_hp || 5,
+    inv: pick('x_inv', { short: 0.5, long: 2 }, 1), range: pick('x_range', { short: 0.7, long: 1.7 }, 1), rate: pick('x_rate', { slow: 1.5, fast: 0.55 }, 1), shot: pick('x_shot', { slow: 0.6, fast: 1.6 }, 1), dashp: pick('x_dashp', { weak: 0.7, strong: 1.45 }, 1),
+    foes: pick('x_foes', { few: 0.5, many: 1.7, swarm: 2.6 }, 1), fspeed: pick('x_fspeed', { slow: 0.7, fast: 1.4 }, 1), fhp: pick('x_fhp', { weak: -9, tough: 2 }, 0), fsize: pick('x_fsize', { s: 0.7, l: 1.4 }, 1), fdmg: +ans.x_fdmg || 1, bsize: pick('x_bsize', { huge: 1.6 }, 1), bhp: pick('x_bhp', { weak: 0.5, tough: 1.8 }, 1),
+    grav: pick('x_grav', { light: 0.55, heavy: 1.5 }, 1), fog: pick('x_fog', { clear: 2.2, thick: 0.45 }, 1), light: pick('x_light', { dim: 0.55, bright: 1.5 }, 1), sky: ans.x_sky && ans.x_sky !== 'auto' ? ans.x_sky : null, wx: pick('x_wx', { light: 0.4, heavy: 2.2 }, 1),
+    hearts: pick('x_hearts', { none: 0, many: 2.5 }, 1), time: pick('x_time', { short: 0.7, long: 1.6 }, 1), camd: pick('x_camd', { close: 0.75, far: 1.35 }, 1), fov: pick('x_fov', { narrow: -10, wide: 14 }, 0), shake: ans.x_shake !== 'no', snd: pick('x_sound', { quiet: 0.35, off: 0 }, 1), cards: ans.x_cards || 'yes',
+    heroCol: colorWord(ans.w_color1), foeCol: colorWord(ans.w_color2) };
+  SND = X.snd;
+  if (/(bow|arrow|gun|laser|قوس|سهم|مسدس|ليزر|بندقي)/i.test(ans.w_weapon || '')) ans.attack = 'shoot'; else if (/(sword|knife|سيف|سكين)/i.test(ans.w_weapon || '')) ans.attack = 'sword';
   const root = document.createElement('div'); root.className = 'ttw';
   root.innerHTML = `<style>
 .ttw [hidden]{display:none!important}
@@ -141,7 +158,7 @@ export async function playWorld(g, opts) {
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
   root.insertBefore(renderer.domElement, root.firstChild);
   const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 400);
-  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = innerWidth < innerHeight ? 72 : 60; camera.updateProjectionMatrix(); };
+  const resize = () => { renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.fov = (innerWidth < innerHeight ? 72 : 60) + X.fov; camera.updateProjectionMatrix(); };
   addEventListener('resize', resize); resize();
 
   // ----- input (own, so the game works the same on phone and PC) -----
@@ -168,8 +185,8 @@ export async function playWorld(g, opts) {
   // ----- world -----
   let scene, H, chIdx = 0, state = 'card', solids = [], foes = [], pickups = [], npcs = [], shots = [], quests = [], qi = 0, exitP = null, mats = {}, wx = null, groundAt = () => 0, bounds = 60;
   const R0 = rng(hash(g.title + g.story));
-  const lvl = +ans.level || 2, hero = { pos: new THREE.Vector3(), vy: 0, ground: true, hp: 5, maxHp: 5, inv: 0, dir: 0, cd: 0, dash: 0, dashCd: 0, jumps: 0, hidden: false, carry: null, parts: 0, mesh: null };
-  const col = new THREE.Color(ans.color || '#22c55e').getHex();
+  const lvl = +ans.level || 2, hero = { pos: new THREE.Vector3(), vy: 0, ground: true, hp: X.hp, maxHp: X.hp, inv: 0, dir: 0, cd: 0, dash: 0, dashCd: 0, jumps: 0, hidden: false, carry: null, parts: 0, mesh: null };
+  const col = new THREE.Color(X.heroCol || ans.color || '#22c55e').getHex();
   function M(c, o) { const k = c + JSON.stringify(o || {}); return mats[k] || (mats[k] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.8 }, o || {}))); }
   function addSolid(x, z, r, h) { solids.push({ x, z, r, h: h || 3 }); }
   function put(name, x, z, s, rot, colours) {
@@ -178,15 +195,29 @@ export async function playWorld(g, opts) {
   }
   function clearWorld() { if (scene) scene.traverse(o => { if (o.geometry) o.geometry.dispose(); }); solids = []; foes = []; pickups = []; npcs = []; shots = []; }
 
+  // V03: hat, pet that follows you, sparkle trail (from the questions)
+  let pet = null, trailT = 0;
+  function addLook() {
+    const head = hero.mesh.getObjectByName('Head') || hero.mesh;
+    if (ans.x_hat === 'crown') { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.18, 6, 1, true), M(0xfacc15, { metalness: 0.8, roughness: 0.25, side: THREE.DoubleSide })); c.position.y = 0.36; head.add(c); }
+    if (ans.x_hat === 'cap') { const c = new THREE.Mesh(new THREE.SphereGeometry(0.27, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), M(0xef4444)); c.position.y = 0.2; head.add(c); const b = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.03, 0.2), M(0xef4444)); b.position.set(0, 0.2, 0.25); head.add(b); }
+    if (ans.x_hat === 'helmet') { const c = new THREE.Mesh(new THREE.SphereGeometry(0.33, 18, 12, 0, Math.PI * 2, 0, Math.PI / 1.8), M(0x94a3b8, { metalness: 0.7, roughness: 0.3 })); c.position.y = 0.12; head.add(c); }
+    pet = null;
+    if (ans.x_pet && ans.x_pet !== 'none') { pet = model(ans.x_pet); if (pet) { pet.scale.setScalar(0.8); scene.add(pet); pet.position.copy(hero.pos); if (ans.n_pet && window.__ttLabel) pet.add(window.__ttLabel(ans.n_pet)); } }
+  }
+  function lookTick(dt) {
+    if (pet) { const tx = hero.pos.x + 1.4, tz = hero.pos.z + 1.2, dx = tx - pet.position.x, dz = tz - pet.position.z, d = Math.hypot(dx, dz); if (d > 0.4) { pet.position.x += dx * Math.min(1, dt * 3); pet.position.z += dz * Math.min(1, dt * 3); pet.rotation.y = Math.atan2(dx, dz); } pet.position.y = groundAt(pet.position.x, pet.position.z); }
+    if (ans.x_trail === 'yes' && (trailT -= dt) < 0) { trailT = 0.06; const sp = new THREE.Mesh(new THREE.SphereGeometry(0.07, 6, 4), new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true })); sp.position.set(hero.pos.x + (Math.random() - 0.5) * 0.4, hero.pos.y + 0.3 + Math.random() * 0.8, hero.pos.z + (Math.random() - 0.5) * 0.4); scene.add(sp); let life = 0.6; const f = () => { life -= 0.03; sp.material.opacity = life; sp.position.y += 0.01; if (life > 0) requestAnimationFrame(f); else scene.remove(sp); }; f(); }
+  }
   function buildChapter(i) {
     clearWorld();
     const ch = spec.chapters[i], R = rng(ch.seed), th = THEMES[ch.theme] || THEMES.forest;
     scene = new THREE.Scene();
     const night = ans.time === 'night' || (ans.time === 'auto' && (ch.night || ch.theme === 'space' || ch.theme === 'haunted')), sunset = ans.time === 'sunset';
     const sky = new THREE.Color(night ? 0x1b2552 : sunset ? 0xff9a62 : th.sky);
-    scene.background = sky; scene.fog = new THREE.Fog(sky, ch.theme === 'cave' ? 14 : 40, ch.theme === 'cave' ? 55 : 140);
-    scene.add(new THREE.HemisphereLight(night ? 0x6877b8 : 0xffffff, th.ground, night ? 0.85 : 0.95));
-    const sun = new THREE.DirectionalLight(night ? 0xaab8ff : sunset ? 0xffc08a : 0xffffff, night ? 0.9 : 1.6);
+    if (X.sky) sky.set(X.sky); scene.background = sky; scene.fog = new THREE.Fog(sky, (ch.theme === 'cave' ? 14 : 40) * X.fog, (ch.theme === 'cave' ? 55 : 140) * X.fog);
+    scene.add(new THREE.HemisphereLight(night ? 0x6877b8 : 0xffffff, th.ground, (night ? 0.85 : 0.95) * X.light));
+    const sun = new THREE.DirectionalLight(night ? 0xaab8ff : sunset ? 0xffc08a : 0xffffff, (night ? 0.9 : 1.6) * X.light);
     sun.position.set(30, 50, 20); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, far: 140 }); scene.add(sun, sun.target); H = { sun };
     if (night) for (let k = 0; k < 4; k++) { const p = new THREE.PointLight(0xffd27a, 30, 22); p.position.set((R() - 0.5) * 60, 4, (R() - 0.5) * 60); scene.add(p); }
@@ -266,13 +297,13 @@ export async function playWorld(g, opts) {
     if (shape === 'maze') ch.things.concat(th.props).slice(0, 5).forEach((t, k) => { const s = spots[(k * 7) % spots.length]; if (s && ['house', 'tower', 'car', 'boat', 'rocket'].indexOf(t) < 0) put(t, s.x + 1.5, s.z + 1.5, 0.9); });
     // weather
     const w = ans.weather !== 'auto' ? ans.weather : ch.snow || ch.theme === 'ice' ? 'snow' : ch.rain ? 'rain' : 'clear';
-    if (w !== 'clear') { const n = 1600, geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3); for (let k = 0; k < n; k++) { pos[k * 3] = (R() - 0.5) * 80; pos[k * 3 + 1] = R() * 30; pos[k * 3 + 2] = (R() - 0.5) * 80; } geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); wx = new THREE.Points(geo, new THREE.PointsMaterial({ color: w === 'snow' ? 0xffffff : 0x9cc8ff, size: w === 'snow' ? 0.22 : 0.08, transparent: true, opacity: 0.85 })); wx.userData.snow = w === 'snow'; scene.add(wx); } else wx = null;
+    if (w !== 'clear') { const n = Math.round(1600 * X.wx), geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3); for (let k = 0; k < n; k++) { pos[k * 3] = (R() - 0.5) * 80; pos[k * 3 + 1] = R() * 30; pos[k * 3 + 2] = (R() - 0.5) * 80; } geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); wx = new THREE.Points(geo, new THREE.PointsMaterial({ color: w === 'snow' ? 0xffffff : 0x9cc8ff, size: w === 'snow' ? 0.22 : 0.08, transparent: true, opacity: 0.85 })); wx.userData.snow = w === 'snow'; scene.add(wx); } else wx = null;
     if (night) { const sg = new THREE.BufferGeometry(), sp = new Float32Array(900); for (let k = 0; k < 300; k++) { const a = R() * 6.28, b = R() * 1.4; sp[k * 3] = Math.cos(a) * Math.cos(b) * 250; sp[k * 3 + 1] = Math.sin(b) * 250 + 20; sp[k * 3 + 2] = Math.sin(a) * Math.cos(b) * 250; } sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.2, sizeAttenuation: false }))); }
 
     // hero
     hero.mesh = makeChar({ shirt: col, pants: 0x1e293b, hair: 0x3b2314 });
     if (ans.attack === 'sword') { const sw = model('sword'); if (sw) { sw.scale.setScalar(0.7); sw.rotation.x = Math.PI / 2; const hand = hero.mesh.getObjectByName('HandR') || hero.mesh; sw.position.set(0, -0.05, 0.25); hand.add(sw); hero.sword = sw; } }
-    scene.add(hero.mesh); hero.pos.copy(start); hero.pos.y = groundAt(start.x, start.z); hero.vy = 0; hero.inv = 1.5; hero.hidden = false; hero.carry = null; hero.parts = 0;
+    hero.mesh.scale.multiplyScalar(X.size); addLook(); scene.add(hero.mesh); hero.pos.copy(start); hero.pos.y = groundAt(start.x, start.z); hero.vy = 0; hero.inv = 1.5; hero.hidden = false; hero.carry = null; hero.parts = 0;
     view.yaw = Math.atan2(start.x - goal.x, start.z - goal.z);
     // goal portal
     exitP = put('portal', goal.x, goal.z, 1.4, view.yaw); if (exitP) exitP.visible = false; H.goal = goal; H.spots = spots;
@@ -284,7 +315,7 @@ export async function playWorld(g, opts) {
     // enemies wander everywhere (more when harder)
     const fk = ans.enemy !== 'auto' ? ans.enemy : (spec.foe || ({ space: 'robot', haunted: 'ghost', city: 'soldier', castle: 'soldier', volcano: 'creature', cave: 'creature' }[ch.theme] || 'creature'));
     H.foeKind = fk === 'dragon' ? 'creature' : fk; H.bossKind = fk === 'dragon' || spec.foe === 'dragon' ? 'dragon' : fk === 'robot' ? 'robot' : 'creature';
-    if (ans.type !== 'arena') for (let k = 0; k < 2 + lvl * 2 + i; k++) { const s = spots[(R() * spots.length) | 0]; if (s && s.distanceTo(start) > 14) spawnFoe(s.x, s.z, false); }
+    if (ans.type !== 'arena') for (let k = 0; k < Math.round((2 + lvl * 2 + i) * X.foes); k++) { const s = spots[(R() * spots.length) | 0]; if (s && s.distanceTo(start) > 14) spawnFoe(s.x, s.z, false); }
     setupQuest();
   }
   function groundTex(c, theme) {
@@ -298,9 +329,10 @@ export async function playWorld(g, opts) {
     const kind = boss ? H.bossKind : H.foeKind;
     let m = kind === 'soldier' ? makeChar({ shirt: 0x991b1b, pants: 0x111827, hair: 0x111111, glow: 0xff3333 }) : model(KIND_MODEL[kind] || 'creature');
     if (!m) m = makeChar({ shirt: 0x7f1d1d });
-    const s = boss ? (kind === 'dragon' ? 1.6 : 2.2) : kind === 'dragon' ? 0.7 : 1;
+    const s = (boss ? (kind === 'dragon' ? 1.6 : 2.2) * X.bsize : (kind === 'dragon' ? 0.7 : 1) * X.fsize);
+    if (X.foeCol && !boss) m.traverse(o => { if (o.isMesh && o.material && o.material.color) { o.material = o.material.clone(); o.material.color.lerp(new THREE.Color(X.foeCol), 0.6); } });
     m.scale.multiplyScalar(s); m.position.set(x, groundAt(x, z), z); scene.add(m);
-    const f = { m, pos: new THREE.Vector3(x, groundAt(x, z), z), home: new THREE.Vector3(x, 0, z), hp: boss ? 10 + lvl * 4 : 1 + (lvl > 2 ? 1 : 0), max: 0, boss, kind, t: Math.random() * 6, speed: (boss ? 2.6 : 2.2) + lvl * 0.5, r: boss ? 1.8 : 0.7, cd: 0, alive: true, fly: kind === 'ghost' || kind === 'dragon' };
+    const f = { m, pos: new THREE.Vector3(x, groundAt(x, z), z), home: new THREE.Vector3(x, 0, z), hp: boss ? Math.max(3, Math.round((10 + lvl * 4) * X.bhp)) : Math.max(1, 1 + (lvl > 2 ? 1 : 0) + X.fhp), max: 0, boss, kind, t: Math.random() * 6, speed: ((boss ? 2.6 : 2.2) + lvl * 0.5) * X.fspeed, r: (boss ? 1.8 * X.bsize : 0.7 * X.fsize), cd: 0, alive: true, fly: kind === 'ghost' || kind === 'dragon' };
     f.max = f.hp; foes.push(f); return f;
   }
   function spot(far) { const s = H.spots; let best = s[0]; for (let k = 0; k < 8; k++) { const c = s[(Math.random() * s.length) | 0]; if (c && (!best || (c.distanceTo(hero.pos) > (far || 15)))) { best = c; break; } } return best || new THREE.Vector3(10, 0, 10); }
@@ -329,15 +361,15 @@ export async function playWorld(g, opts) {
     if (q.k === 'rescue') { const p = spot(25); const n = addNpc(q.who, p, 'rescue'); for (let k = 0; k < 2 + lvl; k++) spawnFoe(p.x + (Math.random() - 0.5) * 8, p.z + (Math.random() - 0.5) * 8); n.cage = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 2.6, 10, 1, true), new THREE.MeshStandardMaterial({ color: 0x94a3b8, wireframe: true })); n.cage.position.set(p.x, n.pos.y + 1.3, p.z); scene.add(n.cage); }
     if (q.k === 'build') { for (let k = 0; k < q.n; k++) addPickup('crate', spot(12), 'part'); q.site = spot(8); const pad = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.2, 24), M(0x22c55e, { emissive: 0x14532d })); pad.position.set(q.site.x, groundAt(q.site.x, q.site.z) + 0.1, q.site.z); scene.add(pad); q.pad = pad; }
     if (q.k === 'fight') { for (let k = 0; k < q.n; k++) { const s = spot(12); spawnFoe(s.x, s.z).q = true; } }
-    if (q.k === 'boss') { const s = H.goal.clone(); s.z += 6; H.boss = spawnFoe(s.x, s.z, true); H.boss.q = true; toast(T('The boss is here!', 'الزعيم ظهر!')); }
-    if (q.k === 'escape') { H.timer = 45 - lvl * 5; for (let k = 0; k < 3 + lvl; k++) { const a = Math.random() * 6.28; spawnFoe(hero.pos.x + Math.cos(a) * 18, hero.pos.z + Math.sin(a) * 18).hunt = true; } if (exitP) exitP.visible = true; }
+    if (q.k === 'boss') { const s = H.goal.clone(); s.z += 6; H.boss = spawnFoe(s.x, s.z, true); H.boss.q = true; toast((ans.n_boss ? ans.n_boss + ' — ' : '') + (ans.l_boss || T('The boss is here!', 'الزعيم ظهر!'))); }
+    if (q.k === 'escape') { H.timer = (45 - lvl * 5) * X.time; for (let k = 0; k < 3 + lvl; k++) { const a = Math.random() * 6.28; spawnFoe(hero.pos.x + Math.cos(a) * 18, hero.pos.z + Math.sin(a) * 18).hunt = true; } if (exitP) exitP.visible = true; }
     if (q.k === 'reach') { if (exitP) exitP.visible = true; }
     if (q.k === 'waves') { H.wave = 0; nextWave(); }
     objective();
   }
-  function nextWave() { H.wave++; for (let k = 0; k < 3 + H.wave * 2 + lvl; k++) { const a = Math.random() * 6.28; spawnFoe(Math.cos(a) * 26, Math.sin(a) * 26).q = true; } if (H.wave === 3) { H.boss = spawnFoe(0, -20, true); H.boss.q = true; } toast(T('Wave ', 'موجة ') + H.wave + '/3'); }
+  function nextWave() { H.wave++; for (let k = 0; k < Math.round((3 + H.wave * 2 + lvl) * X.foes); k++) { const a = Math.random() * 6.28; spawnFoe(Math.cos(a) * 26, Math.sin(a) * 26).q = true; } if (H.wave === 3) { H.boss = spawnFoe(0, -20, true); H.boss.q = true; } toast(T('Wave ', 'موجة ') + H.wave + '/3'); }
   function qText(q) {
-    const nm = q.label ? T(q.label[0], q.label[1]) : '';
+    const nm = (q.k === 'find' && ans.n_item) ? ans.n_item : q.label ? T(q.label[0], q.label[1]) : '';
     return { find: T('Find ', 'لاقي ') + nm + (q.n > 1 ? ` (${q.got}/${q.n})` : ''), talk: T('Talk to ', 'كلّم ') + q.who, rescue: T('Rescue ', 'أنقذ ') + q.who + T(' and bring them to the portal', ' ورجّعه للبوابة'), build: T('Bring the parts to the green circle', 'هات القطع للدايرة الخضرا') + ` (${q.got}/${q.n})`,
       fight: T('Beat the enemies', 'اهزم الأعداء') + ` (${q.got}/${q.n})`, boss: T('Beat the boss', 'اهزم الزعيم'), escape: T('Escape to the portal!', 'اهرب للبوابة!'), reach: T('Reach the portal', 'اوصل للبوابة'), portal: T('Go into the portal', 'ادخل البوابة'), waves: T('Survive the waves', 'اصمد قدام الموجات') + ` (${H.wave || 0}/3)` }[q.k] || '';
   }
@@ -358,17 +390,17 @@ export async function playWorld(g, opts) {
   function startChapter(i) {
     chIdx = i; state = 'card'; const ch = spec.chapters[i];
     buildChapter(i); objective();
-    card(T('Chapter ', 'الفصل ') + (i + 1) + ' — ' + g.title, ans.genre === 'action' ? quests.map(qText).join('\n') : ch.text + '\n\n🎯 ' + quests.map(qText).join(' · '), [[T('Play', 'العب'), () => { state = 'play'; }]]);
+    card(T('Chapter ', 'الفصل ') + (i + 1) + ' — ' + (ch.title || ans.n_world || g.title), (i === 0 && ans.l_intro ? ans.l_intro + '\n\n' : '') + (ans.genre === 'action' || X.cards === 'short' ? quests.map(qText).join('\n') : ch.text + '\n\n🎯 ' + quests.map(qText).join(' · ')), [[T('Play', 'العب'), () => { state = 'play'; }]]);
   }
   function chapterWin() {
     state = 'card'; beep(660, 0.2, 'triangle'); beep(990, 0.3, 'triangle');
     if (chIdx + 1 < spec.chapters.length) { store.set('tt_prog_' + g.id, chIdx + 1); card(T('Chapter done!', 'الفصل خلص!'), T('Great! On to the next part of the story.', 'برافو! يلا على الجزء اللي بعده من القصة.'), [[T('Next chapter', 'الفصل اللي بعده'), () => startChapter(chIdx + 1)]]); }
-    else { store.set('tt_prog_' + g.id, 0); card('🏆 ' + T('You finished ', 'خلّصت ') + g.title, T('The end. You can play it again or go back and change the story or the choices.', 'النهاية. تقدر تلعبها تاني أو ترجع تغيّر القصة أو الاختيارات.'), [[T('Play again', 'العب تاني'), () => startChapter(0)], [T('Back', 'ارجع'), exit, true]]); }
+    else { store.set('tt_prog_' + g.id, 0); card('🏆 ' + T('You finished ', 'خلّصت ') + g.title, ans.l_win || T('The end. You can play it again or go back and change the story or the choices.', 'النهاية. تقدر تلعبها تاني أو ترجع تغيّر القصة أو الاختيارات.'), [[T('Play again', 'العب تاني'), () => startChapter(0)], [T('Back', 'ارجع'), exit, true]]); }
   }
   function hurt(n) {
     if (hero.inv > 0 || hero.hidden || (window.DS_ADM || {}).powerful) return;
-    hero.hp -= n || 1; hero.inv = 1.2; beep(140, 0.25, 'sawtooth'); H.shake = 0.35; objective();
-    if (hero.hp <= 0) { state = 'card'; hero.hp = hero.maxHp; card(T('Ouch!', 'آي!'), T('Try this chapter again.', 'جرّب الفصل ده تاني.'), [[T('Try again', 'جرّب تاني'), () => startChapter(chIdx)], [T('Back', 'ارجع'), exit, true]]); }
+    hero.hp -= (n || 1) * X.fdmg; hero.inv = 1.2 * X.inv; beep(140, 0.25, 'sawtooth'); H.shake = X.shake ? 0.35 : 0; objective();
+    if (hero.hp <= 0) { state = 'card'; hero.hp = hero.maxHp; card(T('Ouch!', 'آي!'), ans.l_lose || T('Try this chapter again.', 'جرّب الفصل ده تاني.'), [[T('Try again', 'جرّب تاني'), () => startChapter(chIdx)], [T('Back', 'ارجع'), exit, true]]); }
   }
 
   // ----- every frame -----
@@ -378,15 +410,15 @@ export async function playWorld(g, opts) {
     // move (forward = where the camera looks)
     let ix = 0, iz = 0; if (keys.has('KeyW') || keys.has('ArrowUp')) iz -= 1; if (keys.has('KeyS') || keys.has('ArrowDown')) iz += 1; if (keys.has('KeyA') || keys.has('ArrowLeft')) ix -= 1; if (keys.has('KeyD') || keys.has('ArrowRight')) ix += 1;
     if (joy.on) { ix = joy.x; iz = joy.z; } const mag = Math.min(1, Math.hypot(ix, iz)); if (mag > 1e-3) { ix /= Math.hypot(ix, iz); iz /= Math.hypot(ix, iz) || 1; }
-    const d = camDir(ix, iz); let sp = 6.5 * mag;
+    const d = camDir(ix, iz); let sp = 6.5 * X.speed * mag;
     if ((pressed.has('ShiftLeft') || pressed.has('ShiftRight')) && ans.dash === 'yes' && hero.dashCd <= 0) { hero.dash = 0.22; hero.dashCd = 1; beep(420, 0.08); }
-    if (hero.dash > 0) { sp = 22; hero.dash -= dt; } hero.dashCd -= dt;
+    if (hero.dash > 0) { sp = 22 * X.dashp; hero.dash -= dt; } hero.dashCd -= dt;
     const vx = (hero.dash > 0 && mag < 0.1 ? -Math.sin(hero.dir) : d.x) * sp, vz = (hero.dash > 0 && mag < 0.1 ? -Math.cos(hero.dir) : d.z) * sp;
     if (!hero.hidden) { tryMove(hero.pos, vx * dt, vz * dt, 0.5); if (mag > 0.05) hero.dir = Math.atan2(-d.x, -d.z); }
     // jump & gravity
     const gy = groundAt(hero.pos.x, hero.pos.z);
-    if (pressed.has('Space') && !hero.hidden && (hero.ground || (ans.djump === 'yes' && hero.jumps < 2))) { hero.vy = 9.5; hero.ground = false; hero.jumps++; beep(520, 0.08, 'sine'); }
-    hero.vy -= 24 * dt; hero.pos.y += hero.vy * dt;
+    if (pressed.has('Space') && !hero.hidden && (hero.ground || (ans.djump === 'yes' && hero.jumps < 2))) { hero.vy = 9.5 * X.jump; hero.ground = false; hero.jumps++; beep(520, 0.08, 'sine'); }
+    hero.vy -= 24 * X.grav * dt; hero.pos.y += hero.vy * dt;
     if (hero.pos.y <= gy && hero.vy <= 0 && gy > -50 && hero.pos.y > gy - 1.2) { hero.pos.y = gy; hero.vy = 0; hero.ground = true; hero.jumps = 0; } else if (hero.pos.y > gy + 0.05) hero.ground = false;
     if (hero.pos.y < -8) { hurt(1); const s = H.lastSafe || new THREE.Vector3(0, 0, 3); hero.pos.copy(s); hero.vy = 0; }
     if (hero.ground && H.shape === 'levels') H.lastSafe = hero.pos.clone();
@@ -449,31 +481,31 @@ export async function playWorld(g, opts) {
   function attack() {
     if (hero.cd > 0 || hero.hidden) return;
     if (ans.attack === 'none') { use(); return; }
-    hero.cd = ans.attack === 'shoot' ? 0.28 : 0.4;
+    hero.cd = (ans.attack === 'shoot' ? 0.28 : 0.4) * X.rate;
     if (ans.attack === 'shoot') { const from = hero.pos.clone(); from.y += 1.2; const to = from.clone().add(new THREE.Vector3(-Math.sin(view.yaw), 0, -Math.cos(view.yaw)).multiplyScalar(30)); hero.dir = view.yaw; shoot(from, to, false); return; }
     beep(300, 0.07, 'square'); if (hero.sword) { hero.sword.rotation.z = 1.4; setTimeout(() => { if (hero.sword) hero.sword.rotation.z = 0; }, 160); }
     const fw = new THREE.Vector3(-Math.sin(hero.dir), 0, -Math.cos(hero.dir));
-    foes.forEach(f => { if (!f.alive) return; tmp.copy(f.pos).sub(hero.pos); tmp.y = 0; const dd = tmp.length(); if (dd < 2.6 + f.r && tmp.normalize().dot(fw) > 0.2) damage(f, 1); });
+    foes.forEach(f => { if (!f.alive) return; tmp.copy(f.pos).sub(hero.pos); tmp.y = 0; const dd = tmp.length(); if (dd < 2.6 * X.range + f.r && tmp.normalize().dot(fw) > 0.2) damage(f, 1); });
   }
-  function shoot(from, to, bad) { const v = new THREE.Vector3().subVectors(to, from); v.y += bad ? 1 : 0; v.normalize().multiplyScalar(bad ? 14 : 26); const m = new THREE.Mesh(new THREE.SphereGeometry(bad ? 0.35 : 0.2, 10, 8), new THREE.MeshBasicMaterial({ color: bad ? 0xff4d1f : 0xfff27a })); m.position.copy(from); if (bad) m.position.y += 1.2; scene.add(m); shots.push({ m, v, life: 2, bad }); beep(bad ? 200 : 900, 0.06, 'square'); }
+  function shoot(from, to, bad) { const v = new THREE.Vector3().subVectors(to, from); v.y += bad ? 1 : 0; v.normalize().multiplyScalar(bad ? 14 * X.fspeed : 26 * X.shot); const m = new THREE.Mesh(new THREE.SphereGeometry(bad ? 0.35 : 0.2, 10, 8), new THREE.MeshBasicMaterial({ color: bad ? 0xff4d1f : 0xfff27a })); m.position.copy(from); if (bad) m.position.y += 1.2; scene.add(m); shots.push({ m, v, life: 2, bad }); beep(bad ? 200 : 900, 0.06, 'square'); }
   function damage(f, n) {
     f.hp -= n; f.m.position.y += 0.3; beep(220, 0.08, 'square');
-    if (f.hp <= 0) { f.alive = false; scene.remove(f.m); if (Math.random() < 0.25) addPickup('heart', f.pos, 'heart');
+    if (f.hp <= 0) { f.alive = false; scene.remove(f.m); if (Math.random() < 0.25 * X.hearts) addPickup('heart', f.pos, 'heart');
       const q = quests[qi]; if (q && (q.k === 'fight' && f.q)) { q.got++; if (q.got >= q.n) questDone(); else objective(); }
       if (q && q.k === 'boss' && f.boss) { toast(T('Boss beaten!', 'الزعيم اتهزم!')); questDone(); } }
   }
   function use() {
     const n = npcs.find(x => !x.done && x.pos.distanceTo(hero.pos) < 2.6 && x.role === 'talk');
-    if (n) { const ch = spec.chapters[chIdx]; const line = ch.line || (ch.text.split(/(?<=[.!?؟])\s+/)[1] || ch.text).slice(0, 120); say(n.name + ': ' + line); n.done = true; const q = quests[qi]; if (q && q.k === 'talk') setTimeout(questDone, 900); return; }
+    if (n) { const ch = spec.chapters[chIdx]; const line = ans.l_friend || ch.line || (ch.text.split(/(?<=[.!?؟])\s+/)[1] || ch.text).slice(0, 120); say(n.name + ': ' + line); n.done = true; const q = quests[qi]; if (q && q.k === 'talk') setTimeout(questDone, 900); return; }
     if (hero.hidden) { hero.hidden = false; toast(T('You came out', 'خرجت')); return; }
     if (ans.attack === 'none' || ans.type === 'sneak') { hero.hidden = true; toast(T('Hidden… enemies can\'t see you', 'استخبيت… الأعداء مش شايفينك')); }
   }
 
   function frame(now) {
     if (!alive) return; const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    if (state === 'play') step(dt);
+    if (state === 'play') { step(dt); lookTick(dt); }
     // camera: 3rd person / shoulder / 1st person, never from the top
-    const m = view.mode || 0, s = Math.sin(view.yaw), c = Math.cos(view.yaw), z = view.zoom || 1;
+    const m = view.mode || 0, s = Math.sin(view.yaw), c = Math.cos(view.yaw), z = (view.zoom || 1) * X.camd;
     if (m === 2) { camera.position.set(hero.pos.x, hero.pos.y + 1.65, hero.pos.z); camera.lookAt(hero.pos.x - s * 10, hero.pos.y + 1.65 - pitch * 8, hero.pos.z - c * 10); }
     else { let bk = (m === 1 ? 3 : 6) * z; const hgt = (m === 1 ? 2.2 : 3) + pitch * 5;
       for (let k = 0; k < 8 && bk > 1.2; k++) { const cx = hero.pos.x + s * bk, cz = hero.pos.z + c * bk; if (!solids.some(o => o.box && cx > o.x0 && cx < o.x1 && cz > o.z0 && cz < o.z1 && hero.pos.y + hgt < o.h + 0.5)) break; bk *= 0.75; }

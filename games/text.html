@@ -7,7 +7,7 @@
 <title>THE TEXT — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script src="../assets/js/rotate.js?v=V43" data-noask defer></script>
+<script src="../assets/js/rotate.js?v=V44" data-noask defer></script>
 <style>
 /* THE TEXT V01 — write a story, answer a few questions, get your own game */
 body{touch-action:manipulation;overflow:auto}
@@ -64,7 +64,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
 .ab{width:78px;height:78px;border-radius:50%;border:0;color:#fff;font-weight:900;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.35);touch-action:none}
 .ab.a{background:rgba(239,68,68,.9)}.ab.j{background:rgba(59,130,246,.9)}
 @media (pointer:fine){.pad2{display:none}}
-</style>
+.qsec{border:1px solid rgba(148,163,184,.3);border-radius:16px;padding:6px 12px;margin:10px 0}.qsec summary{font-weight:900;cursor:pointer;padding:8px 0;font-size:17px}.qin{width:100%;box-sizing:border-box;border-radius:12px;border:2px solid rgba(148,163,184,.35);background:rgba(15,23,42,.6);color:#fff;padding:10px;font:600 15px system-ui}.qin.bad{border-color:#ef4444;text-decoration:underline wavy #ef4444}</style>
 </head>
 <body>
 <div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
@@ -179,24 +179,92 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     { k: 'keys', en: 'Keyboard keys', ar: 'زراير الكيبورد', o: [['both', 'WASD and arrows', 'WASD والأسهم'], ['wasd', 'WASD only', 'WASD بس'], ['arrows', 'Arrows only', 'الأسهم بس']] },
     { k: 'dash', en: 'Dash move (fast burst)', ar: 'حركة اندفاع (سرعة لحظية)', o: [['yes', 'Yes (Shift)', 'أيوه (Shift)'], ['no', 'No', 'لأ']] },
     { k: 'djump', en: 'Double jump (platform games)', ar: 'نطة مزدوجة (في المنصات)', o: [['no', 'No', 'لأ'], ['yes', 'Yes', 'أيوه']] }
+    ,
+    // ===== V04: 82 more questions (100 in all). Options shape the rules; the 50 boxes are YOUR words and change the world =====
+    { sec: ['Hero', 'البطل'] },
+    { k: 'x_size', en: 'Hero size', ar: 'حجم البطل', o: [['m', 'Normal', 'عادي'], ['s', 'Small', 'صغير'], ['l', 'Big', 'كبير']] },
+    { k: 'x_speed', en: 'Walking speed', ar: 'سرعة المشي', o: [['n', 'Normal', 'عادية'], ['slow', 'Slow', 'بطيئة'], ['fast', 'Fast', 'سريعة'], ['super', 'Super fast', 'سريعة جدًا']] },
+    { k: 'x_jump', en: 'Jump height', ar: 'علو النطة', o: [['n', 'Normal', 'عادي'], ['low', 'Low', 'واطي'], ['high', 'High', 'عالي'], ['moon', 'Moon jump', 'نطة قمر']] },
+    { k: 'x_hp', en: 'Hearts', ar: 'عدد القلوب', o: [['5', '5', '5'], ['3', '3', '3'], ['8', '8', '8'], ['12', '12', '12']] },
+    { k: 'x_inv', en: 'Safe time after a hit', ar: 'وقت الأمان بعد الضربة', o: [['n', 'Normal', 'عادي'], ['short', 'Short', 'قصير'], ['long', 'Long', 'طويل']] },
+    { k: 'x_hat', en: 'Hat', ar: 'على راسه', o: [['none', 'Nothing', 'ولا حاجة'], ['crown', 'Crown', 'تاج'], ['cap', 'Cap', 'كاب'], ['helmet', 'Helmet', 'خوذة']] },
+    { k: 'x_pet', en: 'A pet that follows you', ar: 'حيوان بيمشي وراك', o: [['none', 'None', 'مفيش'], ['dog', 'Dog', 'كلب'], ['cat', 'Cat', 'قطة'], ['dinopet', 'Baby dino', 'داينو صغير']] },
+    { k: 'x_trail', en: 'Sparkle trail', ar: 'لمعة وراه وهو ماشي', o: [['no', 'No', 'لأ'], ['yes', 'Yes', 'أيوه']] },
+    { sec: ['Fighting', 'الضرب'] },
+    { k: 'x_range', en: 'Attack reach', ar: 'مدى الضربة', o: [['n', 'Normal', 'عادي'], ['short', 'Short', 'قريب'], ['long', 'Long', 'بعيد']] },
+    { k: 'x_rate', en: 'Attack speed', ar: 'سرعة الضرب', o: [['n', 'Normal', 'عادية'], ['slow', 'Slow', 'بطيئة'], ['fast', 'Fast', 'سريعة']] },
+    { k: 'x_shot', en: 'Shot speed', ar: 'سرعة الطلقة', o: [['n', 'Normal', 'عادية'], ['slow', 'Slow', 'بطيئة'], ['fast', 'Fast', 'سريعة']] },
+    { k: 'x_dashp', en: 'Dash power', ar: 'قوة الاندفاع', o: [['n', 'Normal', 'عادية'], ['weak', 'Weak', 'ضعيفة'], ['strong', 'Strong', 'قوية']] },
+    { sec: ['Enemies', 'الأعداء'] },
+    { k: 'x_foes', en: 'How many enemies', ar: 'عدد الأعداء', o: [['n', 'Normal', 'عادي'], ['few', 'Few', 'قليل'], ['many', 'Many', 'كتير'], ['swarm', 'A swarm', 'جيش']] },
+    { k: 'x_fspeed', en: 'Enemy speed', ar: 'سرعة الأعداء', o: [['n', 'Normal', 'عادية'], ['slow', 'Slow', 'بطيئة'], ['fast', 'Fast', 'سريعة']] },
+    { k: 'x_fhp', en: 'Enemy strength', ar: 'قوة الأعداء', o: [['n', 'Normal', 'عادية'], ['weak', 'Weak (1 hit)', 'ضعاف (ضربة واحدة)'], ['tough', 'Tough', 'جامدين']] },
+    { k: 'x_fsize', en: 'Enemy size', ar: 'حجم الأعداء', o: [['n', 'Normal', 'عادي'], ['s', 'Small', 'صغير'], ['l', 'Big', 'كبير']] },
+    { k: 'x_fdmg', en: 'Enemy hit takes', ar: 'ضربة العدو بتاخد', o: [['1', '1 heart', 'قلب واحد'], ['2', '2 hearts', 'قلبين']] },
+    { k: 'x_bsize', en: 'Boss size', ar: 'حجم الزعيم', o: [['n', 'Big', 'كبير'], ['huge', 'Huge', 'ضخم جدًا']] },
+    { k: 'x_bhp', en: 'Boss strength', ar: 'قوة الزعيم', o: [['n', 'Normal', 'عادية'], ['weak', 'Weak', 'ضعيف'], ['tough', 'Very tough', 'جامد جدًا']] },
+    { sec: ['World', 'العالم'] },
+    { k: 'x_grav', en: 'Gravity', ar: 'الجاذبية', o: [['n', 'Normal', 'عادية'], ['light', 'Light (floaty)', 'خفيفة (بتطير شوية)'], ['heavy', 'Heavy', 'تقيلة']] },
+    { k: 'x_fog', en: 'Fog', ar: 'الضباب', o: [['n', 'Normal', 'عادي'], ['clear', 'Very clear', 'صافي خالص'], ['thick', 'Thick', 'تقيل']] },
+    { k: 'x_light', en: 'Light', ar: 'الإضاءة', o: [['n', 'Normal', 'عادية'], ['dim', 'Dim', 'خافتة'], ['bright', 'Bright', 'قوية']] },
+    { k: 'x_sky', en: 'Sky colour', ar: 'لون السما', c: ['auto', '#7dd3fc', '#f9a8d4', '#c4b5fd', '#fdba74', '#86efac', '#0f172a'] },
+    { k: 'x_wx', en: 'Rain / snow amount', ar: 'كمية المطر أو التلج', o: [['n', 'Normal', 'عادية'], ['light', 'Light', 'خفيفة'], ['heavy', 'Heavy', 'تقيلة']] },
+    { k: 'x_hearts', en: 'Hearts to pick up', ar: 'قلوب تلمّها', o: [['n', 'Some', 'شوية'], ['none', 'None', 'مفيش'], ['many', 'Many', 'كتير']] },
+    { k: 'x_time', en: 'Time for escape chapters', ar: 'وقت فصول الهروب', o: [['n', 'Normal', 'عادي'], ['short', 'Short', 'قصير'], ['long', 'Long', 'طويل']] },
+    { k: 'x_chap', en: 'How many chapters to play', ar: 'تلعب كام فصل', o: [['all', 'All of my story', 'كل قصتي'], ['1', '1', '1'], ['3', '3', '3'], ['5', '5', '5']] },
+    { sec: ['Camera & sound', 'الكاميرا والصوت'] },
+    { k: 'x_camd', en: 'Camera distance', ar: 'بعد الكاميرا', o: [['n', 'Normal', 'عادي'], ['close', 'Close', 'قريبة'], ['far', 'Far', 'بعيدة']] },
+    { k: 'x_fov', en: 'How wide you see', ar: 'زاوية الشوف', o: [['n', 'Normal', 'عادية'], ['narrow', 'Narrow', 'ضيقة'], ['wide', 'Wide', 'واسعة']] },
+    { k: 'x_shake', en: 'Screen shake on hits', ar: 'الشاشة تتهز مع الضرب', o: [['yes', 'Yes', 'أيوه'], ['no', 'No', 'لأ']] },
+    { k: 'x_sound', en: 'Sounds', ar: 'الأصوات', o: [['on', 'On', 'شغالة'], ['quiet', 'Quiet', 'واطية'], ['off', 'Off', 'مقفولة']] },
+    { k: 'x_cards', en: 'Show the story before each chapter', ar: 'اعرض القصة قبل كل فصل', o: [['yes', 'Yes', 'أيوه'], ['short', 'Only the goal', 'المطلوب بس']] },
+    { sec: ['Your words — names (10)', 'كلامك انت — أسامي (10)'] },
+    { k: 'n_hero', t: 1, en: 'Hero name', ar: 'اسم البطل' }, { k: 'n_nick', t: 1, en: 'Hero nickname', ar: 'لقب البطل' }, { k: 'n_pet', t: 1, en: 'Pet name', ar: 'اسم الحيوان' },
+    { k: 'n_friend1', t: 1, en: 'Friend 1', ar: 'صاحب 1' }, { k: 'n_friend2', t: 1, en: 'Friend 2', ar: 'صاحب 2' }, { k: 'n_friend3', t: 1, en: 'Friend 3', ar: 'صاحب 3' },
+    { k: 'n_foe', t: 1, en: 'Enemy name', ar: 'اسم العدو' }, { k: 'n_boss', t: 1, en: 'Boss name', ar: 'اسم الزعيم' }, { k: 'n_world', t: 1, en: 'World name', ar: 'اسم العالم' }, { k: 'n_item', t: 1, en: 'Name of the thing you collect', ar: 'اسم الحاجة اللي بتلمّها' },
+    { sec: ['Your words — lines (10)', 'كلامك انت — جمل (10)'] },
+    { k: 'l_intro', t: 1, en: 'First line of the game', ar: 'أول جملة في اللعبة' }, { k: 'l_win', t: 1, en: 'Line when you win', ar: 'جملة لما تكسب' }, { k: 'l_lose', t: 1, en: 'Line when you lose', ar: 'جملة لما تخسر' },
+    { k: 'l_boss', t: 1, en: 'What the boss says', ar: 'الزعيم بيقول إيه' }, { k: 'l_friend', t: 1, en: 'What a friend says', ar: 'صاحبك بيقول إيه' },
+    { k: 'l_ch1', t: 1, en: 'Chapter 1 title', ar: 'اسم الفصل 1' }, { k: 'l_ch2', t: 1, en: 'Chapter 2 title', ar: 'اسم الفصل 2' }, { k: 'l_ch3', t: 1, en: 'Chapter 3 title', ar: 'اسم الفصل 3' }, { k: 'l_ch4', t: 1, en: 'Chapter 4 title', ar: 'اسم الفصل 4' }, { k: 'l_ch5', t: 1, en: 'Chapter 5 title', ar: 'اسم الفصل 5' },
+    { sec: ['Your words — the places of each chapter (5)', 'كلامك انت — مكان كل فصل (5)'] },
+    { k: 'w_place1', t: 1, en: 'Where is chapter 1? (forest, sea, space, castle…)', ar: 'الفصل 1 فين؟ (غابة، بحر، فضاء، قلعة…)' }, { k: 'w_place2', t: 1, en: 'Where is chapter 2?', ar: 'الفصل 2 فين؟' }, { k: 'w_place3', t: 1, en: 'Where is chapter 3?', ar: 'الفصل 3 فين؟' }, { k: 'w_place4', t: 1, en: 'Where is chapter 4?', ar: 'الفصل 4 فين؟' }, { k: 'w_place5', t: 1, en: 'Where is chapter 5?', ar: 'الفصل 5 فين؟' },
+    { sec: ['Your words — what is in the world (25)', 'كلامك انت — إيه اللي في العالم (25)'] },
+    { k: 'w_ground', t: 1, en: 'The ground is…', ar: 'الأرض عبارة عن…' }, { k: 'w_sky', t: 1, en: 'The sky has…', ar: 'في السما فيه…' }, { k: 'w_tree', t: 1, en: 'Plants and trees', ar: 'زرع وشجر' },
+    { k: 'w_build', t: 1, en: 'Buildings', ar: 'مباني' }, { k: 'w_water', t: 1, en: 'Water (sea, river, lake…)', ar: 'مية (بحر، نهر، بحيرة…)' }, { k: 'w_wx', t: 1, en: 'Weather word', ar: 'كلمة عن الجو' },
+    { k: 'w_item', t: 1, en: 'Thing to find (key, gem, treasure…)', ar: 'حاجة تدوّر عليها (مفتاح، جوهرة، كنز…)' }, { k: 'w_treasure', t: 1, en: 'The big treasure', ar: 'الكنز الكبير' }, { k: 'w_weapon', t: 1, en: 'Your weapon (sword, bow, laser…)', ar: 'سلاحك (سيف، قوس، ليزر…)' },
+    { k: 'w_power', t: 1, en: 'Your special power', ar: 'قوتك الخاصة' }, { k: 'w_food', t: 1, en: 'Food in the world', ar: 'أكل في العالم' }, { k: 'w_animal', t: 1, en: 'Animals', ar: 'حيوانات' },
+    { k: 'w_vehicle', t: 1, en: 'Vehicles (car, boat, rocket…)', ar: 'مواصلات (عربية، مركب، صاروخ…)' }, { k: 'w_enemy1', t: 1, en: 'Enemy type 1 (robot, ghost, dragon…)', ar: 'نوع عدو 1 (روبوت، شبح، تنين…)' }, { k: 'w_enemy2', t: 1, en: 'Enemy type 2', ar: 'نوع عدو 2' },
+    { k: 'w_bossk', t: 1, en: 'The boss is a…', ar: 'الزعيم عبارة عن…' }, { k: 'w_friendk', t: 1, en: 'Your friends are…', ar: 'صحابك عبارة عن…' }, { k: 'w_color1', t: 1, en: 'Hero colour in words (red, blue…)', ar: 'لون البطل بالكلام (أحمر، أزرق…)' },
+    { k: 'w_color2', t: 1, en: 'Enemy colour in words', ar: 'لون العدو بالكلام' }, { k: 'w_mood', t: 1, en: 'Mood (scary, funny, calm…)', ar: 'الإحساس (مرعب، مضحك، هادي…)' }, { k: 'w_time', t: 1, en: 'Time word (night, morning…)', ar: 'كلمة عن الوقت (ليل، صبح…)' },
+    { k: 'w_extra1', t: 1, en: 'One more thing in the world', ar: 'حاجة كمان في العالم' }, { k: 'w_extra2', t: 1, en: 'Another thing', ar: 'حاجة تانية' }, { k: 'w_extra3', t: 1, en: 'Another thing', ar: 'حاجة تالتة' }, { k: 'w_goal', t: 1, en: 'What must the hero do in the end?', ar: 'البطل لازم يعمل إيه في الآخر؟' }
   ];
-  var draft = null;
+  var draft = null, qOpen = { 'Hero': false };
   function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { genre: 'story', view: '3d', type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'auto', map: 'auto', time: 'auto', weather: 'auto', cam: '3rd', level: '2', goal: 'stars', hand: 'r', joy: 'm', keys: 'both', dash: 'yes', djump: 'no', about: '' }, v: 1, remote: null }; }
   function renderQs() {
-    var box = $('qs'); box.innerHTML = '';
+    var box = $('qs'), keepY = scrollY; box.innerHTML = ''; var cur = box, nq = 0;
+    var cnt = document.createElement('p'); cnt.className = 'lead'; cnt.textContent = T('100 questions — open any group. The boxes are your own words: they change the places, enemies, names and lines.', '100 سؤال — افتح أي مجموعة. المربعات دي كلامك انت: بتغيّر الأماكن والأعداء والأسامي والجمل.'); box.appendChild(cnt);
     Q.forEach(function (q) {
-      var d = document.createElement('div'); d.className = 'q'; var h = document.createElement('h3'); h.textContent = T(q.en, q.ar); d.appendChild(h);
+      if (q.sec) { var dt = document.createElement('details'); dt.className = 'qsec'; dt.open = !!qOpen[q.sec[0]]; dt.ontoggle = function () { qOpen[q.sec[0]] = dt.open; }; var sm = document.createElement('summary'); sm.textContent = T(q.sec[0], q.sec[1]); dt.appendChild(sm); box.appendChild(dt); cur = dt; return; }
+      nq++;
+      var d = document.createElement('div'); d.className = 'q'; var h = document.createElement('h3'); h.textContent = nq + '. ' + T(q.en, q.ar); d.appendChild(h);
+      if (q.t) {
+        var inp = document.createElement('input'); inp.className = 'qin'; inp.maxLength = 60; inp.value = draft.ans[q.k] || ''; inp.dir = 'auto'; inp.placeholder = T('Type your own words (optional)', 'اكتب بكلامك (مش لازم)');
+        inp.oninput = function () { var v = inp.value.replace(/[<>]/g, ''); draft.ans[q.k] = v; inp.classList.toggle('bad', findLocal(v).length > 0); };
+        inp.classList.toggle('bad', findLocal(inp.value).length > 0);
+        d.appendChild(inp); cur.appendChild(d); return;
+      }
       var o = document.createElement('div'); o.className = 'opts';
       (q.c || q.o).forEach(function (op) {
         var b = document.createElement('button'); b.type = 'button'; var val = q.c ? op : op[0];
-        if (q.c) { var s = document.createElement('span'); s.className = 'sw'; s.style.background = op; b.appendChild(s); b.setAttribute('aria-label', op); }
+        if (q.c) { if (op === 'auto') b.textContent = T('Auto', 'تلقائي'); else { var s = document.createElement('span'); s.className = 'sw'; s.style.background = op; b.appendChild(s); b.setAttribute('aria-label', op); } }
         else b.textContent = T(op[1], op[2]);
-        b.classList.toggle('on', draft.ans[q.k] === val);
+        b.classList.toggle('on', (draft.ans[q.k] || (q.c ? q.c[0] : q.o[0][0])) === val);
         b.onclick = function () { draft.ans[q.k] = val; renderQs(); };
         o.appendChild(b);
       });
-      d.appendChild(o); box.appendChild(d);
+      d.appendChild(o); cur.appendChild(d);
     });
+    scrollTo(0, keepY);
     var r = readStory(draft.story, draft.title), pv = $('preview'); pv.innerHTML = '';
     var who = document.createElement('div'); who.className = 'chap'; who.textContent = T('Hero: ', 'البطل: ') + r.hero + ' · ' + T('Enemy: ', 'العدو: ') + r.villain; pv.appendChild(who);
     r.chapters.forEach(function (c, i) {
@@ -218,7 +286,9 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     var s = document.createElement('small'); s.textContent = (g.ans && g.ans.view === '2d' ? '2D' : '3D') + ' · V' + String(g.v || g.version || 1).padStart(2, '0') + (g.author ? ' · ' + g.author : '') + (g.plays != null ? ' · ' + T('plays ', 'مرات لعب ') + g.plays : ''); d.appendChild(s);
     var a = document.createElement('div'); a.className = 'acts2';
     var p = document.createElement('button'); p.className = 'p'; p.type = 'button'; p.textContent = T('Play', 'العب'); p.onclick = function () { play(g); if (g.remote && sb) sb.rpc('text_game_play', { p_id: g.remote }).then(function () {}, function () {}); }; a.appendChild(p);
-    if (own) {
+    if (own && g.locked) { var lk = document.createElement('small'); lk.textContent = '🔒 ' + T('By ', 'من عمل ') + (g.author || '?') + T(' — play only', ' — للعب بس'); d.appendChild(lk); }
+    if (!own) { var sv = document.createElement('button'); sv.type = 'button'; sv.textContent = T('📥 Save for offline', '📥 احفظها للأوفلاين'); sv.onclick = function () { saveMine({ id: 'g' + Date.now().toString(36), title: g.title, story: g.story, ans: g.ans || {}, author: g.author, v: g.v || 1, locked: true, saved: true }); sv.textContent = T('Saved ✓', 'اتحفظت ✓'); sv.disabled = true; }; a.appendChild(sv); }
+    if (own && !g.locked) {
       var e = document.createElement('button'); e.type = 'button'; e.textContent = T('Update', 'حدّث'); e.onclick = function () { draft = JSON.parse(JSON.stringify(g)); openWrite(); }; a.appendChild(e);
       var pub = document.createElement('button'); pub.type = 'button'; pub.textContent = g.remote ? T('Published ✓', 'منشورة ✓') : T('Publish', 'انشر'); pub.onclick = function () { publish(g, pub); }; a.appendChild(pub);
     }
@@ -271,6 +341,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   };
   function alertMsg(m) { var t = document.createElement('div'); t.className = 'note'; t.textContent = m; t.style.cssText += ';position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:50;background:#422006'; document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2200); }
   $('aMake').onclick = function () {
+    var badA = Object.keys(draft.ans).filter(function (k) { return typeof draft.ans[k] === 'string' && findLocal(draft.ans[k]).length; });
+    if (badA.length) return alertMsg(T('Remove the bad words in the boxes (red) first', 'شيل الكلام الوحش اللي في المربعات (الأحمر) الأول'));
     var r = readStory(draft.story, draft.title);
     var old = mine().find(function (x) { return x.id === draft.id; });
     draft.v = old ? (old.v || 1) + 1 : 1; draft.spec = r; draft.made = Date.now(); saveMine(draft); store.set('tt_prog_' + draft.id, 0);
@@ -606,9 +678,51 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     document.querySelectorAll('[data-en]').forEach(function (el) { el.textContent = lang === 'en' ? el.dataset.en : el.dataset.ar; });
   }
   document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); if (!$('pAsk').hidden) renderQs(); else if (!$('pHome').hidden) home(); }; });
+
+  // ---------- V04: change your game by writing what you want (works offline, no AI key needed) ----------
+  var EDITS = [
+    [/(أسرع|اسرع|faster|speed up)/i, 'x_speed', 'fast'], [/(أبطأ|ابطأ|أبطء|slower)/i, 'x_speed', 'slow'],
+    [/(ينط|نطة|jump).*(أعلى|اعلى|عالي|higher|high)/i, 'x_jump', 'high'], [/(قمر|moon)/i, 'x_jump', 'moon'],
+    [/(أعداء|اعداء|enemies).*(أكتر|اكتر|كتير|more|many)|(زود|زوّد|more).*(أعداء|اعداء|enemies)/i, 'x_foes', 'many'], [/(أعداء|اعداء|enemies).*(أقل|اقل|less|fewer)|(قلل|قلّل|fewer).*(أعداء|اعداء|enemies)/i, 'x_foes', 'few'],
+    [/(جيش|swarm)/i, 'x_foes', 'swarm'], [/(أعداء|اعداء|enemies).*(أسرع|اسرع|faster)/i, 'x_fspeed', 'fast'], [/(أعداء|اعداء|enemies).*(أبطأ|ابطأ|slower)/i, 'x_fspeed', 'slow'],
+    [/(زعيم|boss).*(أقوى|اقوى|stronger|tough)/i, 'x_bhp', 'tough'], [/(زعيم|boss).*(أضعف|اضعف|weaker|weak)/i, 'x_bhp', 'weak'], [/(زعيم|boss).*(ضخم|أكبر|اكبر|huge|bigger)/i, 'x_bsize', 'huge'],
+    [/(سهل|سهلة|easier|easy)/i, 'level', '1'], [/(صعب|صعبة|harder|hard)/i, 'level', '3'],
+    [/(مطر|rain)/i, 'weather', 'rain'], [/(تلج|ثلج|snow)/i, 'weather', 'snow'], [/(صافي|من غير مطر|no rain|clear)/i, 'weather', 'clear'],
+    [/(ليل|night)/i, 'time', 'night'], [/(نهار|صبح|day|morning)/i, 'time', 'day'], [/(غروب|sunset)/i, 'time', 'sunset'],
+    [/(ضباب|fog)/i, 'x_fog', 'thick'], [/(من عينيه|من عيني|first person|1st)/i, 'cam', '1st'], [/(شخص تالت|third person|3rd)/i, 'cam', '3rd'],
+    [/(متاهة|متاهه|maze)/i, 'map', 'maze'], [/(جزيرة|جزيره|island)/i, 'map', 'island'], [/(مدينة|مدينه|city)/i, 'map', 'city'], [/(منصات|platform)/i, 'map', 'levels'], [/(ساحة|ساحه|arena)/i, 'map', 'arena'],
+    [/(قلوب أكتر|قلوب اكتر|more hearts)/i, 'x_hp', '8'], [/(تاج|crown)/i, 'x_hat', 'crown'], [/(خوذة|خوذه|helmet)/i, 'x_hat', 'helmet'], [/(كاب|cap)/i, 'x_hat', 'cap'],
+    [/(كلب|dog)/i, 'x_pet', 'dog'], [/(قطة|قطه|cat)/i, 'x_pet', 'cat'], [/(داينو|dino)/i, 'x_pet', 'dinopet'], [/(لمعة|sparkle)/i, 'x_trail', 'yes'],
+    [/(بيضرب نار|يضرب نار|shoot|مسدس|قوس|ليزر)/i, 'attack', 'shoot'], [/(سيف|sword)/i, 'attack', 'sword'], [/(نطة مزدوجة|double jump)/i, 'djump', 'yes'],
+    [/(كبير|أكبر|اكبر|bigger)/i, 'x_size', 'l'], [/(صغير|أصغر|اصغر|smaller)/i, 'x_size', 's'], [/(من غير صوت|اقفل الصوت|mute|no sound)/i, 'x_sound', 'off'],
+    [/(روبوت|robot)/i, 'enemy', 'robot'], [/(شبح|اشباح|أشباح|ghost)/i, 'enemy', 'ghost'], [/(تنين|dragon)/i, 'enemy', 'dragon']
+  ];
+  function applyEdit(txt) {
+    var done = [];
+    var nm = txt.match(/(?:اسم البطل|البطل اسمه|hero(?:'s)? name(?: is)?)\s*[:=]?\s*([^\s,.،]{2,16})/i); if (nm) { draft.ans.n_hero = nm[1]; done.push(T('Hero name', 'اسم البطل') + ': ' + nm[1]); }
+    var nb = txt.match(/(?:اسم الزعيم|الزعيم اسمه|boss(?:'s)? name(?: is)?)\s*[:=]?\s*([^\s,.،]{2,16})/i); if (nb) { draft.ans.n_boss = nb[1]; done.push(T('Boss name', 'اسم الزعيم') + ': ' + nb[1]); }
+    var cw = txt.match(/(?:لون البطل|hero colou?r)\s*[:=]?\s*([^\s,.،]{2,12})/i); if (cw) { draft.ans.w_color1 = cw[1]; done.push(T('Hero colour', 'لون البطل') + ': ' + cw[1]); }
+    var pl = txt.match(/(?:الفصل|chapter)\s*(\d)\s*(?:في|فى|in|at)\s+([^,.،]{2,30})/i); if (pl) { draft.ans['w_place' + pl[1]] = pl[2]; done.push(T('Chapter ', 'الفصل ') + pl[1] + ': ' + pl[2]); }
+    txt.split(/[،,.;\n]|\s+و(?=\S)/).forEach(function (cl) { var aboutFoe = /(أعداء|اعداء|العدو|enemies|enemy|زعيم|boss)/i.test(cl);
+    EDITS.forEach(function (e) { if (aboutFoe && /^(x_speed|x_size|x_hat|x_jump)$/.test(e[1])) return; if (e[0].test(cl) && draft.ans[e[1]] !== e[2]) { draft.ans[e[1]] = e[2]; var q = Q.find(function (x) { return x.k === e[1]; }); var op = q && q.o && q.o.find(function (o) { return o[0] === e[2]; }); done.push((q ? T(q.en, q.ar) : e[1]) + ': ' + (op ? T(op[1], op[2]) : e[2])); } }); });
+    if (!done.length && txt.trim().length > 3) { draft.ans.w_extra3 = txt.trim().slice(0, 60); done.push(T('Added to the world: ', 'اتضاف للعالم: ') + draft.ans.w_extra3); }
+    return done;
+  }
+  (function () {
+    var qs = $('qs'); if (!qs) return;
+    var w = document.createElement('div'); w.className = 'q editbox';
+    w.innerHTML = '<h3></h3><div class="row" style="gap:8px;display:flex"><input class="qin" maxlength="200"><button type="button" class="big" style="flex:none"></button></div><small class="done" style="display:block;margin-top:6px;opacity:.85;white-space:pre-line"></small>';
+    w.querySelector('h3').textContent = T('✍️ Write what you want to change (e.g. "make the enemies faster, night, hero name Ali")', '✍️ اكتب عايز تغيّر إيه (مثلًا: «خلي الأعداء أسرع، وخليها ليل، واسم البطل علي»)');
+    var inp = w.querySelector('input'), bt = w.querySelector('button'), out = w.querySelector('.done');
+    inp.placeholder = T('Your change…', 'التعديل بتاعك…'); bt.textContent = T('Change', 'غيّر');
+    bt.onclick = function () { var v = inp.value.replace(/[<>]/g, ''); if (!v.trim()) return; if (findLocal(v).length) return alertMsg(T('Remove the bad words first', 'شيل الكلام الوحش الأول')); var d = applyEdit(v); renderQs(); out.textContent = d.length ? '✅ ' + d.join('\n✅ ') : T('I did not understand — try other words.', 'ما فهمتش — جرّب كلام تاني.'); inp.value = ''; };
+    qs.parentNode.insertBefore(w, qs);
+  })();
   // ---------- V03: every game can live on its own (own page / downloaded file) and games can be uploaded back ----------
-  function packGame(g) { var o = { t: 'thetext', v: 1, title: g.title, story: g.story, ans: g.ans, author: g.author || '' }; return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
-  function unpack(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var o = JSON.parse(decodeURIComponent(escape(atob(s)))); if (o && o.t === 'thetext' && o.story) return o; } catch (e) {} return null; }
+  function seal(o) { var t = JSON.stringify([o.title, o.story, o.ans, o.author]) + '|DINOSPEAR-THETEXT-V1', h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+  function me() { var a = author(); try { var k = Object.keys(localStorage).find(function (x) { return /^sb-.*-auth-token$/.test(x); }); var j = k && JSON.parse(localStorage.getItem(k)); a = a || (j && j.user && j.user.user_metadata && j.user.user_metadata.username) || ''; } catch (e) {} return a; }
+  function packGame(g) { var o = { t: 'thetext', v: 1, title: g.title, story: g.story, ans: g.ans, author: g.author || me() || '' }; o.sig = seal(o); return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function unpack(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var o = JSON.parse(decodeURIComponent(escape(atob(s)))); if (o && o.t === 'thetext' && o.story && o.sig === seal(o)) return o; } catch (e) {} return null; }
   function soloUrl(g) { return location.href.split('#')[0].split('?')[0] + '#g=' + packGame(g); }
   function downloadGame(g) {
     var u = soloUrl(g), name = String(g.title || 'game').replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 40) || 'game';
@@ -619,9 +733,8 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     var f = document.createElement('input'); f.type = 'file'; f.accept = '.html,.htm,.json,.txt';
     f.onchange = function () { var file = f.files[0]; if (!file) return; file.text().then(function (t) {
       var m = t.match(/name="thetext" content="([\w-]+)"/) || t.match(/#g=([\w-]+)/), o = m ? unpack(m[1]) : null;
-      if (!o) { try { var j = JSON.parse(t); if (j.story) o = j; } catch (e) {} }
-      if (!o) return alertMsg(T('This file is not a THE TEXT game.', 'الملف ده مش لعبة من THE TEXT.'));
-      var g = { id: 'g' + Date.now().toString(36), title: o.title, story: o.story, ans: o.ans || {}, author: o.author, v: 1 }; saveMine(g); home();
+      if (!o) return alertMsg(T('This file is not a THE TEXT game, or someone changed it — changed files do not open.', 'الملف ده مش لعبة من THE TEXT، أو حد عدّل فيه — الملفات المتعدّلة ما بتفتحش.'));
+      var g = { id: 'g' + Date.now().toString(36), title: o.title, story: o.story, ans: o.ans || {}, author: o.author, v: 1, locked: !!o.author && o.author !== me(), saved: true }; saveMine(g); home();
     }); };
     f.click();
   }
@@ -645,6 +758,6 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   window.DS_GAME = { name: 'THE TEXT', cmds: [['skip', 'Finish this chapter', 'خلّص الفصل ده'], ['clear', 'Remove all enemies', 'شيل كل الأعداء']], run: function (c) { if (!G || !G.L) return; if (c === 'skip') chapterDone(); if (c === 'clear') G.L.enemies.forEach(function (e) { e.alive = false; }); } };
 })();
 </script>
-<script src="../assets/js/game_admin.js?v=V43" defer></script>
+<script src="../assets/js/game_admin.js?v=V44" defer></script>
 </body>
 </html>

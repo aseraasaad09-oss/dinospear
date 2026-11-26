@@ -1,12 +1,16 @@
 {
-  "v": "V43",
+  "v": "V44",
   "date": "2026-11-26",
   "ar": [
-    "ASER WORLD أونلاين: زرار «👥 أونلاين» فيه كل اللي موجودين دلوقتي بأسامي حساباتهم ومن أي جهاز (آيفون، أندرويد، كمبيوتر، البرنامج أو الموقع)، و«📍 روح له» تروح جنب صاحبك على طول",
-    "شات جوه ASER WORLD: الكلام بيظهر في الشات وفوق راس اللاعب"
+    "THE TEXT: 100 سؤال (50 اختيار + 50 تكتبهم بكلامك) في مجموعات — كل إجابة بتغيّر حاجة في اللعبة (السرعة، النطة، القلوب، الأعداء، الزعيم، الجاذبية، الضباب، السما، الكاميرا، الأسامي، الجمل، مكان كل فصل…)",
+    "THE TEXT: «✍️ اكتب عايز تغيّر إيه» — تكتب مثلًا «خلي الأعداء أسرع وخليها ليل» واللعبة تتعدّل وتعمل تحديث",
+    "THE TEXT: الألعاب المحفوظة بتشتغل من غير نت وبتظهر في صفحة الأوفلاين، و«📥 احفظها» لألعاب الناس",
+    "الملفات المتنزّلة مقفولة: لو حد عدّل فيها ما بتفتحش، ولعبة حد تاني تلعبها بس ما تعدّلهاش"
   ],
   "en": [
-    "ASER WORLD online: «👥 online» shows everyone there now with their account names and device (iPhone, Android, PC, the app or the site), and «📍 Go to» puts you next to your friend",
-    "Chat inside ASER WORLD: messages show in the chat and above the player's head"
+    "THE TEXT: 100 questions (50 choices + 50 in your own words) in groups — every answer changes something (speed, jump, hearts, enemies, boss, gravity, fog, sky, camera, names, lines, the place of each chapter…)",
+    "THE TEXT: «✍️ Write what you want to change» — e.g. «make the enemies faster and night» and the game updates",
+    "THE TEXT: saved games play without internet and show on the offline page, «📥 Save» for other people's games",
+    "Downloaded files are sealed: an edited file will not open, and someone else's game is play-only"
   ]
 }

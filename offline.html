@@ -79,6 +79,8 @@ footer{color:var(--mute);font-size:13px;text-align:center;padding:20px}
  <h2 id="games" data-ar="ألعاب بتشتغل من غير نت" data-en="Games that work without internet"></h2>
  <div class="grid" id="offGames"></div>
 
+ <h2 data-ar="ألعاب THE TEXT اللي على الجهاز ده" data-en="THE TEXT games on this device"></h2>
+ <div class="grid" id="ttOff"></div>
  <h2 data-ar="تقدمك المحفوظ على الجهاز ده" data-en="Your progress saved on this device"></h2>
  <div class="saved" id="saved"></div>
 
@@ -144,6 +146,22 @@ footer{color:var(--mute);font-size:13px;text-align:center;padding:20px}
   document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} render(); }; });
   addEventListener('online', net); addEventListener('offline', net);
   render();
+})();
+</script>
+<script>
+// V02: THE TEXT games you made, downloaded or saved — they play here without internet
+(function () {
+  var box = document.getElementById('ttOff'); if (!box) return;
+  var en = false; try { en = localStorage.getItem('aser_lang') === 'en'; } catch (e) {}
+  var list = []; try { list = JSON.parse(localStorage.getItem('tt_games') || '[]'); } catch (e) {}
+  function pack(g) { var o = { t: 'thetext', v: 1, title: g.title, story: g.story, ans: g.ans, author: g.author || '' }; var t = JSON.stringify([o.title, o.story, o.ans, o.author]) + '|DINOSPEAR-THETEXT-V1', h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } o.sig = (h >>> 0).toString(36); return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  if (!list.length) { var p = document.createElement('p'); p.textContent = en ? 'No THE TEXT games yet — make one or save one.' : 'لسه مفيش ألعاب THE TEXT — اعمل واحدة أو احفظ واحدة.'; box.appendChild(p); return; }
+  list.forEach(function (g) {
+    var a = document.createElement('a'); a.className = 'ttc'; a.style.cssText = 'display:grid;gap:4px;padding:16px;border-radius:18px;background:linear-gradient(135deg,#a855f7,#1e1b4b);color:#fff;text-decoration:none;font-weight:800'; a.href = 'games/text.html#g=' + pack(g);
+    var b = document.createElement('b'); b.textContent = '📝 ' + g.title; a.appendChild(b);
+    var sm = document.createElement('small'); sm.textContent = (g.author ? g.author + ' · ' : '') + (en ? 'Play offline' : 'العبها من غير نت'); a.appendChild(sm);
+    box.appendChild(a);
+  });
 })();
 </script>
 </body>
