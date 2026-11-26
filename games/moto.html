@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>MOTOR BIKE — DINOSPEAR V01</title>
+<link rel="stylesheet" href="ui.css">
+<script src="../assets/js/rotate.js" defer></script>
+<style>
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block}
+.pad{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));display:flex;gap:12px;z-index:6}
+.pad.l{left:max(16px,env(safe-area-inset-left))}.pad.r{right:max(16px,env(safe-area-inset-right))}
+.pb{width:84px;height:84px;border-radius:22px;border:0;color:#fff;font-weight:900;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 6px 18px rgba(0,0,0,.35);touch-action:none}
+.pb svg{width:30px;height:30px}
+.pb.gas{background:rgba(34,197,94,.9)}.pb.brk{background:rgba(239,68,68,.9)}.pb.ln{background:rgba(59,130,246,.85);width:70px;height:70px}
+.pb.on{transform:scale(.93);filter:brightness(1.2)}
+@media (pointer:fine){.pad{display:none}}
+body.playing .lang{display:none}
+#hudM{position:fixed;top:max(10px,env(safe-area-inset-top));inset-inline:10px;display:flex;gap:8px;flex-wrap:wrap;z-index:6}
+#hudM[hidden],.pad[hidden]{display:none}
+.lv button small{display:block;opacity:.8;font-weight:600}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="hudM" hidden>
+ <button class="chip btn" id="bBack" type="button" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+ <button class="chip btn" id="bRestart" type="button" aria-label="Restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5"/></svg></button>
+ <div class="chip" id="hLvl"></div><div class="chip" id="hTime">0.0</div><div class="chip" id="hFlip"></div><div class="chip" id="hProg"></div>
+</div>
+<div class="toast" id="toast" style="position:fixed;z-index:7"></div>
+<div class="pad l" id="padL" hidden>
+ <button class="pb brk" id="kBrake" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg><span data-en="Brake" data-ar="فرامل"></span></button>
+ <button class="pb ln" id="kBack" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 0-3 6.2M20 20v-5h-5" transform="scale(-1 1) translate(-24 0)"/></svg><span data-en="Lean" data-ar="ميّل"></span></button>
+</div>
+<div class="pad r" id="padR" hidden>
+ <button class="pb ln" id="kFwd" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 0-3 6.2M20 20v-5h-5"/></svg><span data-en="Lean" data-ar="ميّل"></span></button>
+ <button class="pb gas" id="kGas" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg><span data-en="Gas" data-ar="بنزين"></span></button>
+</div>
+<div class="keys" id="keysHint" hidden data-en="Gas: → / D · Brake: ← / A · Lean back: W / ↑ · Lean forward: S / ↓ · Restart: R" data-ar="بنزين: → أو D · فرامل: ← أو A · ميّل لورا: W أو ↑ · ميّل لقدّام: S أو ↓ · من الأول: R" style="position:fixed;z-index:6"></div>
+
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+<div class="screen" id="menu" style="--c1:#9a3412">
+ <div class="card">
+  <h1>MOTOR BIKE</h1>
+  <p data-en="Ride over hills and ramps, do flips in the air, and reach the flag as fast as you can. Don't land on your head!" data-ar="اطلع على التلال والمطبات، اعمل شقلبات في الهوا، واوصل للعلم بأسرع وقت. وماتقعش على راسك!"></p>
+  <div class="lv" id="levels"></div>
+  <div class="row"><a class="big sec" href="../demo/index.html" style="text-decoration:none;display:inline-block" data-en="All games" data-ar="كل الألعاب"></a></div>
+ </div>
+</div>
+<div class="screen" id="end" hidden style="--c1:#1e3a8a">
+ <div class="card"><h1 id="eTitle"></h1><p id="eText"></p>
+  <div class="row"><button class="big" id="eNext" type="button"></button><button class="big sec" id="eAgain" type="button" data-en="Try again" data-ar="جرّب تاني"></button><button class="big sec" id="eMenu" type="button" data-en="Levels" data-ar="المراحل"></button></div></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // ---------- language & storage ----------
+  var lang = 'ar'; try { lang = localStorage.getItem('aser_lang') === 'en' ? 'en' : 'ar'; } catch (e) {}
+  var T = function (en, ar) { return lang === 'en' ? en : ar; };
+  function setLang(l) { lang = l; try { localStorage.setItem('aser_lang', l); } catch (e) {} document.documentElement.lang = l; document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr'; document.querySelectorAll('[data-en]').forEach(function (el) { el.textContent = l === 'en' ? el.dataset.en : el.dataset.ar; }); }
+  var store = { get: function (k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  var $ = function (id) { return document.getElementById(id); };
+  var cv = $('cv'), cx = cv.getContext('2d');
+  function fit() { var r = Math.min(devicePixelRatio || 1, 2); cv.width = innerWidth * r; cv.height = innerHeight * r; cx.setTransform(r, 0, 0, r, 0, 0); }
+  addEventListener('resize', fit); fit();
+
+  // ---------- levels: the ground is a height line made of pieces ----------
+  var LEVELS = [
+    { en: 'Desert start', ar: 'بداية الصحرا', sky: ['#fde68a', '#fb923c'], ground: '#c2410c', top: '#fbbf24', len: 260, hard: 0, seed: 3 },
+    { en: 'Green hills', ar: 'التلال الخضرا', sky: ['#bae6fd', '#60a5fa'], ground: '#166534', top: '#4ade80', len: 320, hard: 1, seed: 11 },
+    { en: 'Big ramps', ar: 'المطبات الكبيرة', sky: ['#fecdd3', '#f472b6'], ground: '#831843', top: '#f9a8d4', len: 360, hard: 2, seed: 19 },
+    { en: 'Snow mountain', ar: 'جبل التلج', sky: ['#e0f2fe', '#94a3b8'], ground: '#475569', top: '#f8fafc', len: 400, hard: 3, seed: 27 },
+    { en: 'Night city', ar: 'المدينة بالليل', sky: ['#1e1b4b', '#020617'], ground: '#1f2937', top: '#a78bfa', len: 440, hard: 4, seed: 35 },
+    { en: 'Mars canyon', ar: 'وادي المريخ', sky: ['#7c2d12', '#1c0a04'], ground: '#7c2d12', top: '#fb923c', len: 480, hard: 5, seed: 43 },
+    { en: 'Crazy jumps', ar: 'النطّات المجنونة', sky: ['#a7f3d0', '#0d9488'], ground: '#134e4a', top: '#2dd4bf', len: 520, hard: 6, seed: 51 },
+    { en: 'Final mountain', ar: 'الجبل الأخير', sky: ['#fde047', '#dc2626'], ground: '#450a0a', top: '#fca5a5', len: 600, hard: 7, seed: 59 }
+  ];
+  var seed = 1; function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+  var H = [], STEP = 0.5, LV = null, lvI = 0;
+  function build(i) {
+    LV = LEVELS[i]; lvI = i; seed = LV.seed; H = [];
+    var x = 0, y = 0;
+    function add(fn, len) { var n = Math.round(len / STEP); for (var k = 0; k < n; k++) { y = fn(k / n, y); H.push(y); } }
+    add(function () { return 0; }, 18); // flat start
+    while (H.length * STEP < LV.len - 20) {
+      var t = rnd(), d = LV.hard;
+      if (t < 0.25) { var a = 1 + rnd() * (1.5 + d * 0.5), w = 10 + rnd() * 12, base = y; add(function (u) { return base + Math.sin(u * Math.PI) * a; }, w); }
+      else if (t < 0.45) { var hgt = 1.2 + rnd() * (1 + d * 0.45), b2 = y; add(function (u) { return b2 + u * hgt; }, 5 + rnd() * 4); add(function () { return b2 + hgt; }, 1.5); add(function (u) { return b2 + hgt * (1 - u) ; }, 2 + Math.max(0, 6 - d)); }
+      else if (t < 0.6) { var b3 = y; add(function (u) { return b3 + Math.abs(Math.sin(u * Math.PI * 6)) * (0.25 + d * 0.06); }, 10); }
+      else if (t < 0.78) { var drop = (rnd() - 0.4) * (4 + d), b4 = y; add(function (u) { return b4 + drop * (1 - Math.cos(u * Math.PI)) / 2; }, 12 + rnd() * 10); }
+      else { var b5 = y, up = 0.6 + rnd() * 0.5; for (var s = 0; s < 3 + (d >> 1); s++) { var lv5 = b5 + (s + 1) * up; add(function (u) { return lv5 - up + Math.min(1, u * 2) * up; }, 3); } }
+      add(function () { return y; }, 4);
+    }
+    add(function () { return y; }, 24); // flat finish
+    LV.finish = (H.length - 30) * STEP;
+  }
+  function gy(x) { var i = x / STEP, a = Math.floor(i); if (a < 0) return H[0] || 0; if (a >= H.length - 1) return H[H.length - 1]; var f = i - a; return H[a] * (1 - f) + H[a + 1] * f; }
+  function slope(x) { return (gy(x + 0.15) - gy(x - 0.15)) / 0.3; }
+
+  // ---------- bike physics (verlet points + springs) ----------
+  var WR = 0.42, G = -22, bike, stats;
+  function P(x, y) { return { x: x, y: y, px: x, py: y, c: false }; }
+  function reset() {
+    var y0 = gy(3) + WR + 0.05;
+    bike = { r: P(2.2, y0), f: P(3.8, y0), b: P(3.0, y0 + 0.95), spinR: 0, spinF: 0, dead: false, done: false };
+    stats = { t: 0, flips: 0, air: 0, ang: 0, wheelie: 0, best: 0, started: false };
+    particles = [];
+  }
+  var cons = [['r', 'f', 1.6, 1], ['r', 'b', 1.25, 0.45], ['f', 'b', 1.25, 0.45]];
+  function solve() {
+    cons.forEach(function (c) {
+      var a = bike[c[0]], b = bike[c[1]], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1e-6, k = (d - c[2]) / d * 0.5 * c[3];
+      a.x += dx * k; a.y += dy * k; b.x -= dx * k; b.y -= dy * k;
+    });
+  }
+  function ground(p, r, brake) {
+    var g = gy(p.x), s = slope(p.x), nl = Math.hypot(-s, 1), nx = -s / nl, ny = 1 / nl;
+    var dist = (p.y - g) * ny; p.c = false;
+    if (dist < r) {
+      p.c = true; var push = r - dist; p.x += nx * push; p.y += ny * push;
+      var vx = p.x - p.px, vy = p.y - p.py, vn = vx * nx + vy * ny, tx = ny, ty = -nx, vt = vx * tx + vy * ty;
+      if (vn < 0) vn = -vn * 0.15;
+      vt *= brake ? 0.86 : 0.999;
+      p.px = p.x - (tx * vt + nx * vn); p.py = p.y - (ty * vt + ny * vn);
+    }
+  }
+  var keys = {}, btn = {};
+  addEventListener('keydown', function (e) { keys[e.code] = true; if (/Arrow|Space/.test(e.code)) e.preventDefault(); if (e.code === 'KeyR' && state === 'play') start(lvI); if (e.code === 'Escape' && state === 'play') menu(); });
+  addEventListener('keyup', function (e) { keys[e.code] = false; });
+  [['kGas', 'gas'], ['kBrake', 'brake'], ['kBack', 'back'], ['kFwd', 'fwd']].forEach(function (p) {
+    var b = $(p[0]); var on = function (e) { e.preventDefault(); btn[p[1]] = true; b.classList.add('on'); audio(); }, off = function () { btn[p[1]] = false; b.classList.remove('on'); };
+    b.addEventListener('pointerdown', on); b.addEventListener('pointerup', off); b.addEventListener('pointercancel', off); b.addEventListener('pointerleave', off);
+  });
+  function ctl() { return { gas: keys.ArrowRight || keys.KeyD || btn.gas, brake: keys.ArrowLeft || keys.KeyA || btn.brake, back: keys.ArrowUp || keys.KeyW || btn.back, fwd: keys.ArrowDown || keys.KeyS || btn.fwd }; }
+
+  var particles = [];
+  function physics(dt) {
+    var c = ctl(), b = bike;
+    if (c.gas || c.brake) stats.started = true;
+    ['r', 'f', 'b'].forEach(function (k) {
+      var p = b[k], vx = (p.x - p.px) * 0.9995, vy = (p.y - p.py) * 0.9995;
+      p.px = p.x; p.py = p.y; p.x += vx; p.y += vy + G * dt * dt;
+    });
+    var dx = b.f.x - b.r.x, dy = b.f.y - b.r.y, dl = Math.hypot(dx, dy), ux = dx / dl, uy = dy / dl, nx = -uy, ny = ux;
+    var air = !b.r.c && !b.f.c;
+    if (!b.dead) {
+      if (c.gas && b.r.c && (b.r.x - b.r.px) / dt < 19) { var s = slope(b.r.x), tl = Math.hypot(1, s), acc = 34 * dt * dt; b.r.x += acc / tl; b.r.y += acc * s / tl; }
+      if (c.gas && air) { b.r.x += 4 * dt * dt * ux; }
+      var lean = (c.back ? 1 : 0) - (c.fwd ? 1 : 0); if (!lean && c.gas && !air) lean = 0.25;
+      if (lean) { var L = (air ? 26 : 14) * dt * dt * lean; b.f.x += nx * L; b.f.y += ny * L; b.r.x -= nx * L; b.r.y -= ny * L; }
+    }
+    for (var it = 0; it < 4; it++) { solve(); ground(b.r, WR, c.brake && !b.dead); ground(b.f, WR, c.brake && !b.dead); ground(b.b, 0.25, false); }
+    var sp = b.r.x - b.r.px; b.spinR -= sp / WR; b.spinF -= (b.f.x - b.f.px) / WR;
+    // flips: add up how much the bike turned while in the air
+    var ang = Math.atan2(dy, dx);
+    if (air) { var da = ang - stats.ang; if (da > Math.PI) da -= Math.PI * 2; if (da < -Math.PI) da += Math.PI * 2; stats.air += da; }
+    else { if (Math.abs(stats.air) > Math.PI * 1.75 && !b.dead) { var n = Math.round(Math.abs(stats.air) / (Math.PI * 2)) || 1; stats.flips += n; stats.t = Math.max(0, stats.t - n); toast((stats.air > 0 ? T('Back flip', 'شقلبة لورا') : T('Front flip', 'شقلبة لقدّام')) + (n > 1 ? ' x' + n : '') + '! −' + n + 's', 1200); beep(880, 0.1); beep(1320, 0.15); } stats.air = 0; }
+    stats.ang = ang;
+    // wheelie: only the back wheel on the ground while moving
+    if (b.r.c && !b.f.c && sp > 0.05 && !b.dead) { stats.wheelie += dt; if (stats.wheelie > stats.best) stats.best = stats.wheelie; } else stats.wheelie = 0;
+    // crash: head touches the ground
+    var hx = b.b.x + nx * 0.62, hy = b.b.y + ny * 0.62;
+    if (!b.dead && (hy - 0.2 < gy(hx) || (b.b.c && ny < 0.2))) { b.dead = true; b.deadT = 0; beep(120, 0.4, 'sawtooth'); for (var q = 0; q < 26; q++) particles.push({ x: hx, y: hy, vx: (Math.random() - 0.5) * 8, vy: Math.random() * 7, t: 0, c: '#facc15' }); }
+    if (b.r.c && c.gas && Math.random() < 0.6) particles.push({ x: b.r.x - 0.3, y: b.r.y - WR + 0.05, vx: -1 - Math.random() * 2, vy: Math.random() * 1.5, t: 0, c: LV.top });
+    particles.forEach(function (p) { p.t += dt; p.vy += G * 0.25 * dt; p.x += p.vx * dt; p.y += p.vy * dt; });
+    particles = particles.filter(function (p) { return p.t < 0.8; });
+    if (!b.dead && b.r.x > LV.finish) finish();
+    engine(c.gas && !b.dead ? 1 : 0, Math.abs(sp) / dt);
+  }
+
+  // ---------- drawing ----------
+  var cam = { x: 0, y: 0 };
+  function draw() {
+    var W = innerWidth, Hh = innerHeight, S = Math.min(W, Hh * 1.6) / 15;
+    if (W < Hh) S = W / 9.5;
+    var bx = bike.b.x, by = bike.b.y;
+    cam.x += (bx + 3 - cam.x) * 0.12; cam.y += (by - cam.y) * 0.1;
+    var g = cx.createLinearGradient(0, 0, 0, Hh); g.addColorStop(0, LV.sky[0]); g.addColorStop(1, LV.sky[1]); cx.fillStyle = g; cx.fillRect(0, 0, W, Hh);
+    // far mountains (slow) and near hills (faster) for depth
+    [[0.15, 'rgba(0,0,0,.12)', 4, 0.05], [0.35, 'rgba(0,0,0,.18)', 2.2, 0.11]].forEach(function (L) {
+      cx.fillStyle = L[1]; cx.beginPath(); cx.moveTo(0, Hh);
+      for (var sx = 0; sx <= W + 20; sx += 20) { var wx = sx / S + cam.x * L[0]; cx.lineTo(sx, Hh * 0.62 - (Math.sin(wx * L[3]) * 0.5 + Math.sin(wx * L[3] * 2.7) * 0.3 + 1) * L[2] * S * 0.5); }
+      cx.lineTo(W, Hh); cx.fill();
+    });
+    var X = function (x) { return W * 0.42 + (x - cam.x) * S; }, Y = function (y) { return Hh * 0.6 - (y - cam.y) * S; };
+    // ground
+    var x0 = cam.x - W * 0.42 / S - 1, x1 = cam.x + W * 0.6 / S + 1;
+    cx.beginPath(); cx.moveTo(X(x0), Hh + 10);
+    for (var x = x0; x <= x1; x += 0.25) cx.lineTo(X(x), Y(gy(x)));
+    cx.lineTo(X(x1), Hh + 10); cx.closePath(); cx.fillStyle = LV.ground; cx.fill();
+    cx.beginPath(); for (x = x0; x <= x1; x += 0.25) { if (x === x0) cx.moveTo(X(x), Y(gy(x))); else cx.lineTo(X(x), Y(gy(x))); }
+    cx.lineWidth = Math.max(4, S * 0.18); cx.strokeStyle = LV.top; cx.lineJoin = 'round'; cx.stroke();
+    // finish flag
+    var fx = X(LV.finish), fy = Y(gy(LV.finish));
+    cx.fillStyle = '#fff'; cx.fillRect(fx - 2, fy - S * 3, 4, S * 3);
+    for (var r = 0; r < 3; r++) for (var q = 0; q < 4; q++) { cx.fillStyle = (r + q) % 2 ? '#111' : '#fff'; cx.fillRect(fx + 2 + q * S * 0.3, fy - S * 3 + r * S * 0.3, S * 0.3, S * 0.3); }
+    // particles
+    particles.forEach(function (p) { cx.globalAlpha = 1 - p.t / 0.8; cx.fillStyle = p.c; cx.beginPath(); cx.arc(X(p.x), Y(p.y), S * 0.08, 0, 7); cx.fill(); }); cx.globalAlpha = 1;
+    // bike
+    var b = bike, dx = b.f.x - b.r.x, dy = b.f.y - b.r.y, a = Math.atan2(dy, dx);
+    function wheel(p, spin) {
+      cx.save(); cx.translate(X(p.x), Y(p.y)); cx.rotate(-spin);
+      cx.fillStyle = '#111827'; cx.beginPath(); cx.arc(0, 0, WR * S, 0, 7); cx.fill();
+      cx.fillStyle = '#9ca3af'; cx.beginPath(); cx.arc(0, 0, WR * S * 0.62, 0, 7); cx.fill();
+      cx.strokeStyle = '#374151'; cx.lineWidth = 2; for (var k = 0; k < 6; k++) { cx.beginPath(); cx.moveTo(0, 0); cx.lineTo(Math.cos(k) * WR * S * 0.6, Math.sin(k) * WR * S * 0.6); cx.stroke(); }
+      cx.fillStyle = '#ef4444'; cx.beginPath(); cx.arc(0, 0, WR * S * 0.15, 0, 7); cx.fill(); cx.restore();
+    }
+    wheel(b.r, b.spinR); wheel(b.f, b.spinF);
+    cx.save(); cx.translate(X((b.r.x + b.f.x) / 2), Y((b.r.y + b.f.y) / 2)); cx.rotate(-a);
+    cx.lineCap = 'round'; cx.lineWidth = S * 0.14; cx.strokeStyle = '#334155';
+    cx.beginPath(); cx.moveTo(-0.8 * S, 0); cx.lineTo(-0.15 * S, -0.55 * S); cx.lineTo(0.55 * S, -0.6 * S); cx.lineTo(0.8 * S, 0); cx.stroke();
+    cx.fillStyle = '#f97316'; cx.beginPath(); cx.moveTo(-0.55 * S, -0.5 * S); cx.quadraticCurveTo(0, -0.95 * S, 0.6 * S, -0.62 * S); cx.lineTo(0.3 * S, -0.42 * S); cx.lineTo(-0.4 * S, -0.38 * S); cx.closePath(); cx.fill();
+    cx.fillStyle = '#e5e7eb'; cx.fillRect(-0.15 * S, -0.42 * S, 0.45 * S, 0.22 * S);
+    if (!b.dead) { // rider
+      cx.strokeStyle = '#1d4ed8'; cx.lineWidth = S * 0.16; cx.beginPath(); cx.moveTo(-0.1 * S, -0.75 * S); cx.lineTo(0.15 * S, -1.25 * S); cx.stroke();
+      cx.strokeStyle = '#1e3a8a'; cx.lineWidth = S * 0.13; cx.beginPath(); cx.moveTo(-0.1 * S, -0.75 * S); cx.lineTo(0.2 * S, -0.45 * S); cx.lineTo(0.15 * S, -0.15 * S); cx.stroke();
+      cx.strokeStyle = '#1d4ed8'; cx.lineWidth = S * 0.1; cx.beginPath(); cx.moveTo(0.12 * S, -1.15 * S); cx.lineTo(0.5 * S, -0.75 * S); cx.stroke();
+      cx.fillStyle = '#facc15'; cx.beginPath(); cx.arc(0.2 * S, -1.45 * S, S * 0.24, 0, 7); cx.fill();
+      cx.fillStyle = '#0f172a'; cx.fillRect(0.24 * S, -1.52 * S, S * 0.2, S * 0.1);
+    }
+    cx.restore();
+    if (b.dead) { // rider tumbling
+      var t = b.deadT; cx.save(); cx.translate(X(b.b.x + t * 1.5), Y(b.b.y + 0.6 + t * 2 - t * t * 6)); cx.rotate(t * 8);
+      cx.fillStyle = '#1d4ed8'; cx.fillRect(-S * 0.12, -S * 0.3, S * 0.24, S * 0.6); cx.fillStyle = '#facc15'; cx.beginPath(); cx.arc(0, -S * 0.45, S * 0.22, 0, 7); cx.fill(); cx.restore();
+    }
+  }
+
+  // ---------- sound ----------
+  var ac = null, osc = null, gain = null;
+  function audio() { if (ac) return; try { ac = new (window.AudioContext || window.webkitAudioContext)(); osc = ac.createOscillator(); gain = ac.createGain(); osc.type = 'sawtooth'; osc.frequency.value = 60; gain.gain.value = 0; osc.connect(gain); gain.connect(ac.destination); osc.start(); } catch (e) {} }
+  function engine(on, sp) { if (!ac) return; osc.frequency.value = 55 + Math.min(140, sp * 6) + (on ? 20 : 0); gain.gain.value = state === 'play' ? (on ? 0.035 : 0.015) : 0; }
+  function beep(f, d, type) { if (!ac) return; try { var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'triangle'; o.frequency.value = f; g.gain.value = 0.05; o.connect(g); g.connect(ac.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + d); o.stop(ac.currentTime + d); } catch (e) {} }
+  addEventListener('pointerdown', audio, { once: true }); addEventListener('keydown', audio, { once: true });
+
+  // ---------- screens ----------
+  var state = 'menu';
+  function toast(m, ms) { var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { t.classList.remove('on'); }, ms || 1500); }
+  function hud(on) { document.body.classList.toggle('playing', on); $('hudM').hidden = !on; $('padL').hidden = !on; $('padR').hidden = !on; $('keysHint').hidden = !on; }
+  function menu() {
+    state = 'menu'; hud(false); $('end').hidden = true; $('menu').hidden = false;
+    var done = store.get('moto_done', 0), best = store.get('moto_best', {}), box = $('levels'); box.innerHTML = '';
+    LEVELS.forEach(function (l, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.disabled = i > done; if (best[i]) b.className = 'done';
+      var n = document.createElement('b'); n.textContent = (i + 1) + '. ' + (lang === 'en' ? l.en : l.ar); b.appendChild(n);
+      var s = document.createElement('small'); s.textContent = i > done ? T('Locked', 'مقفولة') : best[i] ? T('Best: ', 'أحسن وقت: ') + best[i].toFixed(1) + 's' : T('Play', 'العب'); b.appendChild(s);
+      b.onclick = function () { start(i); }; box.appendChild(b);
+    });
+  }
+  function start(i) { build(i); reset(); cam.x = bike.b.x; cam.y = bike.b.y; state = 'play'; $('menu').hidden = true; $('end').hidden = true; hud(true); $('hLvl').textContent = (i + 1) + '. ' + (lang === 'en' ? LV.en : LV.ar); toast(T('Gas to go!', 'دوس بنزين وانطلق!'), 1400); }
+  function finish() {
+    bike.done = true; state = 'end'; hud(false); beep(660, 0.15); setTimeout(function () { beep(990, 0.3); }, 150);
+    var best = store.get('moto_best', {}), t = stats.t, rec = !best[lvI] || t < best[lvI];
+    if (rec) { best[lvI] = t; store.set('moto_best', best); }
+    store.set('moto_done', Math.max(store.get('moto_done', 0), lvI + 1));
+    var par = LV.len / 9, stars = t < par ? 3 : t < par * 1.4 ? 2 : 1;
+    $('eTitle').textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars) + ' ' + T('Finished!', 'وصلت!');
+    $('eText').textContent = T('Time ' + t.toFixed(1) + 's · flips ' + stats.flips + ' · longest wheelie ' + stats.best.toFixed(1) + 's', 'الوقت ' + t.toFixed(1) + ' ث · شقلبات ' + stats.flips + ' · أطول ويلي ' + stats.best.toFixed(1) + ' ث') + (rec ? T(' · New record!', ' · رقم جديد!') : '');
+    var last = lvI === LEVELS.length - 1;
+    $('eNext').textContent = last ? T('Play again', 'العب تاني') : T('Next level', 'المرحلة الجاية'); $('eNext').onclick = function () { start(last ? 0 : lvI + 1); };
+    $('end').hidden = false;
+  }
+  $('eAgain').onclick = function () { start(lvI); }; $('eMenu').onclick = menu; $('bBack').onclick = menu; $('bRestart').onclick = function () { start(lvI); };
+  document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { setLang(b.dataset.l); menu(); }; });
+  setLang(lang); build(0); reset(); menu();
+
+  var last = performance.now(), acc = 0, DT = 1 / 120;
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (state === 'play') {
+      acc += dt; while (acc >= DT) { physics(DT); acc -= DT; }
+      if (stats.started && !bike.dead) stats.t += dt;
+      if (bike.dead) { bike.deadT += dt; if (bike.deadT > 1.3) { start(lvI); toast(T('Crashed! Try again', 'وقعت! جرّب تاني'), 1300); } }
+      $('hTime').textContent = stats.t.toFixed(1) + 's';
+      $('hFlip').textContent = T('Flips ', 'شقلبات ') + stats.flips;
+      $('hProg').textContent = Math.max(0, Math.min(100, Math.round(bike.r.x / LV.finish * 100))) + '%';
+    } else { bike.b.x += dt * 4; bike.r.x += dt * 4; bike.f.x += dt * 4; if (bike.b.x > LV.finish) reset(); }
+    draw();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

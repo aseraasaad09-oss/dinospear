@@ -1,50 +1,148 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>DINOSPEAR — من غير نت</title>
-<link rel="icon" href="favicon.svg"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#2f6fe4">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>DINOSPEAR — Offline / أوفلاين</title>
+<link rel="icon" href="favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
-:root{--bg:#eef4ff;--card:#fff;--ink:#14213d;--muted:#55627f;--line:#d7e2f7;--blue:#2f6fe4}
-@media (prefers-color-scheme:dark){:root{--bg:#0b1226;--card:#16213f;--ink:#eef2ff;--muted:#a9b6dc;--line:#2a3a6b;--blue:#4f8dff}}
-*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:var(--bg);color:var(--ink);font:400 17px/1.8 system-ui,"Segoe UI",Tahoma,sans-serif}
-main{max-width:900px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 16px 40px}
-.head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.head img{width:52px;height:52px;border-radius:14px}
-h1{font-size:clamp(26px,6vw,40px);margin:10px 0 0}.lead{color:var(--muted)}
-.badge{display:inline-flex;gap:6px;align-items:center;background:#ffe9b0;color:#7a5200;border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px;margin-top:18px}
-a.tile{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px;transition:transform .15s}
-a.tile:hover{transform:translateY(-3px)}a.tile b{font-size:21px}a.tile span{color:var(--muted)}
-a.tile .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:30px;background:var(--bg)}
-button{font:700 16px system-ui;border:0;border-radius:14px;padding:12px 18px;background:var(--blue);color:#fff;cursor:pointer}
-button.ghost{background:transparent;color:var(--blue);border:2px solid var(--line)}
-[data-l="en"]{display:none}html[lang="en"] [data-l="en"]{display:revert}html[lang="en"] [data-l="ar"]{display:none}
+/* Offline home V02 — a real home screen for no internet: only the things that work without internet are open */
+:root{color-scheme:dark;--bg:#0b1020;--card:#121a33;--ink:#f8fafc;--mute:#94a3b8;--ok:#22c55e;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(1000px 500px at 80% -10%,#1e3a8a 0%,transparent 60%),radial-gradient(800px 500px at 0% 0%,#14532d 0%,transparent 55%),var(--bg);color:var(--ink);font:16px/1.55 "Segoe UI",Tahoma,system-ui,sans-serif;min-height:100dvh;overflow-x:clip}
+header{display:flex;align-items:center;gap:12px;padding:max(14px,env(safe-area-inset-top)) max(4vw,16px) 8px}
+header img{width:44px;height:44px;border-radius:12px}
+header b{font-size:20px;letter-spacing:1px}
+.pill{margin-inline-start:auto;display:flex;align-items:center;gap:8px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.45);color:#fecaca;padding:7px 12px;border-radius:999px;font-weight:800;font-size:13px}
+.pill.on{background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.5);color:#bbf7d0}
+.pill i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.lang{display:flex;gap:6px}.lang button{border:0;border-radius:10px;padding:7px 10px;font-weight:800;background:rgba(255,255,255,.1);color:#fff;cursor:pointer}
+main{padding:6px max(4vw,16px) 40px;max-width:1180px;margin:0 auto}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:center;margin:10px 0 22px}
+.hero h1{font-size:clamp(28px,5vw,46px);line-height:1.05;margin:0 0 10px;text-wrap:balance}
+.hero p{color:var(--mute);margin:0 0 14px;max-width:60ch}
+.art{aspect-ratio:16/10;border-radius:24px;background:linear-gradient(160deg,#1e293b,#0f172a);position:relative;overflow:hidden;border:1px solid var(--line)}
+.art svg{position:absolute;inset:0;width:100%;height:100%}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:14px;padding:13px 18px;font-weight:900;font-size:16px;text-decoration:none;cursor:pointer;min-height:48px}
+.btn.go{background:var(--ok);color:#052e16}.btn.sec{background:rgba(255,255,255,.1);color:#fff}
+h2{font-size:20px;margin:26px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.g{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:transform .15s}
+.g:hover{transform:translateY(-3px)}
+.g .pic{height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+.g .pic svg{width:72px;height:72px}
+.g .tag{position:absolute;top:10px;inset-inline-start:10px;background:rgba(0,0,0,.45);font-size:11px;font-weight:900;padding:4px 9px;border-radius:999px;letter-spacing:.5px}
+.g .b{padding:12px 14px 16px}.g h3{margin:0 0 4px;font-size:17px}.g p{margin:0;color:var(--mute);font-size:14px}
+.g.lock{opacity:.45;pointer-events:none;filter:grayscale(.6)}
+.g.lock .tag{background:#7f1d1d}
+.saved{display:flex;gap:10px;flex-wrap:wrap}
+.saved .s{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:700;font-size:14px}
+footer{color:var(--mute);font-size:13px;text-align:center;padding:20px}
+@media(max-width:700px){.hero{grid-template-columns:1fr}.art{order:-1;aspect-ratio:16/8}}
+@media (prefers-reduced-motion:no-preference){.float{animation:fl 4s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-6px)}}}
 </style>
-<script>try{if(localStorage.getItem('ds_article_lang')==='en'){document.documentElement.lang='en';document.documentElement.dir='ltr'}}catch(e){}</script>
-<script src="assets/js/icons.js" defer></script>
 </head>
 <body>
+<header>
+ <img src="assets/img/icon-192.png" alt="">
+ <b>DINOSPEAR</b>
+ <span class="pill" id="net"><i></i><span id="netT"></span></span>
+ <div class="lang"><button type="button" data-l="ar">ع</button><button type="button" data-l="en">EN</button></div>
+</header>
 <main>
-  <div class="head">
-    <img src="assets/img/icon-192.png" alt="DINOSPEAR">
-    <button class="ghost" type="button" id="lang"><span data-l="ar">English</span><span data-l="en">عربي</span></button>
+ <section class="hero">
+  <div>
+   <h1 data-ar="الوضع الأوفلاين" data-en="Offline mode"></h1>
+   <p data-ar="مفيش نت؟ مش مشكلة. كل الألعاب اللي تحت بتشتغل من غير نت، وتقدمك بيتحفظ على جهازك. أول ما النت يرجع هنرجّعك للبرنامج كامل." data-en="No internet? No problem. Every game below works without internet, and your progress is saved on this device. When the internet is back you go back to the full app."></p>
+   <a class="btn go" href="#games" data-ar="العب دلوقتي" data-en="Play now"></a>
+   <a class="btn sec" href="article.html" data-ar="اقرا عن اللعبة" data-en="Read about the game"></a>
   </div>
-  <h1><span data-l="ar">الوضع الأوفلاين</span><span data-l="en">Offline mode</span></h1>
-  <p class="badge" id="state"><span data-l="ar">📡 مفيش نت دلوقتي</span><span data-l="en">📡 No internet right now</span></p>
-  <p class="lead"><span data-l="ar">هنا الحاجات اللي بتشتغل من غير نت. الشات والمدينة 3D والحساب محتاجين نت.</span><span data-l="en">Here is what works without internet. Chat, the 3D town and your account need internet.</span></p>
-  <div class="grid">
-    <a class="tile" href="demo/index.html?offline=1"><div class="ic">🎮</div><b><span data-l="ar">الألعاب</span><span data-l="en">Games</span></b><span><span data-l="ar">SILENT SLIPPER وألعاب الديمو.</span><span data-l="en">SILENT SLIPPER and the demo games.</span></span></a>
-    <a class="tile" href="article.html"><div class="ic">📖</div><b><span data-l="ar">المقال</span><span data-l="en">The article</span></b><span><span data-l="ar">كل حاجة عن اللعبة الأونلاين وSILENT SLIPPER والموقع.</span><span data-l="en">All about the online game, SILENT SLIPPER and the site.</span></span></a>
-  </div>
-  <p style="margin-top:22px"><button type="button" id="retry"><span data-l="ar">🔁 جرّب النت تاني</span><span data-l="en">🔁 Try the internet again</span></button></p>
+  <div class="art"><svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+   <defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs>
+   <rect width="320" height="200" fill="url(#sk)"/>
+   <circle cx="262" cy="44" r="18" fill="#fde68a"/>
+   <g fill="#fff" opacity=".7"><circle cx="40" cy="30" r="1.5"/><circle cx="90" cy="60" r="1"/><circle cx="150" cy="25" r="1.5"/><circle cx="210" cy="70" r="1"/><circle cx="300" cy="90" r="1.2"/></g>
+   <path d="M0 150 Q60 110 120 140 T240 130 T320 140 V200 H0Z" fill="#14532d"/>
+   <path d="M0 170 Q80 150 160 168 T320 165 V200 H0Z" fill="#166534"/>
+   <g class="float"><g transform="translate(118 62)">
+    <path d="M30 70 C10 70 0 55 4 40 C8 22 26 12 46 14 C70 16 84 34 80 52 C76 66 62 72 46 72Z" fill="#4ade80"/>
+    <circle cx="56" cy="34" r="6" fill="#fff"/><circle cx="58" cy="34" r="3" fill="#0f172a"/>
+    <path d="M52 52 q10 6 20 0" stroke="#14532d" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M86 -10 L92 80" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/><path d="M80 -10 L86 -26 L94 -10Z" fill="#e2e8f0"/>
+   </g></g>
+   <g transform="translate(36 120)" opacity=".9"><rect width="40" height="26" rx="6" fill="#0f172a" stroke="#ef4444" stroke-width="3"/><path d="M8 13 h24 M20 3 v20" stroke="#ef4444" stroke-width="3" stroke-linecap="round" transform="rotate(45 20 13)"/></g>
+  </svg></div>
+ </section>
+
+ <h2 id="games" data-ar="ألعاب بتشتغل من غير نت" data-en="Games that work without internet"></h2>
+ <div class="grid" id="offGames"></div>
+
+ <h2 data-ar="تقدمك المحفوظ على الجهاز ده" data-en="Your progress saved on this device"></h2>
+ <div class="saved" id="saved"></div>
+
 </main>
+<footer data-ar="صانع اللعبة: ASER AMRO AHMED · الدعم على الديسكورد بس" data-en="Made by ASER AMRO AHMED · Support on Discord only"></footer>
+
 <script>
-(function(){var h=document.documentElement;document.getElementById('lang').onclick=function(){var en=h.lang!=='en';h.lang=en?'en':'ar';h.dir=en?'ltr':'rtl';try{localStorage.setItem('ds_article_lang',en?'en':'ar')}catch(e){}};
-function go(){location.href='./'}document.getElementById('retry').onclick=function(){if(navigator.onLine)go();else alertish()};
-function alertish(){var s=document.getElementById('state');s.style.transform='scale(1.08)';setTimeout(function(){s.style.transform=''},250)}
-addEventListener('online',function(){var s=document.getElementById('state');s.innerHTML='<span data-l="ar">✅ النت رجع — دوس جرّب النت تاني</span><span data-l="en">✅ Internet is back — press try again</span>'});
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(function(){});})();
+(function () {
+  var lang = 'ar'; try { lang = localStorage.getItem('aser_lang') === 'en' || localStorage.getItem('ds_lang') === 'en' ? 'en' : 'ar'; } catch (e) {}
+  var T = function (ar, en) { return lang === 'en' ? en : ar; };
+  var ICON = {
+    slip: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M7 3c3 0 5 3 5 7v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8c0-3 0-5 1-5z"/><path d="M6 10c2 1 4 1 6 0"/></svg>',
+    zomb: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="6" y="3" width="12" height="11" rx="2"/><path d="M9 8h1M14 8h1M10 11h4M8 14l-3 7M16 14l3 7M12 14v7"/></svg>',
+    hide: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 12s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6z"/><path d="M4 20L20 4"/></svg>',
+    moto: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="5" cy="16" r="3"/><circle cx="19" cy="16" r="3"/><path d="M5 16l5-6h5l4 6M10 10l-2-3h-2M15 10l1-3h3"/></svg>',
+    town: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 21h18M5 21V10l5-4v15M10 21V8h9v13M13 11h3M13 15h3"/></svg>',
+    chat: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+    idea: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z"/></svg>'
+  };
+  var OFF = [
+    { h: 'demo/index.html?offline=1', i: 'slip', c: 'linear-gradient(135deg,#f472b6,#fb923c)', ar: ['SILENT SLIPPER', 'اهرب من الروبوتات واضرب الأهداف بالشبشب.'], en: ['SILENT SLIPPER', 'Escape the robots and hit the targets with your slipper.'] },
+    { h: 'games/killer.html', i: 'zomb', c: 'linear-gradient(135deg,#7f1d1d,#111827)', ar: ['THE KILLER WINNER', 'لعبة الوحش بالقصة — من عينك.'], en: ['THE KILLER WINNER', 'The monster story game — through your own eyes.'] },
+    { h: 'games/hide.html', i: 'hide', c: 'linear-gradient(135deg,#f59e0b,#b45309)', ar: ['الاستغماية', 'دوّر على أصحابك أو استخبى منهم.'], en: ['HIDE & SEEK', 'Find your friends or hide from them.'] },
+    { h: 'games/moto.html', i: 'moto', c: 'linear-gradient(135deg,#f97316,#7c2d12)', ar: ['MOTOR BIKE', 'تلال وشقلبات وسباق ضد الوقت.'], en: ['MOTOR BIKE', 'Hills, flips and racing the clock.'] },
+    { h: 'games/zombie.html', i: 'zomb', c: 'linear-gradient(135deg,#9a3412,#1c0a04)', ar: ['ZOMBIE MARS', 'المريخ: 50 مهمة والصاروخ.'], en: ['ZOMBIE MARS', 'Mars: 50 missions and the rocket.'] }
+  ];
+  var ON = [
+    { i: 'globe', c: 'linear-gradient(135deg,#22c55e,#0ea5e9)', ar: ['ASER WORLD أونلاين', 'اللعب مع الناس محتاج نت.'], en: ['ASER WORLD online', 'Playing with people needs internet.'] },
+    { i: 'town', c: 'linear-gradient(135deg,#6366f1,#0f172a)', ar: ['المدينة 3D والشطرنج', 'بتشوف اللاعيبة التانيين — محتاجة نت.'], en: ['3D town and chess', 'You see other players — needs internet.'] },
+    { i: 'chat', c: 'linear-gradient(135deg,#0ea5e9,#1e3a8a)', ar: ['الشات والواتساب', 'الرسايل محتاجة نت.'], en: ['Chat and messages', 'Messages need internet.'] },
+    { i: 'idea', c: 'linear-gradient(135deg,#8b5cf6,#4c1d95)', ar: ['أفكاركم', 'الكتابة والتصويت محتاجين نت.'], en: ['Your ideas', 'Posting and likes need internet.'] }
+  ];
+  function card(g, lock) {
+    var a = document.createElement(lock ? 'div' : 'a'); a.className = 'g' + (lock ? ' lock' : ''); if (!lock) a.href = g.h;
+    var pic = document.createElement('div'); pic.className = 'pic'; pic.style.background = g.c; pic.innerHTML = ICON[g.i];
+    var tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = lock ? T('محتاجة نت', 'NEEDS INTERNET') : T('أوفلاين', 'OFFLINE'); pic.appendChild(tag);
+    var b = document.createElement('div'); b.className = 'b'; var h = document.createElement('h3'), p = document.createElement('p');
+    var t = lang === 'en' ? g.en : g.ar; h.textContent = t[0]; p.textContent = t[1]; b.appendChild(h); b.appendChild(p);
+    a.appendChild(pic); a.appendChild(b); return a;
+  }
+  function get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function render() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-ar]').forEach(function (el) { el.textContent = lang === 'en' ? el.dataset.en : el.dataset.ar; });
+    var og = document.getElementById('offGames'); og.innerHTML = ''; OFF.forEach(function (g) { og.appendChild(card(g, false)); });
+    var s = [], z = get('zm_save'), m = get('moto_best'), hs = get('hs_seek_wins'), hh = get('hs_hide_wins');
+    if (z) s.push(T('ZOMBIE MARS: مهمة ', 'ZOMBIE MARS: mission ') + (z.m + 1) + '/50');
+    if (m) s.push(T('MOTOR BIKE: مراحل خلصت ', 'MOTOR BIKE: levels done ') + Object.keys(m).length);
+    if (hs || hh) s.push(T('الاستغماية: فوز ', 'Hide & Seek wins: ') + ((hs || 0) + (hh || 0)));
+    var sv = document.getElementById('saved'); sv.innerHTML = '';
+    (s.length ? s : [T('لسه مفيش تقدم محفوظ — العب أي لعبة.', 'No saved progress yet — play any game.')]).forEach(function (x) { var d = document.createElement('div'); d.className = 's'; d.textContent = x; sv.appendChild(d); });
+    net();
+  }
+  function net() {
+    var on = navigator.onLine, p = document.getElementById('net');
+    p.classList.toggle('on', on);
+    document.getElementById('netT').textContent = on ? T('النت رجع ←', 'Online →') : T('مفيش نت', 'No internet');
+    p.style.cursor = on ? 'pointer' : 'default'; p.onclick = on ? function () { location.href = './'; } : null;
+  }
+  document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} render(); }; });
+  addEventListener('online', net); addEventListener('offline', net);
+  render();
+})();
 </script>
 </body>
 </html>
