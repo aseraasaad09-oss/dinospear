@@ -43,7 +43,7 @@
     }
   }
   function show(el, out, orig, to) {
-    if (!el.isConnected || out.trim().toLowerCase() === orig.trim().toLowerCase()) return;
+    if (!el.isConnected || el.dataset.trDone || out.trim().toLowerCase() === orig.trim().toLowerCase()) return;
     el.dataset.trDone = '1'; el.dataset.orig = orig; el.dataset.tran = out; el.textContent = out; el.dir = 'auto';
     var b = document.createElement('button'); b.type = 'button'; b.className = 'ds-tr-btn';
     b.style.cssText = 'display:inline-block;margin-inline-start:6px;border:0;background:none;color:inherit;opacity:.6;font-size:11px;font-weight:700;cursor:pointer;padding:0;text-decoration:underline';

@@ -1,10 +1,10 @@
 {
-  "v": "V22",
+  "v": "V23",
   "date": "2026-11-26",
   "ar": [
-    "الترجمة بقت بتفهم الكلام المصري والخليجي (زي «جامد اوي» و«عايز» و«شلونك») قبل ما تترجمه"
+    "إصلاح صغير في الترجمة"
   ],
   "en": [
-    "Translation now understands Egyptian and Gulf chat words (like “gamed awi”, “3ayez”, “shlonak”) before translating"
+    "Small translation fix"
   ]
 }
