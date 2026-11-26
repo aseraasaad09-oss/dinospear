@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#000000">
 <title>THE KILLER WINNER — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V26" defer></script>
+<script src="../assets/js/rotate.js?v=V27" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 .bars{position:absolute;bottom:max(14px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;width:min(320px,46vw);pointer-events:none}
@@ -356,6 +356,7 @@ function completeMission() {
   setupMission(next); save();
 }
 function lose(kind) {
+  if ((window.DS_ADM || {}).powerful) { P.mind = Math.max(P.mind, 50); P.life = 100; return; }
   if (state !== 'play') return;
   state = 'dying'; document.exitPointerLock?.();
   $('hud').hidden = true; $('cross').hidden = true;
@@ -378,7 +379,7 @@ function step(dt) {
   const inp = readInput();
   P.four = inp.run && Math.hypot(inp.x, inp.z) > 0.1;
   P.eye += ((P.four ? EYE4 : EYE) - P.eye) * Math.min(1, dt * 8);
-  const sp = P.four ? 6.2 : 3.2, sin = Math.sin(P.yaw), cos = Math.cos(P.yaw);
+  const sp = (P.four ? 6.2 : 3.2) * ((window.DS_ADM || {}).fast ? 2 : 1), sin = Math.sin(P.yaw), cos = Math.cos(P.yaw);
   const dx = (inp.x * cos + inp.z * sin) * sp * dt, dz = (-inp.x * sin + inp.z * cos) * sp * dt;
   moveCircle(P.pos, dx, dz, 0.45);
   const mv = Math.hypot(inp.x, inp.z); P.bob += dt * mv * (P.four ? 14 : 8);
@@ -469,6 +470,7 @@ function shoot(h) {
   if (Math.random() < (P.four ? 0.4 : 0.62)) hurt(14, h);
 }
 function hurt(n, h) {
+  if ((window.DS_ADM || {}).powerful) return;
   P.life -= n; hurtT = 0.6; beep(110, 0.15, 'sawtooth', 0.06);
   if (P.life <= 0) lose('human');
 }
@@ -564,7 +566,11 @@ function loop(now) {
   renderer.render(scene, camera); endFrame();
   requestAnimationFrame(loop);
 }
+window.DS_GAME = { name: 'THE KILLER WINNER', cmds: [['skip', 'Finish this mission', 'خلّص المهمة دي'], ['mind', 'Full mind (serum)', 'العقل كامل (مصل)']], run: c => { if (c === 'skip' && state === 'play') completeMission(); if (c === 'mind') { P.mind = 100; P.life = 100; } } };
 requestAnimationFrame(loop);
 </script>
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script src="../assets/js/game_admin.js?v=V27" defer></script>
 </body>
 </html>

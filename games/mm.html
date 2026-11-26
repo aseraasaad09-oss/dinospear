@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>KILLER KILLER WARS — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V26" defer></script>
+<script src="../assets/js/rotate.js?v=V27" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 #role{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.88);text-align:center;padding:20px}
@@ -164,6 +164,7 @@ const toast = (m, ms) => { const t = $('toast'); t.textContent = m; t.classList.
 // ---------- actions (the same rules for players and bots; online they are sent to everyone) ----------
 function kill(by, target, how, remote) {
   if (!target.alive || !by.alive) return;
+  if (target === me && (window.DS_ADM || {}).powerful) return;
   target.alive = false; target.mesh.rotation.x = -Math.PI / 2; target.mesh.position.y = 0.3; target.gun.visible = target.knife.visible = false;
   beep(how === 'shot' ? 90 : 160, 0.3, 'sawtooth');
   people.forEach(w => { if (w.alive && w !== by && dist(w.pos, by.pos) < 14 && canSee(w.pos, by.pos) && by.role === 'murderer') w.knows = by; });
@@ -244,7 +245,7 @@ function step(dt) {
   timeLeft -= dt; if (timeLeft <= 0 && isHost) { finish('inn'); if (net) net.send('end', { w: 'inn' }); return; }
   const inp = readInput();
   if (me.alive) {
-    const sp = (inp.run ? 5 : 3.2) * (me.crouch ? 0.5 : 1), mv = Math.hypot(inp.x, inp.z);
+    const sp = (inp.run ? 5 : 3.2) * (me.crouch ? 0.5 : 1) * ((window.DS_ADM || {}).fast ? 2 : 1), mv = Math.hypot(inp.x, inp.z);
     moveCircle(me.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38); if (mv > 0.05) me.dir = Math.atan2(inp.x, inp.z); me.mv = mv * (inp.run ? 1.6 : 1);
     if (hit('KeyF') || hit('Space')) { if (me.role === 'murderer') stab(me); else if (me.hasGun) shoot(me); }
     if (hit('KeyG')) { if (me.role === 'murderer') throwKnife(me); else { me.crouch = !me.crouch; toast(me.crouch ? T('Crouching — quieter and harder to see', 'موطّي — أهدى وأصعب تتشاف') : T('Standing', 'واقف'), 900); } }
@@ -333,7 +334,9 @@ function frame(now) {
   renderer.render(scene, camera); endFrame();
   requestAnimationFrame(frame);
 }
+window.DS_GAME = { name: 'KILLER KILLER WARS', cmds: [['who', 'Who is the murderer?', 'مين القاتل؟'], ['gun', 'Give me the gun', 'إديني المسدس'], ['end', 'End the round (innocents win)', 'خلّص الجولة (الأبرياء كسبوا)']], run: c => { if (!me || state !== 'play') return; if (c === 'who') { const m = people.find(p => p.role === 'murderer'); return (L() === 'en' ? 'Murderer: ' : 'القاتل: ') + m.name; } if (c === 'gun' && me.role !== 'murderer') { me.hasGun = true; me.gun.visible = true; } if (c === 'end') { finish('inn'); if (net) net.send('end', { w: 'inn' }); } } };
 requestAnimationFrame(frame);
 </script>
+<script src="../assets/js/game_admin.js?v=V27" defer></script>
 </body>
 </html>

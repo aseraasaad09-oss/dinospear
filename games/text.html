@@ -7,7 +7,7 @@
 <title>THE TEXT — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
-<script src="../assets/js/rotate.js?v=V26" data-noask defer></script>
+<script src="../assets/js/rotate.js?v=V27" data-noask defer></script>
 <style>
 /* THE TEXT V01 — write a story, answer a few questions, get your own game */
 body{touch-action:manipulation;overflow:auto}
@@ -396,7 +396,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     $('pGoal').textContent = goalText() + (left ? ' (' + left + ')' : '') + (L.keyAt && !G.key ? ' · ' + T('find the key', 'لاقي المفتاح') : '');
   }
   function toast(m, ms) { var t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(function () { t.classList.remove('on'); }, ms || 1500); }
-  function hurt() { if (G.inv > 0 || G.hero.hid) return; G.hp--; G.inv = 1.4; G.shake = 0.3; beep(150, 0.25); hud(); if (G.hp <= 0) { G.hp = 3; toast(T('Try the chapter again!', 'جرّب الفصل تاني!'), 1600); var c = G.spec.chapters[G.ch]; G.L = makeLevel(c, G.ans, G.ch, G.spec.chapters.length); G.hero.x = G.L.start.x; G.hero.y = G.L.start.y; G.key = false; G.inv = 1.5; hud(); } }
+  function hurt() { if (G.inv > 0 || G.hero.hid || (window.DS_ADM || {}).powerful) return; G.hp--; G.inv = 1.4; G.shake = 0.3; beep(150, 0.25); hud(); if (G.hp <= 0) { G.hp = 3; toast(T('Try the chapter again!', 'جرّب الفصل تاني!'), 1600); var c = G.spec.chapters[G.ch]; G.L = makeLevel(c, G.ans, G.ch, G.spec.chapters.length); G.hero.x = G.L.start.x; G.hero.y = G.L.start.y; G.key = false; G.inv = 1.5; hud(); } }
   function chapterDone() {
     beep(660, 0.12); beep(990, 0.2);
     if (G.ch + 1 < G.spec.chapters.length) { G.L = null; chapter(G.ch + 1); }
@@ -416,7 +416,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     var dash = a.dash === 'yes' && (k.ShiftLeft || k.ShiftRight || k.KeyL || btn.dash === 2);
     if (btn.act === 2) btn.act = 1; if (btn.jump === 2) btn.jump = 1; if (btn.dash === 2) btn.dash = 1;
     G.inv = Math.max(0, G.inv - dt); G.cool = Math.max(0, G.cool - dt); G.shake = Math.max(0, G.shake - dt);
-    var t = tile(L, h.x, h.y), slow = t === 2 ? 0.55 : 1, sp = 190 * slow;
+    var t = tile(L, h.x, h.y), slow = t === 2 ? 0.55 : 1, sp = 190 * slow * ((window.DS_ADM || {}).fast ? 2 : 1);
     h.dashCd = Math.max(0, h.dashCd - dt); h.dashT = Math.max(0, h.dashT - dt);
     if (dash && h.dashCd <= 0) { h.dashT = 0.18; h.dashCd = 0.9; G.inv = Math.max(G.inv, 0.25); beep(420, 0.08); }
     if (h.dashT > 0) sp *= 3;
@@ -598,7 +598,9 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   }
   document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; try { localStorage.setItem('aser_lang', lang); } catch (e) {} applyLang(); if (!$('pAsk').hidden) renderQs(); else if (!$('pHome').hidden) home(); }; });
   applyLang(); home();
+  window.DS_GAME = { name: 'THE TEXT', cmds: [['skip', 'Finish this chapter', 'خلّص الفصل ده'], ['clear', 'Remove all enemies', 'شيل كل الأعداء']], run: function (c) { if (!G || !G.L) return; if (c === 'skip') chapterDone(); if (c === 'clear') G.L.enemies.forEach(function (e) { e.alive = false; }); } };
 })();
 </script>
+<script src="../assets/js/game_admin.js?v=V27" defer></script>
 </body>
 </html>

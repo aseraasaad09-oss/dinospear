@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>HIDE & SEEK — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V26" defer></script>
+<script src="../assets/js/rotate.js?v=V27" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 </head>
 <body>
@@ -205,7 +205,7 @@ function step(dt) {
   const inp = readInput();
   // player movement
   if (!player.hidden) {
-    const sp = inp.run ? 5.4 : 3.4, mv = Math.hypot(inp.x, inp.z);
+    const sp = (inp.run ? 5.4 : 3.4) * ((window.DS_ADM || {}).fast ? 2 : 1), mv = Math.hypot(inp.x, inp.z);
     moveCircle(player.pos, inp.x * sp * dt, inp.z * sp * dt, 0.38);
     if (mv > 0.05) player.dir = Math.atan2(inp.x, inp.z);
     player.mesh.position.set(player.pos.x, 0, player.pos.z); player.mesh.rotation.y = player.dir; player.mesh.userData.anim(dt, mv * (inp.run ? 1.6 : 1));
@@ -283,6 +283,7 @@ function step(dt) {
 }
 
 function finish(won, why) {
+  if (!won && (window.DS_ADM || {}).powerful && t > 0) return;
   if (state !== 'play') return; state = 'end';
   const key = mode === 'seek' ? 'hs_seek_wins' : 'hs_hide_wins';
   if (won) { store.set(key, store.get(key, 0) + 1); beep(523, 0.15, 'triangle'); setTimeout(() => beep(784, 0.3, 'triangle'), 150); } else beep(160, 0.4, 'sawtooth');
@@ -311,7 +312,11 @@ function frame(now) {
   renderer.render(scene, camera); endFrame();
   requestAnimationFrame(frame);
 }
+window.DS_GAME = { name: T('HIDE & SEEK', 'الاستغماية'), cmds: [['reveal', 'Show where everyone hides', 'ورّيني الكل مستخبي فين'], ['time', '+60 seconds', '+60 ثانية']], run: c => { if (state !== 'play') return; if (c === 'reveal') spots.forEach(s => { if (s.who && s.who !== player) s.wob = 3; }); if (c === 'time') t += 60; } };
 requestAnimationFrame(frame);
 </script>
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script src="../assets/js/game_admin.js?v=V27" defer></script>
 </body>
 </html>

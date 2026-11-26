@@ -7,7 +7,7 @@
 <title>MOTOR BIKE — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script src="../assets/js/rotate.js?v=V26" defer></script>
+<script src="../assets/js/rotate.js?v=V27" defer></script>
 <style>
 #cv{position:fixed;inset:0;width:100%;height:100%;display:block}
 .pad{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));display:flex;gap:12px;z-index:6}
@@ -148,7 +148,7 @@ body.playing .lang{display:none}
     var dx = b.f.x - b.r.x, dy = b.f.y - b.r.y, dl = Math.hypot(dx, dy), ux = dx / dl, uy = dy / dl, nx = -uy, ny = ux;
     var air = !b.r.c && !b.f.c;
     if (!b.dead) {
-      if (c.gas && b.r.c && (b.r.x - b.r.px) / dt < 19) { var s = slope(b.r.x), tl = Math.hypot(1, s), acc = 34 * dt * dt; b.r.x += acc / tl; b.r.y += acc * s / tl; }
+      if (c.gas && b.r.c && (b.r.x - b.r.px) / dt < 19) { var s = slope(b.r.x), tl = Math.hypot(1, s), acc = 34 * dt * dt * ((window.DS_ADM || {}).fast ? 2 : 1); b.r.x += acc / tl; b.r.y += acc * s / tl; }
       if (c.gas && air) { b.r.x += 4 * dt * dt * ux; }
       var lean = (c.back ? 1 : 0) - (c.fwd ? 1 : 0); if (!lean && c.gas && !air) lean = 0.25;
       if (lean) { var L = (air ? 26 : 14) * dt * dt * lean; b.f.x += nx * L; b.f.y += ny * L; b.r.x -= nx * L; b.r.y -= ny * L; }
@@ -164,7 +164,7 @@ body.playing .lang{display:none}
     if (b.r.c && !b.f.c && sp > 0.05 && !b.dead) { stats.wheelie += dt; if (stats.wheelie > stats.best) stats.best = stats.wheelie; } else stats.wheelie = 0;
     // crash: head touches the ground
     var hx = b.b.x + nx * 0.62, hy = b.b.y + ny * 0.62;
-    if (!b.dead && (hy - 0.2 < gy(hx) || (b.b.c && ny < 0.2))) { b.dead = true; b.deadT = 0; beep(120, 0.4, 'sawtooth'); for (var q = 0; q < 26; q++) particles.push({ x: hx, y: hy, vx: (Math.random() - 0.5) * 8, vy: Math.random() * 7, t: 0, c: '#facc15' }); }
+    if (!b.dead && !(window.DS_ADM || {}).powerful && (hy - 0.2 < gy(hx) || (b.b.c && ny < 0.2))) { b.dead = true; b.deadT = 0; beep(120, 0.4, 'sawtooth'); for (var q = 0; q < 26; q++) particles.push({ x: hx, y: hy, vx: (Math.random() - 0.5) * 8, vy: Math.random() * 7, t: 0, c: '#facc15' }); }
     if (b.r.c && c.gas && Math.random() < 0.6) particles.push({ x: b.r.x - 0.3, y: b.r.y - WR + 0.05, vx: -1 - Math.random() * 2, vy: Math.random() * 1.5, t: 0, c: LV.top });
     particles.forEach(function (p) { p.t += dt; p.vy += G * 0.25 * dt; p.x += p.vx * dt; p.y += p.vy * dt; });
     particles = particles.filter(function (p) { return p.t < 0.8; });
@@ -330,6 +330,7 @@ body.playing .lang{display:none}
   $('eAgain').onclick = function () { start(lvI); }; $('eMenu').onclick = menu; $('bBack').onclick = menu; $('bRestart').onclick = function () { start(lvI); };
   document.querySelectorAll('.lang button').forEach(function (b) { b.onclick = function () { setLang(b.dataset.l); menu(); }; });
   setLang(lang); build(0); reset(); menu();
+  window.DS_GAME = { name: 'MOTOR BIKE', cmds: [['unlock', 'Open all levels', 'افتح كل المراحل'], ['win', 'Finish this level', 'خلّص المرحلة دي']], run: function (c) { if (c === 'unlock') { store.set('moto_done', LEVELS.length); if (state === 'menu') menu(); } if (c === 'win' && state === 'play') finish(); } };
 
   var last = performance.now(), acc = 0, DT = 1 / 120;
   function frame(now) {
@@ -348,5 +349,8 @@ body.playing .lang{display:none}
   requestAnimationFrame(frame);
 })();
 </script>
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script src="../assets/js/game_admin.js?v=V27" defer></script>
 </body>
 </html>

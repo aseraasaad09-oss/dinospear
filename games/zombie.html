@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1a0b07">
 <title>ZOMBIE MARS — DINOSPEAR V02</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V26" defer></script>
+<script src="../assets/js/rotate.js?v=V27" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 #story{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:18px;touch-action:manipulation}
@@ -296,6 +296,7 @@ function completeMission() {
   setupMission(next); save(false);
 }
 function die(kind) {
+  if ((window.DS_ADM || {}).powerful) return;
   if (state !== 'play') return; state = 'dying'; $('hud').hidden = true;
   beep(140, 0.5, 'sawtooth', 0.07);
   if (kind === 'cut') {
@@ -326,7 +327,7 @@ function step(dt) {
     }
   }
   if (!P.hidden) { // move
-    const sp = inp.run ? 5.4 : 3.4, mv = Math.hypot(inp.x, inp.z);
+    const sp = (inp.run ? 5.4 : 3.4) * ((window.DS_ADM || {}).fast ? 2 : 1), mv = Math.hypot(inp.x, inp.z);
     moveCircle(P.pos, inp.x * sp * dt, inp.z * sp * dt, 0.4);
     P.pos.x = Math.max(-HALF, Math.min(HALF, P.pos.x)); P.pos.z = Math.max(-HALF, Math.min(HALF, P.pos.z));
     if (mv > 0.05) P.dir = Math.atan2(inp.x, inp.z);
@@ -432,7 +433,11 @@ function frame(now) {
   renderer.render(scene, camera); endFrame();
   requestAnimationFrame(frame);
 }
+window.DS_GAME = { name: 'ZOMBIE MARS', cmds: [['skip', 'Finish this mission', 'خلّص المهمة دي'], ['rocket', 'Jump to the rocket (mission 50)', 'روح للصاروخ (مهمة 50)'], ['keys', 'Remove all walking keys', 'شيل كل المفاتيح']], run: c => { if (state !== 'play') return; if (c === 'skip') completeMission(); if (c === 'rocket') { setupMission(TOTAL); save(false); } if (c === 'keys') keys.forEach(k => { k.alive = false; k.dieT = 0; }); } };
 requestAnimationFrame(frame);
 </script>
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script src="../assets/js/game_admin.js?v=V27" defer></script>
 </body>
 </html>
