@@ -8,13 +8,17 @@
   function saveCache() { try { var k = Object.keys(cache); if (k.length > 400) k.slice(0, k.length - 400).forEach(function (x) { delete cache[x]; }); localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {} }
   function uiLang() { var l = 'ar'; try { l = localStorage.getItem('aser_lang') || localStorage.getItem('ds_lang') || ''; } catch (e) {} if (l !== 'en' && l !== 'ar') l = (document.documentElement.lang || 'ar').slice(0, 2); return l === 'en' ? 'en' : 'ar'; }
   function langOf(t) { var ar = (t.match(/[؀-ۿ]/g) || []).length, la = (t.match(/[A-Za-z]/g) || []).length; if (ar + la < 2) return null; return ar >= la ? 'ar' : 'en'; }
-  // 1) Chrome's own translator on the device (natural, free, private); 2) a free online translator as a fallback
+  // 1) Chrome's own translator on the device; 2) Google's free web translator (natural, no daily limit for chat use); 3) MyMemory as a last fallback
   var tr = {};
   function viaDevice(text, from, to) {
     if (!('Translator' in self)) return Promise.reject();
     var key = from + to;
     tr[key] = tr[key] || self.Translator.availability({ sourceLanguage: from, targetLanguage: to }).then(function (a) { if (a === 'unavailable') throw 0; return self.Translator.create({ sourceLanguage: from, targetLanguage: to }); });
     return tr[key].then(function (t) { return t.translate(text); });
+  }
+  function viaGoogle(text, from, to) {
+    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=' + from + '&tl=' + to + '&q=' + encodeURIComponent(text.slice(0, 900)))
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { var o = (j && j[0] || []).map(function (x) { return x && x[0] || ''; }).join(''); if (!o) throw 0; return o; });
   }
   function viaWeb(text, from, to) {
     return fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text.slice(0, 480)) + '&langpair=' + from + '|' + to)
@@ -26,7 +30,7 @@
       var job = queue.shift(); busy++;
       (function (job) {
         var k = job.from + job.to + ':' + job.text;
-        var p = cache[k] ? Promise.resolve(cache[k]) : viaDevice(job.text, job.from, job.to).catch(function () { return viaWeb(job.text, job.from, job.to); });
+        var p = cache[k] ? Promise.resolve(cache[k]) : viaDevice(job.text, job.from, job.to).catch(function () { return viaGoogle(job.text, job.from, job.to); }).catch(function () { return viaWeb(job.text, job.from, job.to); });
         p.then(function (out) { cache[k] = out; saveCache(); show(job.el, out, job.text, job.to); }, function () {}).then(function () { busy--; pump(); });
       })(job);
     }

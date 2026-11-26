@@ -1,12 +1,16 @@
 {
-  "v": "V20",
+  "v": "V21",
   "date": "2026-11-26",
   "ar": [
-    "THE TEXT: الشتايم والتحرش بيتعلّم عليهم بخط أحمر ورسالة إنك ممكن تتبند، ومش بيتحفظوا",
-    "الرسايل بتتترجم لوحدها: اللي كاتب عربي واللي بيقرا إنجليزي بيشوفها إنجليزي (والعكس)، وفيه زرار يورّي الأصل"
+    "التحديث بقى بيسألك: «تحب تحدّث دلوقتي؟» أيوه أو لأ — ومفيش إعادة تشغيل لوحده تاني",
+    "إشعار على الموبايل أو الكمبيوتر أول ما يطلع تحديث جديد (فعّله من كارت التحديث)",
+    "الترجمة بقت أقوى وطبيعية أكتر",
+    "جرافيك أحلى: أثاث وشخصيات جديدة معمولة في Blender وإضاءة أنعم"
   ],
   "en": [
-    "THE TEXT: bad words and harassment get a red underline and a ban warning, and can't be saved",
-    "Messages translate by themselves: Arabic messages show in English for English players (and the other way), with an Original button"
+    "Updates now ask: “Do you want to update now?” Yes or No — no more restarting by itself",
+    "A phone/PC notification when a new update is out (turn it on from the update card)",
+    "Stronger, more natural translation",
+    "Nicer graphics: new furniture and characters made in Blender, softer lighting"
   ]
 }

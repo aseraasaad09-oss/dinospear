@@ -240,12 +240,14 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V20';
+  var APP_V = 'V21';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];
     if ('serviceWorker' in navigator) p.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }));
     if (window.caches) p.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }));
+    ['./', 'index.html', 'assets/js/home.js', 'assets/js/events.js', 'assets/js/translate.js', 'assets/js/rotate.js', 'assets/js/ds_auth.js', 'assets/js/icons.js', 'sw.js', 'demo/index.html', 'town/index.html', 'app/city.html'].forEach(function (u) { p.push(fetch(u, { cache: 'reload' }).catch(function () {})); });
+    try { sessionStorage.setItem('ds_upd_done', UPD.target || ''); } catch (e) {}
     Promise.all(p).catch(function () {}).then(function () { location.replace(location.pathname + '?v=' + Date.now() + location.hash); });
   }
   function updBox(info, auto) {
@@ -263,21 +265,42 @@
     if (list.length) { var ul = document.createElement('ul'); ul.style.cssText = 'margin:0 0 10px;padding-inline-start:20px;line-height:1.7;font-size:14px;opacity:.92'; list.slice(0, 5).forEach(function (x) { var li = document.createElement('li'); li.textContent = x; ul.appendChild(li); }); b.appendChild(ul); }
     if (auto) return;
     var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px';
-    var go = document.createElement('button'); go.type = 'button'; go.className = 'btn'; go.style.flex = '2'; go.textContent = en ? 'Update now' : 'حدّث دلوقتي';
+    var q = document.createElement('div'); q.style.cssText = 'font-weight:800;margin:4px 0 10px'; q.textContent = en ? 'Do you want to update now?' : 'تحب تحدّث دلوقتي؟'; b.appendChild(q);
+    var go = document.createElement('button'); go.type = 'button'; go.className = 'btn'; go.style.flex = '2'; go.textContent = en ? 'Yes, update' : 'أيوه، حدّث';
     go.onclick = function () { h.textContent = en ? 'Updating…' : 'جاري التحديث…'; row.remove(); wipeAndReload(); };
-    var later = document.createElement('button'); later.type = 'button'; later.className = 'btn ghost'; later.style.flex = '1'; later.textContent = en ? 'Later' : 'بعدين';
-    later.onclick = function () { b.remove(); UPD.box = null; };
+    var later = document.createElement('button'); later.type = 'button'; later.className = 'btn ghost'; later.style.flex = '1'; later.textContent = en ? 'No' : 'لأ';
+    later.onclick = function () { UPD.no = info.v; b.remove(); UPD.box = null; };
     row.appendChild(go); row.appendChild(later); b.appendChild(row);
   }
   var bootT = Date.now();
+  function notify(info) {
+    if (!('Notification' in window)) return;
+    var en = (document.documentElement.lang || 'ar').indexOf('en') === 0;
+    function fire() {
+      try {
+        var n = new Notification(en ? 'DINOSPEAR — new update ' + info.v : 'DINOSPEAR — تحديث جديد ' + info.v, { body: ((en ? info.en : info.ar) || []).slice(0, 2).join(' • ') + (en ? '\nOpen the app to update.' : '\nافتح البرنامج علشان تحدّث.'), icon: 'assets/img/icon-192.png', tag: 'ds-update' });
+        n.onclick = function () { window.focus(); n.close(); };
+      } catch (e) {}
+    }
+    if (Notification.permission === 'granted') { if (document.hidden) fire(); }
+    else if (Notification.permission === 'default' && UPD.box && !UPD.askedPerm) {
+      UPD.askedPerm = true;
+      var nb = document.createElement('button'); nb.type = 'button'; nb.className = 'btn ghost'; nb.style.cssText = 'margin-top:8px;width:100%';
+      nb.textContent = en ? 'Notify me about next updates' : 'بلّغني بالتحديثات الجاية';
+      nb.onclick = function () { Notification.requestPermission().then(function () { nb.remove(); }); };
+      UPD.box.appendChild(nb);
+    }
+  }
   function checkUpdate(manual) {
     if (!navigator.onLine) { if (manual) manual(null); return; }
     fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (info) {
       if (manual) manual(info);
       if (!info || !info.v || info.v === APP_V) return;
-      // right after opening the app: update straight away (nothing to lose yet); later: ask, so a game is never cut
-      if (Date.now() - bootT < 8000) { updBox(info, true); wipeAndReload(); }
-      else if (UPD.shown !== info.v || !UPD.box) { UPD.shown = info.v; updBox(info, false); }
+      var done = ''; try { done = sessionStorage.getItem('ds_upd_done') || ''; } catch (e) {}
+      if (done === info.v) return;                       // already updated to this one in this visit: never loop
+      if (UPD.no === info.v) return;                     // the player pressed "No" for this version
+      UPD.target = info.v;
+      if (UPD.shown !== info.v || !UPD.box) { UPD.shown = info.v; updBox(info, false); notify(info); }
     }).catch(function () { if (manual) manual(null); });
   }
   window.DS_checkUpdate = checkUpdate;

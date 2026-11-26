@@ -56,7 +56,7 @@
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store , preload, model } from './engine.js';
-await preload(['person', 'tree', 'bush']);
+await preload(['person', 'tree', 'bush', 'wardrobe', 'crate', 'bed', 'sofa', 'lamp']);
 
 // '#' wall, 'H' hiding place in the house (wardrobe / boxes / bed), 'B' bush in the garden, 'T' tree (sofa inside the house), 'S' base, 'P' player start
 const MAP = [
@@ -106,7 +106,7 @@ grid.forEach((row, r) => row.forEach((ch, c) => {
   if (ch === 'S') base = p;
   if (ch === 'P') startP = p;
   if (ch === 'T') {
-    if (r < HOUSE_ROWS) { box(scene, p.x, p.z, 1.8, 0.8, 0.5, 0x2563eb); box(scene, p.x, p.z - 0.35, 1.8, 0.2, 1.0, 0x1d4ed8, { solid: false }); }
+    if (r < HOUSE_ROWS) { const so = model('sofa'); if (so) { so.position.set(p.x, 0, p.z); scene.add(so); walls.push({ x0: p.x - 0.9, x1: p.x + 0.9, z0: p.z - 0.4, z1: p.z + 0.4, tall: false }); const la = model('lamp'); if (la) { la.position.set(p.x + 1.3, 0, p.z); scene.add(la); } } else { box(scene, p.x, p.z, 1.8, 0.8, 0.5, 0x2563eb); box(scene, p.x, p.z - 0.35, 1.8, 0.2, 1.0, 0x1d4ed8, { solid: false }); } }
     else {
       const tm = model('tree');
       if (tm) { tm.position.set(p.x, 0, p.z); tm.rotation.y = c * 1.3; scene.add(tm); walls.push({ x0: p.x - 0.3, x1: p.x + 0.3, z0: p.z - 0.3, z1: p.z + 0.3, tall: true }); }
@@ -120,9 +120,13 @@ grid.forEach((row, r) => row.forEach((ch, c) => {
       if (bm) g.add(bm); else [[0, 0.6, 0, 0.9], [0.5, 0.5, 0.2, 0.65], [-0.45, 0.5, -0.15, 0.7]].forEach(b => { const s = new THREE.Mesh(new THREE.IcosahedronGeometry(b[3], 1), mat(0x22863a, { flatShading: true })); s.position.set(b[0], b[1], b[2]); s.castShadow = true; g.add(s); });
     } else {
       kind = ['wardrobe', 'boxes', 'bed'][spots.length % 3];
+      const fm = model(kind === 'boxes' ? 'crate' : kind);
+      if (fm) { if (kind === 'boxes') { const c2 = model('crate'); c2.position.set(0.35, 0, 0.35); c2.scale.setScalar(0.7); c2.rotation.y = 0.5; fm.add(c2); } g.add(fm); }
+      else {
       if (kind === 'wardrobe') { const b = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 0.9), mat(0x92400e)); b.position.y = 1.1; b.castShadow = true; g.add(b); [-0.35, 0.35].forEach(x => { const k = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.06), mat(0xfacc15)); k.position.set(x * 0.3, 1.2, 0.47); g.add(k); }); }
       if (kind === 'boxes') { [[0, 0.4, 0, 1.1], [0.3, 1.1, 0.1, 0.7], [-0.35, 0.3, 0.3, 0.6]].forEach(b => { const s = new THREE.Mesh(new THREE.BoxGeometry(b[3], b[3] * 0.8, b[3]), mat(0xc8a06a)); s.position.set(b[0], b[1], b[2]); s.rotation.y = b[0]; s.castShadow = true; g.add(s); }); }
       if (kind === 'bed') { const f = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.55, 1.9), mat(0x1e40af)); f.position.y = 0.45; const pl = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.15, 0.45), mat(0xf8fafc)); pl.position.set(0, 0.8, -0.6); const leg = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.18, 1.9), mat(0x78350f)); leg.position.y = 0.09; g.add(f, pl, leg); f.castShadow = true; }
+      }
     }
     g.position.set(p.x, 0, p.z); scene.add(g);
     walls.push({ x0: p.x - 0.7, x1: p.x + 0.7, z0: p.z - 0.6, z1: p.z + 0.6, tall: kind === 'wardrobe' });

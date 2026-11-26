@@ -66,7 +66,7 @@
 <script src="../key.js"></script>
 <script type="module">
 import { THREE, makeWorld, mat, walls, box, floor, makeChar, moveCircle, canSee, dist, readInput, hit, endFrame, setupJoystick, bindButton, beep, T, setLang, L, store, preload, model, view } from './engine.js';
-await preload(['person']);
+await preload(['person', 'sofa', 'table', 'shelf', 'lamp', 'crate']);
 const $ = id => document.getElementById(id);
 
 // ---------- the house: '#' wall, '.' floor, 'F' furniture, 'c' coin spot, 'S' start spots ----------
@@ -99,7 +99,11 @@ const starts = [], coinSpots = [];
   grid.forEach((row, r) => { let s = -1; for (let c = 0; c <= Wd; c++) { const w = row[c] === '#'; if (w && s < 0) s = c; if (!w && s >= 0) { const a = cell(s, r), b = cell(c - 1, r); walls.push({ x0: a.x - 1, x1: b.x + 1, z0: a.z - 1, z1: a.z + 1, tall: true }); s = -1; } } });
   grid.forEach((row, r) => row.forEach((ch, c) => {
     const p = cell(c, r);
-    if (ch === 'F') { const col = [0x7c2d12, 0x1e40af, 0x166534, 0x6b21a8][(c + r) % 4]; box(scene, p.x, p.z, 1.8, 1.8, 0.9, col); const top = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 1.9), mat(0xfef3c7)); top.position.set(p.x, 0.96, p.z); scene.add(top); }
+    if (ch === 'F') {
+      const kind = ['sofa', 'table', 'shelf', 'crate'][(c * 3 + r) % 4], fm = model(kind);
+      if (fm) { fm.position.set(p.x, 0, p.z); fm.rotation.y = ((c + r) % 4) * Math.PI / 2; scene.add(fm); walls.push({ x0: p.x - 0.85, x1: p.x + 0.85, z0: p.z - 0.85, z1: p.z + 0.85, tall: kind === 'shelf' }); }
+      else { const col = [0x7c2d12, 0x1e40af, 0x166534, 0x6b21a8][(c + r) % 4]; box(scene, p.x, p.z, 1.8, 1.8, 0.9, col); }
+    }
     if (ch === 'S') starts.push(p); if (ch === 'c') coinSpots.push(p);
   }));
   for (let i = 0; i < 10; i++) { const l = new THREE.PointLight(0xffe4b5, 8, 12, 1.6); const p = cell(3 + (i % 5) * 5, 3 + Math.floor(i / 5) * 6); l.position.set(p.x, 2.7, p.z); scene.add(l); }

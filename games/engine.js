@@ -55,6 +55,8 @@ export function makeWorld(opts) {
   document.getElementById('app').appendChild(renderer.domElement);
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(o.sky);
+  // soft studio reflections: materials look rounder and richer (cheap, built once)
+  import('three/addons/environments/RoomEnvironment.js').then(m => { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new m.RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.35; }).catch(() => {});
   scene.fog = new THREE.Fog(o.fog, o.fogNear, o.fogFar);
   const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 200);
   scene.add(new THREE.HemisphereLight(0xdbeafe, 0x1e293b, o.ambient));
