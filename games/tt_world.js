@@ -49,6 +49,10 @@ function rng(seed) { let s = seed % 2147483646 + 1; return () => (s = (s * 16807
 function names(story) {
   const out = [];
   (story.match(/(?:اسمه|اسمها|يدعى|تدعى|named|called)\s+([^\s,.،!?؟]{2,16})/gi) || []).forEach(m => out.push(m.split(/\s+/).pop()));
+  // V06: Arabic names: after "said / asked / shouted / his friend / the hero …" — counted, the most used first
+  const STOP_AR = /^(هو|هي|هم|إن|ان|أن|لما|كان|كانت|بعد|قبل|في|على|من|إلى|الى|مع|اللي|ده|دي|كده|يا|خلاص|طيب|ليه|إيه|ايه|الولد|البنت|الوحش|الشرير|له|لها|لهم|بصوت|وهو|وهي)$/;
+  const cntA = {}; (story.match(/(?:قال|قالت|رد|ردّ|ردت|سأل|سألت|صرخ|صرخت|ضحك|ضحكت|همس|همست|صاحبه|صاحبها|صاحبته|صاحبتها|صديقه|صديقها|صديقته|صديقتها|البطل|البطلة|أخوه|اخوه|أخته|اخته|يا)\s+([؀-ۿ]{2,14})/g) || []).forEach(m => { const w = m.split(/\s+/).pop(); if (!STOP_AR.test(w)) cntA[w] = (cntA[w] || 0) + 1; });
+  Object.keys(cntA).sort((a, b) => cntA[b] - cntA[a]).forEach(w => { if (out.indexOf(w) < 0) out.push(w); });
   const cnt = {}; (story.match(/\b[A-Z][a-z]{2,14}\b/g) || []).forEach(w => { if (!/^(The|And|But|When|Then|One|They|She|He|It|In|On|At|After|Before|There|This|That|His|Her|Once|Suddenly|Finally|Inside|Outside|With|Every|Chapter)$/.test(w)) cnt[w] = (cnt[w] || 0) + 1; });
   Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).forEach(w => { if (out.indexOf(w) < 0) out.push(w); });
   return out.slice(0, 6);
@@ -59,7 +63,7 @@ export function analyse(story, title, ans) {
   const W = WORD_KEYS.map(k => ans[k] || '').filter(Boolean).join(' . ');   // V03: the player's own words change every chapter's world
   let paras = story.split(/\n\s*\n|\n(?=\s*(?:الفصل|فصل|chapter|part)\b)/i).map(p => p.trim()).filter(p => p.length > 3);
   if (paras.length < 2) { const sent = story.split(/(?<=[.!?؟])\s+/).filter(Boolean); const n = Math.min(6, Math.max(1, Math.ceil(sent.length / 3))); paras = []; for (let c = 0; c < n; c++) paras.push(sent.slice(Math.floor(c * sent.length / n), Math.floor((c + 1) * sent.length / n)).join(' ')); }
-  if (paras.length > 8) { const m = []; for (let k = 0; k < 8; k++) m.push(paras.slice(Math.floor(k * paras.length / 8), Math.floor((k + 1) * paras.length / 8)).join(' ')); paras = m; }
+  if (paras.length > 12) { const m = []; for (let k = 0; k < 12; k++) m.push(paras.slice(Math.floor(k * paras.length / 12), Math.floor((k + 1) * paras.length / 12)).join('\n\n')); paras = m; }   // V06: long stories (6000+ words) → up to 12 chapters
   const nm = names(story), hero = ans.n_hero || nm[0] || title || T('Hero', 'البطل'), friends = [ans.n_friend1, ans.n_friend2, ans.n_friend3].filter(Boolean).concat(nm.slice(1, 4)).slice(0, 3);
   const score = t => Object.keys(THEMES).map(k => [k, (t.match(new RegExp(THEMES[k].re.source, 'gi')) || []).length]).sort((a, b) => b[1] - a[1]);
   const whole = score(story + ' ' + W), mainTheme = whole[0][1] ? whole[0][0] : ['forest', 'city', 'castle', 'sea', 'space'][hash(story) % 5];
@@ -91,7 +95,63 @@ export function analyse(story, title, ans) {
 // ---------- V04: questions made from the story (what the game needs to know, with answers taken from the story) ----------
 const PLACE_NAMES = { forest: ['Forest', 'غابة'], desert: ['Desert', 'صحرا'], ice: ['Snow land', 'أرض التلج'], space: ['Space', 'الفضاء'], city: ['City', 'مدينة'], sea: ['Sea and islands', 'بحر وجزر'], volcano: ['Volcano', 'بركان'], castle: ['Castle', 'قلعة'], haunted: ['Haunted place', 'مكان مسكون'], cave: ['Cave', 'كهف'], farm: ['Farm', 'مزرعة'] };
 const FOE_NAMES = { robot: ['Robots', 'روبوتات'], ghost: ['Ghosts', 'أشباح'], dragon: ['A dragon', 'تنين'], creature: ['Monsters', 'وحوش'], soldier: ['Guards / thieves', 'حراس / حرامية'] };
+// ---------- V06: the story brain — reads the story like a person: who is in it, what they are like, where, what for — and how detailed it is ----------
+export const TRAITS = {
+  coward: { re: /(جبان|خايف|خواف|بيخاف|scared|coward|afraid)/i, en: 'scaredy-cat', ar: 'جبان', lines: [['I\'m behind you… to protect you from behind 😅', 'أنا ورا ضهرك… عشان أحميك من ورا 😅'], ['Does that monster bite? Just asking!', 'هو الوحش ده بيعض؟ بسأل بس!'], ['MOMMY!', 'يا ماما!'], ['I\'m not scared, my legs are just running by themselves', 'أنا مش خايف، رجلي بس بتجري لوحدها'], ['You go first. I insist.', 'اتفضل انت الأول. أنا مصمم.']] },
+  foodie: { re: /(أكول|اكول|جعان|بياكل|بيحب الأكل|hungry|food|eat|snack)/i, en: 'foodie', ar: 'أكول', lines: [['Anyone got a sandwich?', 'حد معاه سندوتش؟'], ['That monster looks like it tastes like chicken', 'الوحش ده شكله طعمه فراخ'], ['I\'m not hungry… I\'m VERY hungry', 'أنا مش جعان… أنا جعان جداً'], ['Can we save the world after lunch?', 'ممكن ننقذ العالم بعد الغدا؟'], ['Is that treasure made of chocolate?', 'هو الكنز ده شوكولاتة؟']] },
+  showoff: { re: /(فشار|بيتباهى|بيتفشخر|شايف نفسه|مغرور|show.?off|brag|proud)/i, en: 'show-off', ar: 'فشار', lines: [['I would have done that in one second', 'أنا لو مكانك كنت خلصتها في ثانية'], ['Did you see that move? I taught you that', 'شفت الحركة دي؟ أنا اللي علمتهالك'], ['Take a picture of me!', 'صوّروني!'], ['Easy. Too easy. For me.', 'سهلة. سهلة أوي. عليّا أنا يعني.'], ['I\'m famous, you know', 'أنا مشهور على فكرة']] },
+  sleepy: { re: /(نايم|نعسان|بينام|كسلان|sleepy|lazy|tired|nap)/i, en: 'sleepy', ar: 'نعسان', lines: [['Zzz… huh? Are we there yet?', 'ززز… هه؟ وصلنا؟'], ['Five more minutes…', 'خمس دقايق كمان بس…'], ['I\'m awake! I swear I\'m awake', 'أنا صاحي! والله صاحي'], ['Wake me up when the boss shows up', 'صحّيني لما الزعيم ييجي'], ['This is a great place for a nap', 'المكان ده حلو للنوم']] },
+  chatter: { re: /(رغاي|بيتكلم كتير|حكاي|talkative|chatty)/i, en: 'chatterbox', ar: 'رغاي', lines: [['By the way, did you know that…', 'بالمناسبة، عارف إن…'], ['Did I tell you about my aunt\'s cat?', 'أنا حكيتلك على قطة خالتي؟'], ['…and then I said, and then HE said…', '…وبعدين قلتله، وبعدين هو قالي…'], ['Shhh! …ok I\'ll keep talking', 'هششش! …خلاص هكمل كلام'], ['Fun fact: I talk a lot', 'معلومة: أنا بتكلم كتير']] },
+  clumsy: { re: /(بيقع|أخرق|اخرق|مش واخد باله|clumsy|trips|falls)/i, en: 'clumsy', ar: 'أخرق', lines: [['I fell. Again.', 'أنا وقعت. تاني.'], ['Who put that rock there?!', 'مين حط الحجر ده هنا؟!'], ['Oops…', 'أوبس…'], ['I meant to do that', 'أنا كنت قاصد أعمل كده'], ['Is the floor always this… floory?', 'هي الأرض دايماً أرضية كده؟']] }
+};
+const TRAIT_KEYS = Object.keys(TRAITS);
+const PETS = { dog: /(كلب|جرو|dog|puppy)/i, cat: /(قط[ةه]?|بس[ةه]|cat|kitten)/i, robot: /(روبوت|robot)/i, dinopet: /(داينو|ديناصور|dino)/i };
+export function brain(story, title) {
+  story = String(story || ''); const words = (story.match(/\S+/g) || []).length;
+  const a = analyse(story, title, {}), nm = names(story);
+  // every name: its role (hero / friend / villain), what kind of creature, and its personality (from the words next to it)
+  const near = n => { const i = story.indexOf(n); return i < 0 ? '' : story.slice(Math.max(0, i - 80), i + 140); };
+  const isVillain = n => /(الشرير|الوحش|الزعيم|العدو|الساحر الشرير|villain|evil|enemy|boss)/i.test(near(n));
+  const people = nm.map((n, k) => { const ctx = near(n), i0 = story.indexOf(n), after = i0 < 0 ? "" : story.slice(i0, i0 + 110).split(/[.!؟?\n،,]/)[0]; const trait = TRAIT_KEYS.find(t => TRAITS[t].re.test(after)) || TRAIT_KEYS.find(t => TRAITS[t].re.test(ctx)) || null; const kind = Object.keys(PETS).find(p => PETS[p].test(ctx.slice(0, 110))) || 'person';
+    return { name: n, role: k === 0 ? 'hero' : isVillain(n) ? 'villain' : 'friend', trait, kind }; });
+  const friends = people.filter(p => p.role === 'friend').slice(0, 3);
+  friends.forEach((f, k) => { if (!f.trait) { f.trait = TRAIT_KEYS[(hash(f.name) + k) % TRAIT_KEYS.length]; f.guessed = true; } });
+  const villain = people.find(p => p.role === 'villain') || null;
+  const placesKnown = a.chapters.filter(c => Object.keys(THEMES).some(k => THEMES[k].re.test(c.text))).length;
+  const item = ITEMS.find(t => t[1].test(story));
+  const last = a.chapters[a.chapters.length - 1] || { quests: [], text: '' };
+  const goal = /(هزم|يهزم|حارب|defeat|beat)/i.test(last.text) ? 'boss' : VERBS.rescue.test(last.text) ? 'rescue' : VERBS.escape.test(last.text) ? 'escape' : item ? 'treasure' : null;
+  const mood = /(ضحك|مضحك|نكت[ةه]|هزار|funny|laugh|joke|silly)/i.test(story) ? 'funny' : /(رعب|مرعب|خوف|scary|horror|creepy)/i.test(story) ? 'scary' : null;
+  const weapon = /(سيف|sword)/i.test(story) ? 'sword' : /(قوس|سهم|مسدس|ليزر|bow|arrow|gun|laser)/i.test(story) ? 'shoot' : null;
+  const slots = { hero: nm.length > 0, friends: friends.length > 0, villain: !!(villain || a.foe), places: placesKnown >= Math.ceil(a.chapters.length / 2), item: !!item, goal: !!goal, mood: !!mood, weapon: !!weapon, chapters: a.chapters.length >= 3 };
+  const found = Object.values(slots).filter(Boolean).length, total = Object.keys(slots).length;
+  const detail = Math.min(1, found / total + (words >= 3000 ? 0.25 : words >= 800 ? 0.15 : words >= 300 ? 0.05 : 0));
+  return { words, chapters: a.chapters.length, hero: people[0] || null, friends, villain, foe: a.foe, theme: a.theme, item: item ? item[2] : null, goal, mood, weapon, slots, detail, ask: Math.max(2, Math.min(12, Math.round((1 - detail) * 12))) };
+}
+// the questions: only about what the story did NOT say — fewer when the story is detailed, more when it is short
 export function storyQuestions(story, title, ans) {
+  const b = brain(story, title), out = [], nm = names(String(story || '')), a = analyse(story, title, {});
+  const opt = (v, en, ar) => [v, en, ar || en];
+  const need = [];
+  if (!b.slots.hero) need.push({ k: 'n_hero', en: 'What is your hero called?', ar: 'البطل اسمه إيه؟', o: [opt(title || 'Hero', title || 'Hero'), opt('Dino', 'Dino', 'داينو'), opt('Aser', 'Aser', 'أسر')] });
+  if (!b.slots.friends) need.push({ k: 'n_friend1', en: 'Give your hero a funny friend (name)', ar: 'البطل محتاج صاحب يضحّك (اسمه)', o: [opt('Bondo', 'Bondo', 'بندق'), opt('Fluffy', 'Fluffy', 'فلفل'), opt('Zizo', 'Zizo', 'زيزو')] });
+  if (b.friends.some(f => f.guessed)) b.friends.filter(f => f.guessed).slice(0, 2).forEach((f, k) => need.push({ k: 'f_trait' + (k + 1), en: 'What is ' + f.name + ' like?', ar: f.name + ' شخصيته عاملة إزاي؟', o: TRAIT_KEYS.slice(0, 6).map(t => opt(t, TRAITS[t].en, TRAITS[t].ar)) }));
+  if (!b.slots.villain) need.push({ k: 'w_enemy1', en: 'Who are the bad guys?', ar: 'مين الأشرار؟', o: Object.keys(FOE_NAMES).slice(0, 4).map(f => opt(FOE_NAMES[f][1] + ' ' + f, FOE_NAMES[f][0], FOE_NAMES[f][1])) });
+  if (!b.slots.places) a.chapters.slice(0, 4).forEach((c, i) => need.push({ k: 'w_place' + (i + 1), en: 'Chapter ' + (i + 1) + ': where does it happen? (“' + c.text.slice(0, 40) + '…”)', ar: 'الفصل ' + (i + 1) + ': بيحصل فين؟ («' + c.text.slice(0, 40) + '…»)', o: [c.theme].concat(Object.keys(PLACE_NAMES).filter(t => t !== c.theme).slice(i, i + 2)).map(t => opt(PLACE_NAMES[t][1] + ' ' + t, PLACE_NAMES[t][0], PLACE_NAMES[t][1])) }));
+  if (!b.slots.item) need.push({ k: 'n_item', en: 'What does the hero look for?', ar: 'البطل بيدوّر على إيه؟', o: [opt('Treasure', 'Treasure', 'الكنز'), opt('Magic stone', 'Magic stone', 'الحجر السحري'), opt('Lost sandwich', 'The lost sandwich', 'السندوتش الضايع')] });
+  if (!b.slots.goal) need.push({ k: 'w_goal', en: 'How does the story end?', ar: 'القصة بتخلص إزاي؟', o: [opt('boss ' + T('beat the boss', 'يهزم الزعيم'), 'Beat the boss', 'يهزم الزعيم'), opt('rescue ' + T('save a friend', 'ينقذ صاحبه'), 'Save a friend', 'ينقذ صاحبه'), opt('escape ' + T('escape', 'يهرب'), 'Escape', 'يهرب'), opt('treasure ' + T('find the treasure', 'يلاقي الكنز'), 'Find the treasure', 'يلاقي الكنز')] });
+  if (!b.slots.mood) need.push({ k: 'w_mood', en: 'What should it feel like?', ar: 'عايزها تبقى إزاي؟', o: [opt('funny', 'Funny', 'مضحكة'), opt('scary', 'A bit scary', 'مرعبة شوية'), opt('epic', 'Big adventure', 'مغامرة كبيرة')] });
+  if (!b.slots.weapon) need.push({ k: 'attack', en: 'How does the hero fight?', ar: 'البطل بيحارب بإيه؟', o: [opt('sword', 'Sword', 'سيف'), opt('shoot', 'Shoots', 'بيضرب نار'), opt('stomp', 'Jumps on them', 'بينط عليهم')] });
+  // always useful, asked last (only when the story leaves room for more questions)
+  const extra = [
+    { k: 'world', en: 'Straight road or open world?', ar: 'طريق واحد ولا عالم مفتوح؟', o: [opt('linear', 'Straight road — chapter after chapter', 'طريق واحد — فصل ورا فصل'), opt('open', 'Open world — go anywhere', 'عالم مفتوح — روح أي حتة')] },
+    { k: 'level', en: 'How hard?', ar: 'صعوبتها قد إيه؟', o: [opt('1', 'Easy', 'سهلة'), opt('2', 'Normal', 'عادية'), opt('3', 'Hard', 'صعبة')] },
+    { k: 'time', en: 'Day or night?', ar: 'نهار ولا ليل؟', o: [opt('day', 'Day', 'نهار'), opt('night', 'Night', 'ليل'), opt('auto', 'Changes each chapter', 'بيتغيّر كل فصل')] }
+  ];
+  for (const q of need.concat(extra)) if (out.length < b.ask) out.push(q);
+  return out;
+}
+function storyQuestionsOld(story, title, ans) {
   const a = analyse(story, title, Object.assign({}, ans, { n_hero: '', n_friend1: '', n_friend2: '', n_friend3: '' })), out = [], nm = names(String(story || ''));
   const opt = (v, en, ar) => [v, en, ar || en];
   out.push({ k: 'n_hero', en: 'Who is the hero of your story?', ar: 'مين البطل في قصتك؟', o: (nm.length ? nm.slice(0, 3) : [title || 'Hero']).map(n => opt(n, n)) });
@@ -328,7 +388,7 @@ export async function playWorld(g, opts) {
     // hero
     hero.mesh = makeChar({ shirt: col, pants: 0x1e293b, hair: 0x3b2314 });
     if (ans.attack === 'sword') { const sw = model('sword'); if (sw) { sw.scale.setScalar(0.7); sw.rotation.x = Math.PI / 2; const hand = hero.mesh.getObjectByName('HandR') || hero.mesh; sw.position.set(0, -0.05, 0.25); hand.add(sw); hero.sword = sw; } }
-    hero.mesh.scale.multiplyScalar(X.size); addLook(); scene.add(hero.mesh); hero.pos.copy(start); hero.pos.y = groundAt(start.x, start.z); hero.vy = 0; hero.inv = 1.5; hero.hidden = false; hero.carry = null; hero.parts = 0;
+    hero.mesh.scale.multiplyScalar(X.size); bigHead(hero.mesh, 1.25); addLook(); scene.add(hero.mesh); hero.pos.copy(start); hero.pos.y = groundAt(start.x, start.z); hero.vy = 0; hero.inv = 1.5; hero.hidden = false; hero.carry = null; hero.parts = 0;
     view.yaw = Math.atan2(start.x - goal.x, start.z - goal.z);
     // goal portal
     exitP = put('portal', goal.x, goal.z, 1.4, view.yaw); if (exitP) exitP.visible = false; H.goal = goal; H.spots = spots;
@@ -341,6 +401,7 @@ export async function playWorld(g, opts) {
     const fk = ans.enemy !== 'auto' ? ans.enemy : (spec.foe || ({ space: 'robot', haunted: 'ghost', city: 'soldier', castle: 'soldier', volcano: 'creature', cave: 'creature' }[ch.theme] || 'creature'));
     H.foeKind = fk === 'dragon' ? 'creature' : fk; H.bossKind = fk === 'dragon' || spec.foe === 'dragon' ? 'dragon' : fk === 'robot' ? 'robot' : 'creature';
     if (ans.type !== 'arena') for (let k = 0; k < Math.round((2 + lvl * 2 + i) * X.foes); k++) { const s = spots[(R() * spots.length) | 0]; if (s && s.distanceTo(start) > 14) spawnFoe(s.x, s.z, false); }
+    spawnBuddies();
     setupQuest();
   }
   function groundTex(c, theme) {
@@ -372,6 +433,68 @@ export async function playWorld(g, opts) {
     const m = makeChar({ shirt: [0xf59e0b, 0xa855f7, 0x14b8a6, 0xec4899][npcs.length % 4], hair: 0x111827 }); m.position.set(p.x, groundAt(p.x, p.z), p.z); scene.add(m);
     const tag = label(name); tag.position.y = 2.6; m.add(tag);
     const n = { m, pos: new THREE.Vector3(p.x, groundAt(p.x, p.z), p.z), name, role, follow: false }; npcs.push(n); return n;
+  }
+  // ----- V06: comedy — speech bubbles over heads, buddies with a personality, taunting enemies -----
+  const BR = brain(g.story, g.title);
+  const REACT = {
+    kill: [['Boom! Next!', 'بوم! اللي بعده!'], ['Did you see that?!', 'شفت دي؟!'], ['He won\'t be back for dinner', 'ده مش راجع على العشا'], ['Too easy!', 'سهلة!']],
+    hurt: [['Ouch! That looked painful', 'آي! دي شكلها وجعت'], ['Careful! I need you alive', 'خلّي بالك! أنا محتاجك عايش'], ['Hahaha… sorry', 'هههه… آسف'], ['Should I call your mom?', 'أكلّم مامتك؟']],
+    quest: [['We did it!', 'عملناها!'], ['Teamwork! (I did nothing)', 'شغل فريق! (أنا ما عملتش حاجة)'], ['One more and I go home', 'واحدة كمان وأروّح']],
+    taunt: [['You can\'t pass!', 'مش هتعدي!'], ['I\'m the official bad guy here!', 'أنا الشرير الرسمي هنا!'], ['Where do you think you\'re going?', 'رايح فين يا حلو؟'], ['My mom says I\'m scary', 'ماما بتقول إني مخيف']]
+  };
+  const pickL = l => { const x = l[(Math.random() * l.length) | 0]; return T(x[0], x[1]); };
+  function bubble(obj, text, secs) {
+    if (!obj) return; if (obj.userData.bub) { obj.remove(obj.userData.bub); obj.userData.bub = null; }
+    const cv = document.createElement('canvas'), x = cv.getContext('2d'); x.font = 'bold 30px system-ui'; const w = Math.min(560, x.measureText(text).width + 44); cv.width = w; cv.height = 96;
+    x.fillStyle = '#fff'; x.beginPath(); x.roundRect(4, 4, w - 8, 64, 24); x.fill(); x.beginPath(); x.moveTo(w / 2 - 12, 66); x.lineTo(w / 2, 90); x.lineTo(w / 2 + 12, 66); x.fill();
+    x.fillStyle = '#111827'; x.font = 'bold 30px system-ui'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.direction = /[؀-ۿ]/.test(text) ? 'rtl' : 'ltr'; x.fillText(text, w / 2, 37, w - 30);
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), depthTest: false })); s.renderOrder = 9; const k = 0.0072; s.scale.set(w * k, 96 * k, 1); s.position.y = 3.1 / (obj.scale.y || 1); s.scale.multiplyScalar(1 / (obj.scale.y || 1)); obj.add(s); obj.userData.bub = s;
+    setTimeout(() => { if (obj.userData.bub === s) { obj.remove(s); obj.userData.bub = null; } }, (secs || 3) * 1000);
+  }
+  const bigHead = (m, k) => { const h = m && m.userData && m.userData.head; if (h && h !== m) h.scale.setScalar(k); };
+  let buddies = [], chatT = 6, idleT = 0;
+  function buddyList() {
+    const list = BR.friends.map((f, k) => Object.assign({}, f, { trait: ans['f_trait' + (k + 1)] || f.trait }));
+    [ans.n_friend1, ans.n_friend2, ans.n_friend3].forEach((n, k) => { if (n && !list.some(b => b.name === n)) list.splice(k, 0, { name: n, trait: ans['f_trait' + (k + 1)] || TRAIT_KEYS[(hash(n) + k) % TRAIT_KEYS.length], kind: 'person' }); });
+    return list.slice(0, 3);
+  }
+  function spawnBuddies() {
+    if (g.classic) { buddies = []; return; }   // an old story the player chose to keep as it was
+    buddies = buddyList().map((b, k) => {
+      let m = b.kind !== 'person' ? model(b.kind) : null; if (m) m.scale.setScalar(b.kind === 'robot' ? 0.9 : 1.1);
+      if (!m) { m = makeChar({ shirt: [0xf59e0b, 0xa855f7, 0x14b8a6][k % 3], pants: [0x1e3a8a, 0x3f3f46, 0x7c2d12][k % 3], hair: [0x111827, 0xb45309, 0xfacc15][k % 3] }); bigHead(m, 1.35); }
+      const p = new THREE.Vector3(hero.pos.x + (k - 1) * 1.6, hero.pos.y, hero.pos.z + 2.2); m.position.copy(p); scene.add(m);
+      const tag = label(b.name + ' · ' + T(TRAITS[b.trait].en, TRAITS[b.trait].ar)); tag.position.y = 2.5 / (m.scale.y || 1); tag.scale.multiplyScalar(0.7 / (m.scale.y || 1)); m.add(tag);
+      return Object.assign({ m, pos: p, slot: k }, b);
+    });
+  }
+  function buddySay(kind, who) { if (!buddies.length) return; const b = who || buddies[(Math.random() * buddies.length) | 0]; bubble(b.m, kind ? pickL(REACT[kind]) : pickL(TRAITS[b.trait].lines), 3.2); }
+  function buddyTick(dt) {
+    const threat = foes.find(f => f.alive && f.pos.distanceTo(hero.pos) < 8);
+    buddies.forEach((b, k) => {
+      const side = (buddies.length === 1 ? 2.4 : (k - (buddies.length - 1) / 2) * 4.6), back = b.trait === 'coward' && threat ? 1.6 : -0.4;
+      const tx = hero.pos.x + Math.sin(hero.dir) * back + Math.cos(hero.dir) * side, tz = hero.pos.z + Math.cos(hero.dir) * back - Math.sin(hero.dir) * side;
+      tmp.set(tx - b.pos.x, 0, tz - b.pos.z); const dd = tmp.length();
+      if (dd > 30) { b.pos.set(tx, hero.pos.y, tz); } else if (dd > 0.6) { tmp.normalize().multiplyScalar(Math.min(dd * 3, 9) * dt); tryMove(b.pos, tmp.x, tmp.z, 0.4); b.m.rotation.y = Math.atan2(tmp.x, tmp.z); }
+      b.pos.y = Math.max(groundAt(b.pos.x, b.pos.z), -2); b.m.position.copy(b.pos);
+      if (b.trait === 'clumsy' && Math.random() < dt * 0.03) { b.m.rotation.z = 1.4; bubble(b.m, pickL(TRAITS.clumsy.lines), 2.5); setTimeout(() => (b.m.rotation.z = 0), 1500); }
+      if (b.m.userData.anim) b.m.userData.anim(dt, dd > 0.6 ? 1 : 0); else b.m.position.y += Math.abs(Math.sin(t * 8 + k)) * 0.15;
+      if (b.trait === 'coward' && threat && Math.random() < dt * 0.25) bubble(b.m, pickL(TRAITS.coward.lines), 2.4);
+    });
+    idleT = keys.size || joy.on ? 0 : idleT + dt;
+    if ((chatT -= dt) <= 0) { chatT = 9 + Math.random() * 8; buddySay(null); }
+    if (idleT > 6) { idleT = 0; const s = buddies.find(b => b.trait === 'sleepy') || buddies[0]; if (s) bubble(s.m, s.trait === 'sleepy' ? T('Zzz… zzz…', 'ززز… ززز…') : T('Hello? Are we playing or not?', 'ألو؟ هنلعب ولا لأ؟'), 3); }
+    // enemies taunt you sometimes
+    foes.forEach(f => { if (f.alive && f.pos.distanceTo(hero.pos) < 14 && Math.random() < dt * (f.boss ? 0.12 : 0.03)) bubble(f.m, f.boss && ans.l_boss ? ans.l_boss : pickL(REACT.taunt), 2.6); });
+  }
+  // the comic talk before each chapter: hero + buddies, with lines from the story when it has them
+  function chapterTalk(ch) {
+    if (g.classic) return "";
+    const heroName = ans.n_hero || spec.hero, lines = [];
+    if (ch.line) lines.push('💬 ' + heroName + ': «' + ch.line + '»');
+    else lines.push('💬 ' + heroName + ': ' + pickL([['Here we go again!', 'يلا بينا تاني!'], ['This chapter looks easy… I hope', 'الفصل ده شكله سهل… أتمنى'], ['Everybody ready?', 'كله جاهز؟']]));
+    buddies.slice(0, 2).forEach(b => lines.push('💬 ' + b.name + ': ' + pickL(TRAITS[b.trait].lines)));
+    return lines.join('\n');
   }
   function label(text) { const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64; const x = cv.getContext('2d'); x.fillStyle = 'rgba(15,23,42,.8)'; x.beginPath(); x.roundRect(4, 8, 248, 48, 22); x.fill(); x.fillStyle = '#facc15'; x.font = 'bold 28px system-ui'; x.textAlign = 'center'; x.fillText(String(text).slice(0, 16), 128, 43); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), depthTest: false })); s.scale.set(2.4, 0.6, 1); return s; }
 
@@ -406,7 +529,7 @@ export async function playWorld(g, opts) {
   const escH = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 1700); }
   function say(m) { const s = $('say'); s.textContent = m; s.style.display = 'block'; clearTimeout(say.h); say.h = setTimeout(() => s.style.display = 'none', 3200); }
-  function questDone() { quests[qi].done = true; beep(880, 0.15, 'triangle'); beep(1320, 0.2, 'triangle'); qi++; setupQuest(); }
+  function questDone() { quests[qi].done = true; beep(880, 0.15, 'triangle'); beep(1320, 0.2, 'triangle'); qi++; buddySay('quest'); setupQuest(); }
 
   function card(title, text, btns) {
     const c = $('card'); c.hidden = false; c.querySelector('h3').textContent = title; c.querySelector('p').textContent = text;
@@ -415,7 +538,12 @@ export async function playWorld(g, opts) {
   function startChapter(i) {
     chIdx = i; state = 'card'; const ch = spec.chapters[i];
     buildChapter(i); objective();
-    card(T('Chapter ', 'الفصل ') + (i + 1) + ' — ' + (ch.title || ans.n_world || g.title), (i === 0 && ans.l_intro ? ans.l_intro + '\n\n' : '') + (ans.genre === 'action' || X.cards === 'short' ? quests.map(qText).join('\n') : ch.text + '\n\n🎯 ' + quests.map(qText).join(' · ')), [[T('Play', 'العب'), () => { state = 'play'; }]]);
+    // V06: long chapters show the start (button for the full text) + the comic talk + the goal
+    const long = ch.text.length > 700, txt = long ? ch.text.slice(0, 700).replace(/\s+\S*$/, '') + ' …' : ch.text;
+    const body = (i === 0 && ans.l_intro ? ans.l_intro + '\n\n' : '') + (ans.genre === 'action' || X.cards === 'short' ? '' : txt + '\n\n') + chapterTalk(ch) + '\n\n🎯 ' + quests.map(qText).join(' · ');
+    const btns = [[T('Play', 'العب'), () => { state = 'play'; setTimeout(() => buddySay(null), 1500); }]];
+    if (long) btns.push([T('Read the whole chapter', 'اقرا الفصل كله'), () => card(T('Chapter ', 'الفصل ') + (i + 1), ch.text, [[T('Play', 'العب'), () => { state = 'play'; }]]), true]);
+    card(T('Chapter ', 'الفصل ') + (i + 1) + ' — ' + (ch.title || ans.n_world || g.title), body, btns);
   }
   function chapterWin() {
     state = 'card'; beep(660, 0.2, 'triangle'); beep(990, 0.3, 'triangle');
@@ -424,7 +552,7 @@ export async function playWorld(g, opts) {
   }
   function hurt(n) {
     if (hero.inv > 0 || hero.hidden || (window.DS_ADM || {}).powerful) return;
-    hero.hp -= (n || 1) * X.fdmg; hero.inv = 1.2 * X.inv; beep(140, 0.25, 'sawtooth'); H.shake = X.shake ? 0.35 : 0; objective();
+    hero.hp -= (n || 1) * X.fdmg; hero.inv = 1.2 * X.inv; beep(140, 0.25, 'sawtooth'); H.shake = X.shake ? 0.35 : 0; objective(); if (Math.random() < 0.6) buddySay('hurt');
     if (hero.hp <= 0) { state = 'card'; hero.hp = hero.maxHp; card(T('Ouch!', 'آي!'), ans.l_lose || T('Try this chapter again.', 'جرّب الفصل ده تاني.'), [[T('Try again', 'جرّب تاني'), () => startChapter(chIdx)], [T('Back', 'ارجع'), exit, true]]); }
   }
 
@@ -465,6 +593,7 @@ export async function playWorld(g, opts) {
         if (p.kind === 'heart') { hero.hp = Math.min(hero.maxHp, hero.hp + 1); objective(); } } });
     const q = quests[qi];
     if (q && q.k === 'build' && hero.parts > 0 && q.site && hero.pos.distanceTo(q.site) < 2.6) { q.got += hero.parts; hero.parts = 0; toast(qText(q)); if (q.got >= q.n) { put(spec.chapters[chIdx].things.find(x => ['house', 'boat', 'rocket', 'car', 'tower'].indexOf(x) >= 0) || 'house', q.site.x, q.site.z, 1.2); questDone(); } else objective(); }
+    buddyTick(dt);
     // npcs
     npcs.forEach(n => { if (n.follow) { tmp.copy(hero.pos).sub(n.pos); tmp.y = 0; const dd = tmp.length(); if (dd > 2.2) { tmp.normalize().multiplyScalar(Math.min(6, dd * 2) * dt); tryMove(n.pos, tmp.x, tmp.z, 0.5); n.m.rotation.y = Math.atan2(tmp.x, tmp.z); } n.pos.y = groundAt(n.pos.x, n.pos.z); n.m.position.copy(n.pos); if (n.m.userData.anim) n.m.userData.anim(dt, dd > 2.2 ? 1 : 0); }
       else { n.m.rotation.y = Math.atan2(hero.pos.x - n.pos.x, hero.pos.z - n.pos.z); if (n.m.userData.anim) n.m.userData.anim(dt, 0); }
@@ -515,7 +644,7 @@ export async function playWorld(g, opts) {
   function shoot(from, to, bad) { const v = new THREE.Vector3().subVectors(to, from); v.y += bad ? 1 : 0; v.normalize().multiplyScalar(bad ? 14 * X.fspeed : 26 * X.shot); const m = new THREE.Mesh(new THREE.SphereGeometry(bad ? 0.35 : 0.2, 10, 8), new THREE.MeshBasicMaterial({ color: bad ? 0xff4d1f : 0xfff27a })); m.position.copy(from); if (bad) m.position.y += 1.2; scene.add(m); shots.push({ m, v, life: 2, bad }); beep(bad ? 200 : 900, 0.06, 'square'); }
   function damage(f, n) {
     f.hp -= n; f.m.position.y += 0.3; beep(220, 0.08, 'square');
-    if (f.hp <= 0) { f.alive = false; scene.remove(f.m); if (Math.random() < 0.25 * X.hearts) addPickup('heart', f.pos, 'heart');
+    if (f.hp <= 0) { f.alive = false; scene.remove(f.m); if (Math.random() < 0.25 * X.hearts) addPickup('heart', f.pos, 'heart'); if (Math.random() < (f.boss ? 1 : 0.45)) buddySay('kill');
       const q = quests[qi]; if (q && (q.k === 'fight' && f.q)) { q.got++; if (q.got >= q.n) questDone(); else objective(); }
       if (q && q.k === 'boss' && f.boss) { toast(T('Boss beaten!', 'الزعيم اتهزم!')); questDone(); } }
   }

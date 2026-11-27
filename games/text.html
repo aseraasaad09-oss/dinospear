@@ -7,7 +7,7 @@
 <title>THE TEXT — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script src="../assets/js/rotate.js?v=V55" data-noask defer></script>
+<script src="../assets/js/rotate.js?v=V56" data-noask defer></script>
 <style>
 /* THE TEXT V01 — write a story, answer a few questions, get your own game */
 body{touch-action:manipulation;overflow:auto}
@@ -64,7 +64,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
 .ab{width:78px;height:78px;border-radius:50%;border:0;color:#fff;font-weight:900;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.35);touch-action:none}
 .ab.a{background:rgba(239,68,68,.9)}.ab.j{background:rgba(59,130,246,.9)}
 @media (pointer:fine){.pad2{display:none}}
-.qsec{border:1px solid rgba(148,163,184,.3);border-radius:16px;padding:6px 12px;margin:10px 0}.qsec summary{font-weight:900;cursor:pointer;padding:8px 0;font-size:17px}.qin{width:100%;box-sizing:border-box;border-radius:12px;border:2px solid rgba(148,163,184,.35);background:rgba(15,23,42,.6);color:#fff;padding:10px;font:600 15px system-ui}.qin.bad{border-color:#ef4444;text-decoration:underline wavy #ef4444}</style>
+.qsec{border:1px solid rgba(148,163,184,.3);border-radius:16px;padding:6px 12px;margin:10px 0}.qsec summary{font-weight:900;cursor:pointer;padding:8px 0;font-size:17px}.qin{width:100%;box-sizing:border-box;border-radius:12px;border:2px solid rgba(148,163,184,.35);background:rgba(15,23,42,.6);color:#fff;padding:10px;font:600 15px system-ui}.qin.bad{border-color:#ef4444;text-decoration:underline wavy #ef4444}.brain{background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(14,165,233,.18));border:2px solid rgba(167,139,250,.55);border-radius:18px;padding:12px 16px;margin:6px 0 12px;line-height:1.7}.brain h3{margin:0 0 6px;font-size:18px}.brain b{color:#fde047}.brain .bar{height:10px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin:8px 0 4px}.brain .bar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#facc15)}.brain p{margin:4px 0 0;font-weight:800}.qsec.adv{opacity:.85}</style>
 </head>
 <body>
 <div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
@@ -99,7 +99,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
  <div style="height:10px"></div>
  <input type="text" id="wAbout" maxlength="90">
  <div style="height:10px"></div>
- <textarea id="wStory" maxlength="6000"></textarea>
+ <textarea id="wStory" maxlength="60000"></textarea>
  <div class="cnt" id="wCnt"></div>
  <div id="wBad" hidden style="margin-top:10px;background:rgba(239,68,68,.12);border:2px solid #ef4444;border-radius:14px;padding:12px 14px"><div id="wBadTxt" style="line-height:1.8;white-space:pre-wrap;max-height:180px;overflow:auto"></div><p style="color:#f87171;font-weight:900;margin:8px 0 0">الكلام اللي تحته خط أحمر مش مسموح — لو كتبته ممكن تتبند.</p><p style="color:#f87171;font-weight:900;margin:2px 0 0" dir="ltr">This is not allowed — you could be banned.</p></div>
  <div class="row" style="justify-content:flex-start"><button class="big" id="wNext" type="button" data-en="Next: questions" data-ar="التالي: الأسئلة"></button></div>
@@ -239,13 +239,25 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     { k: 'w_extra1', t: 1, en: 'One more thing in the world', ar: 'حاجة كمان في العالم' }, { k: 'w_extra2', t: 1, en: 'Another thing', ar: 'حاجة تانية' }, { k: 'w_extra3', t: 1, en: 'Another thing', ar: 'حاجة تالتة' }, { k: 'w_goal', t: 1, en: 'What must the hero do in the end?', ar: 'البطل لازم يعمل إيه في الآخر؟' }
   ];
   var draft = null, qOpen = { 'Hero': false }, sqCache = null;
-  import('./tt_world.js').then(function (m) { window.TT_SQ = m.storyQuestions; if (!$('pAsk').hidden) renderQs(); }).catch(function () {});
+  import('./tt_world.js').then(function (m) { window.TT_SQ = m.storyQuestions; window.TT_BRAIN = m.brain; window.TT_TRAITS = m.TRAITS; if (!$('pAsk').hidden) renderQs(); }).catch(function () {});
   function newDraft() { return { id: 'g' + Date.now(), title: '', story: '', ans: { genre: 'story', view: '3d', type: 'adv', shape: 'circle', color: '#22c55e', attack: 'sword', enemy: 'auto', map: 'auto', time: 'auto', weather: 'auto', cam: '3rd', level: '2', goal: 'stars', hand: 'r', joy: 'm', keys: 'both', dash: 'yes', djump: 'no', about: '' }, v: 1, remote: null }; }
   function renderQs() {
     var box = $('qs'), keepY = scrollY; box.innerHTML = ''; var cur = box, nq = 0;
     // V05: first, the questions made from YOUR story — pick an answer or write your own
     if (window.TT_SQ && draft.story) {
-      var key = draft.story + '|' + draft.title; if (!sqCache || sqCache.key !== key) sqCache = { key: key, list: window.TT_SQ(draft.story, draft.title, draft.ans) };
+      var key = draft.story + '|' + draft.title; if (!sqCache || sqCache.key !== key) sqCache = { key: key, list: window.TT_SQ(draft.story, draft.title, draft.ans), brain: window.TT_BRAIN(draft.story, draft.title) };
+      // V06: what the story brain understood — and why it asks this many questions
+      var bz = sqCache.brain, TR = window.TT_TRAITS, sum = document.createElement('div'); sum.className = 'brain';
+      var li = function (k, v) { return v ? '<div><b>' + k + '</b> ' + v + '</div>' : ''; };
+      var esc2 = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+      sum.innerHTML = '<h3>🧠 ' + T('What I understood from your story', 'فهمت من قصتك') + '</h3>' +
+        li(T('Hero:', 'البطل:'), bz.hero ? esc2(bz.hero.name) : '') +
+        li(T('Friends:', 'صحابه:'), bz.friends.map(function (f) { return esc2(f.name) + ' (' + T(TR[f.trait].en, TR[f.trait].ar) + (f.guessed ? '?' : '') + ')'; }).join(' · ')) +
+        li(T('Villain:', 'الشرير:'), bz.villain ? esc2(bz.villain.name) : bz.foe || '') +
+        li(T('Chapters:', 'الفصول:'), bz.chapters + ' · ' + bz.words + T(' words', ' كلمة')) +
+        '<div class="bar"><i style="width:' + Math.round(bz.detail * 100) + '%"></i></div>' +
+        '<p>' + T('Story details: ', 'تفاصيل القصة: ') + Math.round(bz.detail * 100) + '% → ' + (bz.ask <= 3 ? T('your story says almost everything, so only ', 'قصتك قايلة كل حاجة تقريباً، فهسألك ') : T('I need to know a few things, so ', 'محتاجة أعرف كام حاجة، فهسألك ')) + sqCache.list.length + T(' questions.', ' أسئلة بس.') + '</p>';
+      box.appendChild(sum);
       var sd = document.createElement('details'); sd.className = 'qsec'; sd.open = qOpen.story !== false; sd.ontoggle = function () { qOpen.story = sd.open; };
       var ss = document.createElement('summary'); ss.textContent = T('🔎 Questions from your story (' + sqCache.list.length + ')', '🔎 أسئلة من قصتك (' + sqCache.list.length + ')'); sd.appendChild(ss);
       sqCache.list.forEach(function (q, qi) {
@@ -260,9 +272,12 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
       });
       box.appendChild(sd);
     }
-    var cnt = document.createElement('p'); cnt.className = 'lead'; cnt.textContent = T('100 questions — open any group. The boxes are your own words: they change the places, enemies, names and lines.', '100 سؤال — افتح أي مجموعة. المربعات دي كلامك انت: بتغيّر الأماكن والأعداء والأسامي والجمل.'); box.appendChild(cnt);
+    // V06: the 100 fixed questions are optional now — hidden in one "advanced" box
+    var adv = document.createElement('details'); adv.className = 'qsec adv'; adv.open = !!qOpen.adv; adv.ontoggle = function () { qOpen.adv = adv.open; };
+    var asm = document.createElement('summary'); asm.textContent = T('⚙️ Advanced settings (optional, 100 questions)', '⚙️ إعدادات متقدمة (مش لازم، 100 سؤال)'); adv.appendChild(asm); box.appendChild(adv); cur = adv;
+    var cnt = document.createElement('p'); cnt.className = 'lead'; cnt.textContent = T('You don\'t need these — the game is already made from your story. Change anything you like.', 'مش محتاجهم — اللعبة اتعملت من قصتك خلاص. غيّر أي حاجة لو حابب.'); adv.appendChild(cnt);
     Q.forEach(function (q) {
-      if (q.sec) { var dt = document.createElement('details'); dt.className = 'qsec'; dt.open = !!qOpen[q.sec[0]]; dt.ontoggle = function () { qOpen[q.sec[0]] = dt.open; }; var sm = document.createElement('summary'); sm.textContent = T(q.sec[0], q.sec[1]); dt.appendChild(sm); box.appendChild(dt); cur = dt; return; }
+      if (q.sec) { var dt = document.createElement('details'); dt.className = 'qsec'; dt.open = !!qOpen[q.sec[0]]; dt.ontoggle = function () { qOpen[q.sec[0]] = dt.open; }; var sm = document.createElement('summary'); sm.textContent = T(q.sec[0], q.sec[1]); dt.appendChild(sm); adv.appendChild(dt); cur = dt; return; }
       nq++;
       var d = document.createElement('div'); d.className = 'q'; var h = document.createElement('h3'); h.textContent = nq + '. ' + T(q.en, q.ar); d.appendChild(h);
       if (q.t) {
@@ -314,6 +329,22 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     var dl = document.createElement('button'); dl.type = 'button'; dl.textContent = T('⬇ Download', '⬇ نزّلها'); dl.onclick = function () { downloadGame(g); }; a.appendChild(dl);
     d.appendChild(a); return d;
   }
+  // V06: when THE TEXT updates, your old stories are NOT changed by themselves — you get asked first (and a backup is kept)
+  var TT_VER = 6;
+  function askUpdate() {
+    var old = mine().filter(function (g) { return (g.tv || 0) < TT_VER && !g.classic; });
+    if (!old.length || store.get('tt_asked_v' + TT_VER, false)) return;
+    var box = document.createElement('div'); box.className = 'note'; box.style.cssText = 'position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:rgba(2,6,23,.8)';
+    box.innerHTML = '<div style="max-width:min(520px,92vw);background:#0f172a;border:2px solid #a78bfa;border-radius:20px;padding:20px;line-height:1.7"><h3 style="margin:0 0 8px;color:#fde047">🆕 ' + T('THE TEXT was updated', 'THE TEXT اتحدّثت') + '</h3><p style="margin:0 0 6px">' + T('New: the questions depend on your story (fewer when it has details), funny friends that walk and talk with you, and long stories (6000+ words).', 'الجديد: الأسئلة على حسب قصتك (أقل لو فيها تفاصيل)، صحاب كوميدي بيمشوا ويتكلموا معاك، وقصص طويلة (أكتر من 6000 كلمة).') + '</p><p style="margin:0 0 14px;font-weight:800">' + T('Do you want to update your ' + old.length + ' old stories? A backup is kept either way.', 'عايز تحدّث قصصك القديمة (' + old.length + ')؟ هتتحفظ نسخة احتياطي في الحالتين.') + '</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="big" data-a="yes">' + T('Yes, update them', 'أيوه، حدّثها') + '</button><button type="button" class="big sec" data-a="no">' + T('No, keep them as they are', 'لأ، سيبها زي ما هي') + '</button></div></div>';
+    document.body.appendChild(box);
+    box.querySelectorAll('button').forEach(function (b) { b.onclick = function () {
+      store.set('tt_games_backup_v' + (TT_VER - 1), mine());   // the old stories, exactly as they were
+      var all = mine().map(function (g) { if ((g.tv || 0) >= TT_VER) return g; if (b.dataset.a === 'yes') { g.tv = TT_VER; delete g.spec; delete g.classic; } else g.classic = true; return g; });
+      store.set('tt_games', all); store.set('tt_asked_v' + TT_VER, true); box.remove(); home();
+      alertMsg(b.dataset.a === 'yes' ? T('Updated ✓ (backup kept)', 'اتحدّثت ✓ (والنسخة القديمة محفوظة)') : T('Kept as they are ✓', 'سبتها زي ما هي ✓'));
+    }; });
+  }
+  setTimeout(askUpdate, 600);
   function home() {
     show('pHome'); var m = $('mine'); m.innerHTML = '';
     var list = mine(); if (!list.length) { var e = document.createElement('p'); e.className = 'lead'; e.textContent = T('No games yet — write your first story!', 'لسه مفيش ألعاب — اكتب أول قصة!'); m.appendChild(e); }
@@ -321,7 +352,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     search();
   }
   function openWrite() { setTimeout(checkNow, 50); show('pWrite'); $('wTitle').value = draft.title; $('wAbout').value = draft.ans.about || ''; $('wAbout').placeholder = T('What is your game about? (one line)', 'لعبتك عن إيه؟ (سطر واحد)'); $('wStory').value = draft.story; $('wTitle').placeholder = T('Game name (2–40 letters)', 'اسم اللعبة (من 2 لـ 40 حرف)'); $('wStory').placeholder = T('Once upon a time…', 'في يوم من الأيام…'); cnt(); }
-  function cnt() { $('wCnt').textContent = $('wStory').value.length + ' / 6000'; }
+  function cnt() { $('wCnt').textContent = ($('wStory').value.match(/\S+/g) || []).length + T(' words', ' كلمة') + ' · ' + $('wStory').value.length + ' / 60000'; }
   $('wStory').oninput = function () { cnt(); checkSoon(); }; $('wTitle').oninput = checkSoon; $('wAbout').oninput = checkSoon;
   // bad words / harassment: red underline + a warning (checked on the server list, a small list when offline)
   var LOCAL_BAD = ['fuck', 'fucking', 'shit', 'bitch', 'asshole', 'dick', 'pussy', 'porn', 'nude', 'nudes', 'sex', 'sexy', 'rape', 'whore', 'slut', 'كس', 'كسمك', 'شرموط', 'شرموطة', 'متناك', 'منيوك', 'خول', 'عرص', 'معرص', 'زب', 'طيز', 'نيك', 'سكس', 'جنس', 'عريان', 'عريانة'];
@@ -363,7 +394,7 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
     if (badA.length) return alertMsg(T('Remove the bad words in the boxes (red) first', 'شيل الكلام الوحش اللي في المربعات (الأحمر) الأول'));
     var r = readStory(draft.story, draft.title);
     var old = mine().find(function (x) { return x.id === draft.id; });
-    draft.v = old ? (old.v || 1) + 1 : 1; draft.spec = r; draft.made = Date.now(); saveMine(draft); store.set('tt_prog_' + draft.id, 0);
+    draft.v = old ? (old.v || 1) + 1 : 1; draft.spec = r; draft.made = Date.now(); draft.tv = TT_VER; delete draft.classic; saveMine(draft); store.set('tt_prog_' + draft.id, 0);
     if (draft.remote) publish(draft, null, true);
     play(draft);
   };
@@ -776,6 +807,6 @@ input:focus,textarea:focus{outline:none;border-color:#22c55e}
   window.DS_GAME = { name: 'THE TEXT', cmds: [['skip', 'Finish this chapter', 'خلّص الفصل ده'], ['clear', 'Remove all enemies', 'شيل كل الأعداء']], run: function (c) { if (!G || !G.L) return; if (c === 'skip') chapterDone(); if (c === 'clear') G.L.enemies.forEach(function (e) { e.alive = false; }); } };
 })();
 </script>
-<script src="../assets/js/game_admin.js?v=V55" defer></script>
+<script src="../assets/js/game_admin.js?v=V56" defer></script>
 </body>
 </html>

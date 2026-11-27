@@ -1,7 +1,7 @@
 // ASER WORLD web — phase 7: ASER CITY 150 houses (buy · rent · grow · enter · sell) + your own land in the wild lands
 // numbers from Unity AserEstate.cs, AserHomeGrow.cs, AserLand.cs
 import { THREE, mat, model, T, beep, walls } from './engine.js';
-import { egp } from './aw_eco.js?v=V55';
+import { egp } from './aw_eco.js?v=V56';
 
 export const HOUSE_PRICE = i => 80000 + ((i * 7919 + 13) % 17) * 60000 + (i % 5 === 0 ? 500000 : 0);
 const RENT = i => Math.floor(HOUSE_PRICE(i) / 50), MAX_HOUSES = 3, RENT_EVERY = 600, PTS_PER_LV = 3;
