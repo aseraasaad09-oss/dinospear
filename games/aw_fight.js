@@ -1,6 +1,6 @@
 // ASER WORLD web — phase 3: power fruits, fighting styles, monsters (numbers from Unity AserFruits.cs, AserFruitsPlus.cs, AserStyles.cs, FarmData2.cs, Zombie.cs, AserSkyWorld.cs)
 import { THREE, mat, makeChar, T, beep } from './engine.js';
-import { egp, ITEMS, SWORDS } from './aw_eco.js?v=V51';
+import { egp, ITEMS, SWORDS } from './aw_eco.js?v=V52';
 
 // ---------- fruits (no SECRET/admin fruits here: they are never sold or rolled) ----------
 const RAR = [['COMMON', 'عادي', '#bbbbbb'], ['UNCOMMON', 'مش منتشر', '#6bff6b'], ['RARE', 'نادر', '#4fa8ff'], ['MYTHIC', 'خرافي', '#c060ff'], ['LEGENDARY', 'أسطوري', '#ffc830']];
@@ -66,15 +66,22 @@ const MON = [
   { n: 'Mud Golem', ar: 'جولم الطين', hp: 70, dmg: 7, sp: 2.4, rw: 18, sc: 1, skin: c3(.45, .33, .22) },
   { n: 'Cave Spider', ar: 'عنكبوت الكهف', hp: 45, dmg: 5, sp: 4.6, rw: 22, sc: .9, skin: c3(.2, .18, .22) },
   { n: 'Blast Blob', ar: 'الكورة المتفجرة', hp: 40, dmg: 35, sp: 3.1, rw: 30, sc: 1, skin: c3(1, .55, .15) },
-  { n: 'STONE KING', ar: 'ملك الحجر', hp: 1400, dmg: 26, sp: 2.6, rw: 600, sc: 2.2, skin: c3(.5, .5, .58) }
+  { n: 'STONE KING', ar: 'ملك الحجر', hp: 1400, dmg: 26, sp: 2.6, rw: 600, sc: 2.2, skin: c3(.5, .5, .58) },
+  { n: 'SHADOW MONARCH', ar: 'ملك الضلال', hp: 9000, dmg: 48, sp: 3.4, rw: 8000, sc: 3.2, skin: c3(.18, .1, .32) },
+  { n: 'FROST GIANT', ar: 'عملاق التلج', hp: 2600, dmg: 32, sp: 2.4, rw: 1500, sc: 2.6, skin: c3(.6, .85, 1) },
+  { n: 'LAVA TITAN', ar: 'تايتن الحمم', hp: 4200, dmg: 38, sp: 2.6, rw: 3000, sc: 2.9, skin: c3(.95, .35, .08) },
+  { n: 'PUMPKIN KING', ar: 'ملك القرع', hp: 7000, dmg: 40, sp: 3, rw: 6000, sc: 3, skin: c3(1, .5, .08) },
+  { n: 'EVIL SANTA', ar: 'سانتا الشرير', hp: 7000, dmg: 40, sp: 3, rw: 6000, sc: 3, skin: c3(.85, .1, .12) },
+  { n: 'PHARAOH GUARDIAN', ar: 'حارس الفرعون', hp: 7000, dmg: 40, sp: 3, rw: 6000, sc: 3, skin: c3(1, .8, .25) }
 ];
+export const MONSTERS = MON;
 const floorHp = f => Math.pow(1.25, Math.max(0, f - 1)), floorDmg = f => Math.pow(1.14, Math.max(0, f - 1));
 const nm = o => T(o.n, o.ar);
 
 export function setupFight(ctx) {
   const { scene, me, pos, player, toast, save, gainXp, panel, islands, zombie, maxHp, respawn, redraw, yaw } = ctx;
   me.power = me.power ?? -1; me.fruitBag = me.fruitBag || FRUITS.map(() => 0); me.fLv = me.fLv || FRUITS.map(() => 0); me.fXp = me.fXp || FRUITS.map(() => 0);
-  me.style = me.style ?? 0; me.styles = me.styles ?? 1; me.gacha = me.gacha || [];
+  me.style = me.style ?? 0; me.styles = me.styles ?? 1; me.gacha = me.gacha || []; me.gems = me.gems || 0;
   const mobs = []; const cds = {}; const fx = [];
   let shieldUntil = 0, invisUntil = 0, floatUntil = 0, formUntil = 0, timeStopUntil = 0, atkCd = 0, styleHits = 0;
   const now = () => performance.now() / 1000;
@@ -96,6 +103,7 @@ export function setupFight(ctx) {
     if (m.zone === 'zombie') { if (Math.random() < 0.03) { me.items[23]++; drop += ' · +1 ' + nm(ITEMS[23]); } if (Math.random() < 0.01) { me.items[22]++; drop += ' · 🪽 ELYTRA!'; } }
     toast('+' + egp(m.rw) + drop); gainXp(10 + m.floor * 3);
     if (me.power >= 0 && heldFruit) fruitXp(3);
+    if (api.onKill) api.onKill(m);
     save();
   }
   function hurt(m, dmg, o) {
@@ -199,7 +207,7 @@ export function setupFight(ctx) {
   function eat(i) { if (!me.fruitBag[i]) return; me.fruitBag[i]--; me.power = i; toast(T('You ate the ', 'كلت ') + nm(FRUITS[i]) + T('! Hold 2 and press Z X C V', '! امسك 2 ودوس Z X C V')); beep(520, 0.25, 'triangle', 0.06); save(); redraw(); }
   function fruitShop() {
     panel(T('FRUIT SHOP', 'محل الفاكهة'), b => {
-      b.appendChild(row('💰 ' + egp(me.money) + (me.power >= 0 ? ' · ' + T('Your power: ', 'قدرتك: ') + nm(FRUITS[me.power]) + ' (LV ' + fruitLv() + ')' : '')));
+      b.appendChild(row('💰 ' + egp(me.money) + ' · 💎 ' + me.gems + (me.power >= 0 ? ' · ' + T('Your power: ', 'قدرتك: ') + nm(FRUITS[me.power]) + ' (LV ' + fruitLv() + ')' : '')));
       b.appendChild(row('🎲 <b>' + T('RANDOM FRUIT', 'فاكهة عشوائية') + '</b><br><small>' + T('The price goes up ×1.3 every roll and resets after 24 hours.', 'السعر بيزيد ×1.3 كل لفة وبيرجع بعد 24 ساعة.') + '</small>', egp(gachaPrice()), () => {
         const p = gachaPrice(); if (me.money < p) return toast(T('NOT ENOUGH MONEY', 'فلوسك مش كفاية'));
         me.money -= p; me.gacha.push(Date.now()); let w = Math.random() * 100, r = 0; while (r < 4 && w > GACHA_W[r]) { w -= GACHA_W[r]; r++; }
@@ -209,7 +217,7 @@ export function setupFight(ctx) {
       FRUITS.forEach((f, i) => {
         const own = me.fruitBag[i];
         b.appendChild(row('<b style="color:#' + new THREE.Color(f.col).getHexString() + '">' + nm(f) + '</b> ' + rTag(f.r) + '<br><small>' + f.moves.map(m => m.n).join(' · ') + (own ? ' · ' + T('in bag: ', 'في الشنطة: ') + own : '') + '</small>',
-          own ? T('EAT', 'كُل') : f.gems ? '💎 ' + f.gems : egp(f.price), () => { if (own) return eat(i); if (f.gems) return toast(T('Gem fruits come from the random fruit roll for now', 'فواكه الجواهر بتيجي من اللفة العشوائية دلوقتي')); if (me.money < f.price) return toast(T('NOT ENOUGH MONEY', 'فلوسك مش كفاية')); me.money -= f.price; me.fruitBag[i]++; toast(T('Bought ', 'اشتريت ') + nm(f)); save(); fruitShop(); }, !own && (f.gems ? false : me.money < f.price)));
+          own ? T('EAT', 'كُل') : f.gems ? '💎 ' + f.gems : egp(f.price), () => { if (own) return eat(i); if (f.gems) { if (me.gems < f.gems) return toast(T('You need ', 'محتاج ') + f.gems + T(' gems (clear gates and dungeons)', ' جوهرة (اقفل بوابات ودانجن)')); me.gems -= f.gems; me.fruitBag[i]++; toast(T('Bought ', 'اشتريت ') + nm(f)); save(); return fruitShop(); } if (me.money < f.price) return toast(T('NOT ENOUGH MONEY', 'فلوسك مش كفاية')); me.money -= f.price; me.fruitBag[i]++; toast(T('Bought ', 'اشتريت ') + nm(f)); save(); fruitShop(); }, !own && (f.gems ? me.gems < f.gems : me.money < f.price)));
       });
     });
   }
@@ -222,7 +230,8 @@ export function setupFight(ctx) {
 
   // ---------- per frame ----------
   const api = {
-    fruitShop, styleShop, attack, mobs,
+    fruitShop, styleShop, attack, mobs, spawn, fruitXp, onKill: null,
+    remove(m) { scene.remove(m.g); const k = mobs.indexOf(m); if (k >= 0) mobs.splice(k, 1); },
     fruitName: () => (me.power >= 0 ? nm(FRUITS[me.power]) + ' ' + fruitLv() : null), styleName: () => nm(STYLES[me.style]),
     keys(hit, held) {
       heldFruit = held === 2;

@@ -190,6 +190,7 @@ export function setupEco(ctx) {
   let mineCd = 0, chopCd = 0;
   const near = (p, r) => Math.hypot(pos.x - p.x, pos.z - p.z) < r;
   function prompt() {
+    if (ext.prompt) { const p = ext.prompt(); if (p) return p; }
     if (near(places.seedShop, 10)) return [T('E: SEED SHOP', 'E: محل البذور'), seedShop];
     if (near(places.sell, 10)) return [T('E: SELL SHOP', 'E: محل البيع'), sellShop];
     if (near(places.forge, 10)) return [T('E: WORKSHOP', 'E: الورشة'), forge];

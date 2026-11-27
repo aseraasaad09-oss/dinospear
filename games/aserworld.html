@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#3b82f6">
-<title>ASER WORLD — WEB V03</title>
+<title>ASER WORLD — WEB V04</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V51" defer></script>
+<script src="../assets/js/rotate.js?v=V52" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 /* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
@@ -123,15 +123,16 @@
  <div class="card">
   <h1>ASER WORLD</h1>
   <p data-en="The web version of the Unity game, built step by step. This is not the full game yet — it is part of the game." data-ar="نسخة الويب من لعبة Unity، بتتبني خطوة خطوة. اللعبة دي مش اللعبة الكاملة، دي جزئية من اللعبة بس."></p>
-  <p style="opacity:.75;font-size:14px" data-en="V03: the full map, farming, mining and the workshop, plus 36 power fruits (Z X C V), 7 fighting styles and monsters on the islands — same numbers as Unity." data-ar="V03: الخريطة كاملة والزراعة والتعدين والورشة، وكمان 36 فاكهة بقدرات (Z X C V) و7 أساليب قتال ووحوش على الجزر — بنفس أرقام Unity."></p>
+  <p style="opacity:.75;font-size:14px" data-en="V04: the full map, farming, mining, the workshop, 36 power fruits, 7 fighting styles, monsters, dungeon gates (E to S) and 6 far dungeons — same numbers as Unity." data-ar="V04: الخريطة كاملة والزراعة والتعدين والورشة و36 فاكهة و7 أساليب قتال ووحوش، وكمان بوابات الدانجن (من E لـ S) و6 دانجن بعيدة — بنفس أرقام Unity."></p>
   <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="Back" data-ar="رجوع"></button></div>
  </div>
 </div>
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
-import { setupEco, xpFor, egp } from './aw_eco.js?v=V51';
-import { setupFight } from './aw_fight.js?v=V51';
+import { setupEco, xpFor, egp } from './aw_eco.js?v=V52';
+import { setupFight } from './aw_fight.js?v=V52';
+import { setupDungeon } from './aw_dungeon.js?v=V52';
 const $ = id => document.getElementById(id);
 await preload(['person']);
 
@@ -304,7 +305,9 @@ spawn();
 const ISL = islands.filter(s => !s.hidden && !s.eventOnly);
 const islandAt = p => ISL.find(s => Math.abs(p.x - s.x) <= s.size / 2 && Math.abs(p.z - s.z) <= s.size / 2);
 function onBridge(p) { for (const b of bridges) { const dx = b.bx - b.ax, dz = b.bz - b.az, t = Math.max(0, Math.min(1, ((p.x - b.ax) * dx + (p.z - b.az) * dz) / (b.len * b.len))); if (Math.hypot(p.x - (b.ax + dx * t), p.z - (b.az + dz * t)) < 4.2) return true; } return false; }
-const hasFloor = p => !!islandAt(p) || onBridge(p);
+const EXTRA_FLOORS = [];   // dungeon arenas (aw_dungeon.js)
+const onExtra = p => EXTRA_FLOORS.some(r => p.x > r.x0 && p.x < r.x1 && p.z > r.z0 && p.z < r.z1);
+const hasFloor = p => !!islandAt(p) || onBridge(p) || onExtra(p);
 function maxHp() { return 100 + Math.min(me.lvl, 100) * 5 + Math.max(0, me.lvl - 100); }   // Unity FarmData.MaxHp — slower after level 100
 // Unity FarmData.XpForLevel: total XP to reach a level = 30 · level^1.7 (max level 3400)
 if (!me.xpV) { me.xpV = 1; me.xp = xpFor(me.lvl); }
@@ -318,7 +321,7 @@ function hud() {
   $('hpI').style.width = (me.hp / mh * 100) + '%'; $('hpT').textContent = 'HP ' + Math.round(me.hp) + ' / ' + mh;
   const a = xpFor(me.lvl), b = xpFor(me.lvl + 1);
   $('xpI').style.width = Math.min(100, (me.xp - a) / (b - a) * 100) + '%'; $('xpT').textContent = 'XP ' + (me.xp - a) + ' / ' + (b - a);
-  $('lvl').textContent = 'LV ' + me.lvl; $('money').textContent = egp(me.money);
+  $('lvl').textContent = 'LV ' + me.lvl; $('money').textContent = egp(me.money) + (me.gems ? ' · 💎 ' + me.gems : '');
 }
 const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 function drawMap(cv, span, cx, cz, big) {
@@ -347,7 +350,7 @@ function phone(open) {
     app('📍', 'WHERE AM I', 'أنا فين', () => { const s = islandAt(pos); toast(s ? nameOf(s) : T('On a bridge', 'على كوبري')); });
   } else if (tab === 1) { app('🚗', 'CAR + GARAGE', 'العربية + الجراج'); app('✈️', 'PLANE + MY PLANE', 'الطيارة + طيارتي'); app('⛵', 'BOATS', 'السفن'); }
   else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('🍉', 'FRUIT', 'الفاكهة', () => goShop(SHOP.fruit)); app('🥋', 'FIGHTING STYLES', 'أساليب القتال', () => { phone(false); fight.styleShop(); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك'); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
-  else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة'); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
+  else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة', () => { phone(false); dng.open(); }); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
   else if (tab === 4) { app('👥', 'FRIENDS', 'الأصحاب'); app('💬', 'CHAT', 'الشات'); }
   else { app('🎒', 'BACKPACK', 'الشنطة', () => { phone(false); eco.bag(); }); app('🌐', 'LANGUAGE', 'اللغة', () => { setLang(L() === 'ar' ? 'en' : 'ar'); rebuildLabelsNote(); phone(true); }); app('📊', 'CHARTS', 'الترتيب'); app('🎁', 'CODES + REDEEM', 'الأكواد'); app('🛟', 'HELP + SUPPORT', 'المساعدة', () => toast(T('Support is on Discord only', 'الدعم على Discord بس'))); }
 }
@@ -365,7 +368,9 @@ const pillars = []; for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28; pill
 const fight = setupFight({ scene, me, pos, player, camera, toast: m => toast(m), save, gainXp, panel, maxHp: () => maxHp(), islands: FIGHT_ISL, zombie: { pillars },
   redraw: () => eco.drawBar(), move: (dx, dz) => moveCircle(pos, dx, dz, 0.45), jump: v => { vy = v; onGround = false; },
   hurtMe: d => { if (state !== 'play') return; me.hp -= d; beep(120, 0.1, 'square', 0.05); if (me.hp <= 0) { spawn(); onGround = true; me.hp = maxHp(); toast(T('You were defeated! Back to ASER TOWN', 'خسرت! رجعت ASER TOWN')); save(); } } });
-eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop });
+// ================= PHASE 4: dungeon gates E–S + 6 far dungeons (aw_dungeon.js) =================
+const dng = setupDungeon({ scene, me, pos, fight, toast: m => toast(m), save, gainXp, panel, floors: EXTRA_FLOORS, label, goTown: () => { spawn(); onGround = true; } });
+eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: dng.prompt });
 // phone buttons for moves (Z X C V) + attack, shown when you hold the fruit (2) or a style (3) / sword (1)
 function moveButtons() { const h = me.held; $('mv').hidden = !(h === 1 || h === 2 || h === 3); ['mZ', 'mX', 'mC', 'mV'].forEach((id, i) => { $(id).hidden = !(h === 2 || (h === 3 && i < 2)); }); }
 
@@ -386,7 +391,7 @@ $('mBack').onclick = () => { location.href = '../index.html'; };
 const clock = new THREE.Clock(); let lastIsl = null, hudT = 0;
 function frame() {
   const dt = Math.min(0.05, clock.getDelta()), now = performance.now();
-  if (state === 'play') { eco.update(dt); fight.update(dt); moveButtons(); }
+  if (state === 'play') { eco.update(dt); fight.update(dt); dng.update(dt); moveButtons(); }
   if (state === 'play' && !$('panel').hidden && hit('Escape')) $('panel').hidden = true;
   if (state === 'play' && $('phone').hidden && $('panel').hidden) {
     eco.keys(hit); if (hit('KeyE')) eco.use(); if (hit('KeyB')) eco.bag(); fight.keys(hit, me.held);
@@ -401,7 +406,7 @@ function frame() {
     if (pos.y < -60) { spawn(); onGround = true; me.hp = Math.max(1, me.hp - 10); toast(T('You fell! Back to ASER TOWN (−10 HP)', 'وقعت! رجعت ASER TOWN (−10 HP)')); save(); }
     player.userData.anim && player.userData.anim(dt, Math.hypot(inp.x, inp.z) * (inp.run ? 1.6 : 1));
     const s = islandAt(pos);
-    if (s !== lastIsl) { lastIsl = s; $('areaName').textContent = s ? nameOf(s) : T('BRIDGE', 'كوبري'); if (s && !me.seen.includes(s.name)) { me.seen.push(s.name); gainXp(25); toast(T('New place: ', 'مكان جديد: ') + nameOf(s) + ' +25 XP'); } }
+    if (s !== lastIsl) { lastIsl = s; $('areaName').textContent = s ? nameOf(s) : onBridge(pos) ? T('BRIDGE', 'كوبري') : T('DUNGEON', 'الدانجن'); if (s && !me.seen.includes(s.name)) { me.seen.push(s.name); gainXp(25); toast(T('New place: ', 'مكان جديد: ') + nameOf(s) + ' +25 XP'); } }
     // portals: arcade island ↔ race track (Unity AserIslands2)
     const rp = PLACES.racePortal, rr = PLACES.raceReturn;
     if (Math.hypot(pos.x - rp.x, pos.z - rp.z) < 3.5) { pos.set(rr.x, 0, rr.z + 10); toast(nameOf(race)); }
@@ -421,6 +426,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V51" defer></script>
+<script src="../assets/js/game_admin.js?v=V52" defer></script>
 </body>
 </html>
