@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#3b82f6">
+<title>ASER WORLD — WEB V01</title>
+<link rel="stylesheet" href="ui.css">
+<script src="../assets/js/rotate.js?v=V49" defer></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<style>
+/* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
+.top{position:absolute;top:max(10px,env(safe-area-inset-top));right:10px;display:flex;gap:6px;direction:ltr}
+.top button{background:rgba(15,23,42,.8);color:#fff;font-weight:900;font-size:13px;padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.16)}
+.top button.on{background:#dc2626}
+#area{position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 84px);left:50%;transform:translateX(-50%);text-align:center;pointer-events:none}
+#area b{display:block;font-size:17px;color:#ffd040;text-shadow:0 2px 6px #000}
+#compass{font:800 12px system-ui;letter-spacing:2px;background:rgba(15,23,42,.7);padding:3px 12px;border-radius:999px;display:inline-block;margin-top:4px;direction:ltr}
+#stats{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;direction:ltr;pointer-events:none}
+#stats .bars{display:flex;flex-direction:column;gap:4px;width:min(42vw,260px)}
+.b{height:13px;border-radius:8px;background:rgba(0,0,0,.45);overflow:hidden;position:relative;border:1px solid rgba(255,255,255,.2)}
+.b i{position:absolute;inset:0 auto 0 0;display:block}
+.b span{position:relative;font:800 10px system-ui;padding-left:6px;line-height:12px}
+#hpI{background:linear-gradient(90deg,#16a34a,#4ade80)}#xpI{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.badge{background:#ffd040;color:#1f1300;font-weight:900;border-radius:12px;padding:6px 10px;font-size:13px}
+.money{background:rgba(15,23,42,.85);color:#86efac;font-weight:900;border-radius:12px;padding:6px 10px;font-size:13px}
+#mini{position:absolute;top:58px;right:10px;width:150px;height:150px;border-radius:16px;background:rgba(15,23,42,.75);border:1px solid rgba(255,255,255,.18)}
+#bigmap{position:fixed;inset:0;z-index:15;background:rgba(5,10,25,.92);display:flex;align-items:center;justify-content:center}
+#bigmap[hidden]{display:none}
+#bigmap canvas{width:min(92vw,92vh);height:min(92vw,92vh)}
+#phone{position:fixed;z-index:16;inset:auto 50% 50% auto;transform:translate(50%,50%);width:min(360px,92vw);max-height:86vh;overflow:auto;background:#0f172a;border:3px solid #334155;border-radius:28px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#phone[hidden]{display:none}
+#phone h3{margin:2px 0 10px;text-align:center}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+.tabs button{padding:6px 9px;border-radius:10px;background:#1e293b;color:#fff;font-weight:800;font-size:12px}
+.tabs button.on{background:#2563eb}
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.apps button{background:#1e293b;color:#fff;border-radius:16px;padding:10px 4px;font-weight:800;font-size:12px;line-height:1.3}
+.apps button i{display:block;font-style:normal;font-size:26px}
+.apps button[disabled]{opacity:.4}
+#pClose{margin:12px auto 0;display:block}
+#jumpB{background:rgba(234,179,8,.9)}
+@media (pointer:fine){#stats{bottom:44px}}
+@media (pointer:coarse){#stats{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 150px)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="hud" id="hud" hidden>
+ <div id="area"><b id="areaName">ASER TOWN</b><span id="compass">N</span></div>
+ <div class="top">
+  <button type="button" id="bPhone" data-en="PHONE" data-ar="التليفون"></button>
+  <button type="button" id="bMenu" data-en="MENU" data-ar="القائمة"></button>
+  <button type="button" id="bMap" data-en="MAP" data-ar="الخريطة"></button>
+  <button type="button" id="bPvp">PVP</button>
+ </div>
+ <canvas id="mini" width="300" height="300"></canvas>
+ <div id="stats">
+  <span class="badge" id="lvl">LV 1</span>
+  <div class="bars"><div class="b"><i id="hpI"></i><span id="hpT">HP</span></div><div class="b"><i id="xpI"></i><span id="xpT">XP</span></div></div>
+  <span class="money" id="money">$0</span>
+ </div>
+ <div class="toast" id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+ <div class="acts">
+  <button class="act" id="jumpB" type="button" data-en="Jump" data-ar="نط"></button>
+  <button class="act alt" id="runB" type="button" data-en="Run" data-ar="جري"></button>
+ </div>
+ <div class="keys" data-en="Move: WASD · Run: Shift · Jump: Space · Phone: P · Map: M · Camera: V / drag" data-ar="الحركة: WASD · الجري: Shift · النط: Space · التليفون: P · الخريطة: M · الكاميرا: V أو اسحب"></div>
+</div>
+
+<div id="bigmap" hidden><canvas id="bigC" width="900" height="900"></canvas></div>
+
+<div id="phone" hidden>
+ <h3 data-en="PHONE" data-ar="التليفون"></h3>
+ <div class="tabs" id="pTabs"></div>
+ <div class="apps" id="pApps"></div>
+ <button class="big sec" id="pClose" type="button" data-en="Close" data-ar="اقفل"></button>
+</div>
+
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+
+<div class="screen" id="menu" style="--c1:#1d4ed8">
+ <div class="card">
+  <h1>ASER WORLD</h1>
+  <p data-en="The web version of the Unity game, built step by step. This is not the full game yet — it is part of the game." data-ar="نسخة الويب من لعبة Unity، بتتبني خطوة خطوة. اللعبة دي مش اللعبة الكاملة، دي جزئية من اللعبة بس."></p>
+  <p style="opacity:.75;font-size:14px" data-en="V01: the full map — ASER TOWN in the middle, 8 islands around it with bridges, and the race track far away." data-ar="V01: الخريطة كاملة — ASER TOWN في النص، و8 جزر حواليها بكباري، وحلبة السباق بعيد."></p>
+  <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="Back" data-ar="رجوع"></button></div>
+ </div>
+</div>
+
+<script type="module">
+import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
+const $ = id => document.getElementById(id);
+await preload(['person']);
+
+// ================= WORLD LAYOUT — copied from Unity AserSkyWorld.cs ComputeSky() =================
+// Unity: ring radius R = 2600, every ring island the size of the middle one (S), angles 22.5° + i·45°.
+// Web scale K = 1/7 for positions and sizes (S ≈ 1400 in Unity → 200 here). Buildings stay real size.
+const K = 1 / 7, S = 200, R = 2600 * K;
+const BMain = 0, BLava = 1, BIce = 2, BDead = 3, BEstate = 4, BFun = 5, BLake = 6, BBoss = 7, BSky = 8, BSecret = 9, BZombie = 10, BCave = 11, BXmas = 12, BRace = 13;
+const AR = { 'ASER TOWN': 'ASER TOWN', 'BIG LAKE (FISHING)': 'البحيرة الكبيرة (صيد)', 'FROZEN ISLAND': 'جزيرة الجليد', 'ASER CITY': 'ASER CITY', 'VOLCANO ISLAND': 'جزيرة البركان', 'DEAD FOREST': 'الغابة الميتة', 'ZOMBIE ISLAND': 'جزيرة الزومبي', 'THE FORGE CAVES': 'كهوف الورشة', 'ARCADE ISLAND': 'جزيرة الألعاب', 'RACE TRACK': 'حلبة السباق', 'CHRISTMAS ISLAND': 'جزيرة الكريسماس', 'BOSS ISLAND (EVENTS)': 'جزيرة البوس (إيفنتات)', 'SKY ARENA (EVENTS)': 'ساحة السما (إيفنتات)', '???': '???' };
+const nameOf = s => T(s.name, AR[s.name] || s.name);
+const C = (r, g, b) => new THREE.Color(r, g, b).getHex();
+const g1 = C(0.3, 0.5, 0.22), d1 = C(0.42, 0.3, 0.2);
+const islands = [];
+function add(name, x, z, size, biome, bridge, top, side) { const s = { name, x, z, size, biome, bridge, top, side, gates: [] }; islands.push(s); return s; }
+const main = add('ASER TOWN', 0, 0, S, BMain, true, g1, d1);
+const NM = ['BIG LAKE (FISHING)', 'FROZEN ISLAND', 'ASER CITY', 'VOLCANO ISLAND', 'DEAD FOREST', 'ZOMBIE ISLAND', 'THE FORGE CAVES', 'ARCADE ISLAND'];
+const BI = [BLake, BIce, BEstate, BLava, BDead, BZombie, BCave, BFun];
+const TC = [g1, C(0.9, 0.95, 1), g1, C(0.17, 0.14, 0.13), C(0.42, 0.38, 0.34), C(0.28, 0.3, 0.22), C(0.45, 0.43, 0.42), g1];
+const SC = [d1, C(0.55, 0.7, 0.85), d1, C(0.22, 0.17, 0.15), C(0.23, 0.19, 0.16), C(0.2, 0.18, 0.15), C(0.3, 0.29, 0.3), d1];
+const ring = [];
+for (let i = 0; i < 8; i++) { const a = (22.5 + i * 45) * Math.PI / 180; ring.push(add(NM[i], Math.sin(a) * R, Math.cos(a) * R, S, BI[i], true, TC[i], SC[i])); }
+const xmas = add('CHRISTMAS ISLAND', 0, 6200 * K, S, BXmas, false, C(0.95, 0.97, 1), C(0.6, 0.7, 0.85)); xmas.eventOnly = true;
+const race = add('RACE TRACK', -9500 * K, 2500 * K, 900 * K, BRace, false, g1, d1);
+add('BOSS ISLAND (EVENTS)', 9000 * K, -9000 * K, 320 * K, BBoss, false, C(0.3, 0.28, 0.3), C(0.25, 0.22, 0.25)).eventOnly = true;
+add('SKY ARENA (EVENTS)', -9000 * K, -9000 * K, 320 * K, BSky, false, C(0.55, 0.75, 0.95), C(0.4, 0.5, 0.7)).eventOnly = true;
+add('???', -17000 * K, 17000 * K, 160 * K, BSecret, false, C(0.35, 0.25, 0.45), C(0.25, 0.18, 0.3)).hidden = true;
+const island = b => islands.find(s => s.biome === b);
+// same gate maths as Unity: middle ↔ ring uses EdgeHit, ring ↔ ring uses SideGate
+function edgeHit(s, to) { const dx = to.x - s.x, dz = to.z - s.z, h = s.size / 2; const k = Math.min(Math.abs(dx) > .01 ? h / Math.abs(dx) : 1e9, Math.abs(dz) > .01 ? h / Math.abs(dz) : 1e9); return { x: s.x + dx * k, z: s.z + dz * k }; }
+function sideGate(s, to) { const dx = to.x - s.x, dz = to.z - s.z, h = s.size / 2; return Math.abs(dx) >= Math.abs(dz) ? { x: s.x + Math.sign(dx) * h, z: s.z } : { x: s.x, z: s.z + Math.sign(dz) * h }; }
+const links = [];
+function link(a, b) { const r = a.biome !== BMain && b.biome !== BMain; const ga = r ? sideGate(a, b) : edgeHit(a, b), gb = r ? sideGate(b, a) : edgeHit(b, a); a.gates.push(ga); b.gates.push(gb); links.push({ a, b, ga, gb }); }
+for (const r of ring) link(main, r);
+for (let i = 0; i < 8; i++) link(ring[i], ring[(i + 1) % 8]);
+// special places (Unity offsets × K)
+const fun = island(BFun), lake = island(BLake), cave = island(BCave), zom = island(BZombie), city = island(BEstate);
+const P = (s, dx, dz) => ({ x: s.x + dx * K, z: s.z + dz * K });
+const PLACES = {
+  racePortal: P(fun, -150, -150), raceReturn: { x: race.x, z: race.z - race.size / 2 + 20 * K }, arcade: P(fun, 60, 0),
+  lake: { x: lake.x, z: lake.z, r: 110 * K * 2.2 }, elevator: { x: cave.x, z: cave.z }, dungeon: P(zom, 240, 240), police: P(city, -170, 170)
+};
+
+// ================= SCENE =================
+const { renderer, scene, camera, sun } = makeWorld({ sky: 0x8ec5ff, fog: 0x9fd0ff, fogNear: 120, fogFar: 520, ambient: 0.75, sun: 1.6 });
+camera.far = 1400; camera.updateProjectionMatrix();
+sun.shadow.camera.far = 160; sun.shadow.camera.updateProjectionMatrix();
+// blue ground far below (Unity VoidY)
+const voidM = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), mat(0x3a7aeb)); voidM.rotation.x = -Math.PI / 2; voidM.position.y = -260 * K * 3; scene.add(voidM);
+
+// instanced helpers — thousands of boxes in a few draw calls (phone friendly)
+const inst = {};
+function put(kind, geo, color, x, y, z, sx, sy, sz, ry, opt) {
+  const key = kind + color; let b = inst[key];
+  if (!b) b = inst[key] = { geo, m: mat(color, opt), list: [] };
+  b.list.push([x, y, z, sx, sy, sz, ry || 0]);
+}
+const BOX = new THREE.BoxGeometry(1, 1, 1), CYL = new THREE.CylinderGeometry(0.5, 0.5, 1, 10), CONE = new THREE.ConeGeometry(0.5, 1, 8), BALL = new THREE.SphereGeometry(0.5, 12, 8);
+function flush() {
+  const o = new THREE.Object3D();
+  for (const k in inst) {
+    const b = inst[k]; const im = new THREE.InstancedMesh(b.geo, b.m, b.list.length);
+    b.list.forEach((p, i) => { o.position.set(p[0], p[1], p[2]); o.scale.set(p[3], p[4], p[5]); o.rotation.set(0, p[6], 0); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+    im.castShadow = im.receiveShadow = true; scene.add(im);
+  }
+}
+const solid = (x, z, w, d) => walls.push({ x0: x - w / 2, z0: z - d / 2, x1: x + w / 2, z1: z + d / 2, tall: false });
+const block = (x, z, w, d, h, color, y) => { put('b', BOX, color, x, (y || 0) + h / 2, z, w, h, d); solid(x, z, w, d); };
+const deco = (x, z, w, d, h, color, y) => put('b', BOX, color, x, (y || 0) + h / 2, z, w, h, d);
+function label(text, color, size, x, y, z) {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 92px system-ui,Segoe UI'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 14; g.strokeStyle = 'rgba(0,0,0,.7)';
+  g.strokeText(text, 512, 84); g.fillStyle = color; g.fillText(text, 512, 84);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthWrite: false, fog: false }));
+  sp.scale.set(size * 6.4, size, 1); sp.position.set(x, y, z); scene.add(sp); return sp;
+}
+let seed = 77; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const inIsl = (s, m) => ({ x: s.x + (rnd() - 0.5) * (s.size - (m || 20)), z: s.z + (rnd() - 0.5) * (s.size - (m || 20)) });
+function tree(x, z, leaf, trunk, s) { s = s || 1; put('c', CYL, trunk || 0x6b4423, x, 1.6 * s, z, 0.5 * s, 3.2 * s, 0.5 * s); put('k', CONE, leaf || 0x2f7d32, x, 4.4 * s, z, 3.2 * s, 4.4 * s, 3.2 * s); solid(x, z, 0.8 * s, 0.8 * s); }
+function deadTree(x, z) { put('c', CYL, 0x3a2f28, x, 2.5, z, 0.45, 5, 0.45); put('b', BOX, 0x3a2f28, x + 0.8, 3.6, z, 1.8, 0.25, 0.25, rnd() * 3); solid(x, z, 0.8, 0.8); }
+
+// islands + walls with gate gaps (Unity: lobby-wall copy around every island)
+for (const s of islands) {
+  if (s.hidden || s.eventOnly) continue;
+  put('b', BOX, s.top, s.x, -0.5, s.z, s.size, 1, s.size);
+  put('b', BOX, s.side, s.x, -9, s.z, s.size - 2, 16, s.size - 2);
+  put('k', CONE, s.side, s.x, -28, s.z, s.size * 0.7, 30, s.size * 0.7);
+  if (s.biome === BRace || s.biome === BMain && false) continue;
+  const h = s.size / 2, wc = s.biome === BIce ? 0xdbeafe : s.biome === BLava ? 0x3f2a22 : 0x9aa0a6;
+  for (const side of [0, 1, 2, 3]) {
+    const gatesOn = s.gates.filter(g => side === 0 ? Math.abs(g.z - (s.z - h)) < .5 : side === 1 ? Math.abs(g.z - (s.z + h)) < .5 : side === 2 ? Math.abs(g.x - (s.x - h)) < .5 : Math.abs(g.x - (s.x + h)) < .5);
+    const along = side < 2 ? gatesOn.map(g => g.x - s.x) : gatesOn.map(g => g.z - s.z);
+    const cuts = [-h, ...along.sort((a, b) => a - b).flatMap(a => [a - 7, a + 7]), h];
+    for (let i = 0; i < cuts.length; i += 2) {
+      const a = cuts[i], b = cuts[i + 1]; if (b - a < 1) continue; const m = (a + b) / 2, L2 = b - a;
+      if (side < 2) block(s.x + m, side === 0 ? s.z - h + 0.6 : s.z + h - 0.6, L2, 1.2, 3, wc); else block(side === 2 ? s.x - h + 0.6 : s.x + h - 0.6, s.z + m, 1.2, L2, 3, wc);
+    }
+    for (const a of along) {   // gate posts
+      const gx = side < 2 ? s.x + a : side === 2 ? s.x - h + 0.6 : s.x + h - 0.6, gz = side < 2 ? (side === 0 ? s.z - h + 0.6 : s.z + h - 0.6) : s.z + a;
+      const ox = side < 2 ? 7 : 0, oz = side < 2 ? 0 : 7;
+      block(gx - ox, gz - oz, 1.6, 1.6, 7, 0xffd040); block(gx + ox, gz + oz, 1.6, 1.6, 7, 0xffd040); deco(gx, gz, side < 2 ? 15.6 : 1.6, side < 2 ? 1.6 : 15.6, 1.2, 0xffd040, 7);
+    }
+  }
+  if (s.biome !== BMain) { const g = s.gates[0] || { x: s.x, z: s.z - s.size / 2 }; const dx = s.x - g.x, dz = s.z - g.z, d = Math.hypot(dx, dz) || 1; label(nameOf(s), '#ffd040', 5, g.x + dx / d * 16, 12, g.z + dz / d * 16); }
+}
+// bridges (long, between islands)
+const bridges = [];
+for (const l of links) {
+  const dx = l.gb.x - l.ga.x, dz = l.gb.z - l.ga.z, len = Math.hypot(dx, dz), ry = Math.atan2(dx, dz);
+  bridges.push({ ax: l.ga.x, az: l.ga.z, bx: l.gb.x, bz: l.gb.z, len });
+  put('b', BOX, 0x8b5a2b, (l.ga.x + l.gb.x) / 2, -0.4, (l.ga.z + l.gb.z) / 2, 8, 0.8, len, ry);
+  const n = Math.floor(len / 6);
+  for (let i = 0; i <= n; i++) { const t = i / n, x = l.ga.x + dx * t, z = l.ga.z + dz * t, ox = Math.cos(ry) * 4, oz = -Math.sin(ry) * 4; put('c', CYL, 0x5b3a1e, x + ox, 0.6, z + oz, 0.25, 1.6, 0.25); put('c', CYL, 0x5b3a1e, x - ox, 0.6, z - oz, 0.25, 1.6, 0.25); }
+  for (const sgn of [1, -1]) put('b', BOX, 0x5b3a1e, (l.ga.x + l.gb.x) / 2 + Math.cos(ry) * 4 * sgn, 1.35, (l.ga.z + l.gb.z) / 2 - Math.sin(ry) * 4 * sgn, 0.2, 0.2, len, ry);
+}
+
+// ---------- ASER TOWN (middle) ----------
+{
+  const s = main; put('c', CYL, 0xd1d5db, 0, 0.5, 0, 10, 1, 10); put('c', CYL, 0x60a5fa, 0, 1.05, 0, 8.6, 0.2, 8.6); put('c', CYL, 0xd1d5db, 0, 2, 0, 0.8, 3, 0.8); put('c', CYL, 0x93c5fd, 0, 3.6, 0, 2.4, 0.3, 2.4); solid(0, 0, 9, 9);
+  label('ASER TOWN', '#ffd24a', 3, 0, 9, 0);
+  // roads: two crossing streets to the gates + ring road
+  deco(0, 0, 10, 160, 0.06, 0x3b3f46, 0); deco(0, 0, 160, 10, 0.06, 0x3b3f46, 0);
+  for (let i = -70; i <= 70; i += 10) { deco(0, i, 0.5, 4, 0.08, 0xf8fafc, 0); deco(i, 0, 4, 0.5, 0.08, 0xf8fafc, 0); }
+  // shops around the square (seed shop, sell, bank, workshop, fruit, avatar) — the Unity HUD names
+  const shops = [['SEEDS', 'البذور', 0x22c55e, 22, 18], ['SELL', 'البيع', 0xf59e0b, -22, 18], ['BANK', 'البنك', 0x1d4ed8, 22, -18], ['WORKSHOP', 'الورشة', 0x78350f, -22, -18], ['FRUIT', 'الفاكهة', 0xdb2777, 40, 0], ['AVATAR', 'الأفاتار', 0x7c3aed, -40, 0]];
+  for (const [en, ar, col, x, z] of shops) { block(x, z, 12, 9, 6, 0xf3e8d2); deco(x, z, 13, 10, 1, col, 6); label(T(en, ar), '#ffffff', 2.2, x, 9, z); }
+  // houses + trees + farm plots
+  for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, r = 70 + (i % 2) * 12, x = Math.sin(a) * r, z = Math.cos(a) * r; if (Math.abs(x) < 9 || Math.abs(z) < 9) continue; block(x, z, 8, 8, 4.5, [0xfde68a, 0xfecaca, 0xbfdbfe, 0xbbf7d0][i % 4]); put('k', CONE, 0xb91c1c, x, 6.5, z, 9, 4, 9, Math.PI / 4); }
+  for (let gx = 0; gx < 4; gx++) for (let gz = 0; gz < 3; gz++) deco(52 + gx * 6, 32 + gz * 6, 5, 5, 0.25, 0x6b4423, 0);
+  label(T('FARM', 'المزرعة'), '#bbf7d0', 2.2, 61, 6, 38);
+  seed = 11; for (let i = 0; i < 90; i++) { const p = inIsl(s, 24); if (Math.hypot(p.x, p.z) < 55 || Math.abs(p.x) < 8 || Math.abs(p.z) < 8) continue; tree(p.x, p.z); }
+}
+// ---------- the 8 islands — each with its Unity theme ----------
+for (const s of ring) {
+  seed = 77 + s.biome * 13;
+  switch (s.biome) {
+    case BLake: { put('c', CYL, 0x1e7fd6, s.x, 0.02, s.z, PLACES.lake.r * 2, 0.1, PLACES.lake.r * 2, 0, { roughness: 0.15, metalness: 0.2 }); label(T('FISHING', 'صيد'), '#7dd3fc', 2.5, s.x, 6, s.z); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; deco(s.x + Math.sin(a) * (PLACES.lake.r + 3), s.z + Math.cos(a) * (PLACES.lake.r + 3), 3, 6, 0.4, 0x8b5a2b, 0.2); } for (let i = 0; i < 60; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < PLACES.lake.r + 8) continue; tree(p.x, p.z); } break; }
+    case BIce: { for (let i = 0; i < 70; i++) { const p = inIsl(s); tree(p.x, p.z, 0xe0f2fe, 0x6b4423); } for (let i = 0; i < 6; i++) { const p = inIsl(s, 60); put('o', BALL, 0xf8fafc, p.x, 0, p.z, 7, 6, 7); solid(p.x, p.z, 6, 6); } for (let i = 0; i < 14; i++) { const p = inIsl(s); put('k', CONE, 0x67e8f9, p.x, 1.6, p.z, 1.4, 3.2, 1.4, 0, { emissive: 0x0891b2, emissiveIntensity: 0.6 }); } label(T('ESKIMO VILLAGE', 'قرية الإسكيمو'), '#e0f2fe', 2.2, s.x, 8, s.z); break; }
+    case BEstate: { // 150 houses in a grid + jail
+      const cols = 15, rows = 10, pitch = 11, x0 = s.x - (cols - 1) * pitch / 2, z0 = s.z - (rows - 1) * pitch / 2;
+      for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) { const x = x0 + c * pitch, z = z0 + r * pitch; if (Math.hypot(x - PLACES.police.x, z - PLACES.police.z) < 14) continue; block(x, z, 7, 7, 4, [0xfef3c7, 0xe0e7ff, 0xfce7f3, 0xdcfce7, 0xf1f5f9][(c + r) % 5]); put('k', CONE, [0x991b1b, 0x1e3a8a, 0x166534][(c * 7 + r) % 3], x, 5.8, z, 8, 3.6, 8, Math.PI / 4); }
+      block(PLACES.police.x, PLACES.police.z, 14, 10, 6, 0x1d3557); label('🚓 POLICE', '#ffffff', 2.4, PLACES.police.x, 9, PLACES.police.z);
+      block(PLACES.police.x + 40 * K + 9, PLACES.police.z + 3 * K, 8, 8, 5, 0x52525b); label(T('JAIL', 'السجن'), '#e5e7eb', 2, PLACES.police.x + 40 * K + 9, 8, PLACES.police.z); break; }
+    case BLava: { for (let i = 0; i < 9; i++) { const p = inIsl(s, 50); put('c', CYL, 0xff5a00, p.x, 0.03, p.z, 14, 0.1, 14, 0, { emissive: 0xff3300, emissiveIntensity: 1.2 }); } put('k', CONE, 0x2b211d, s.x, 18, s.z, 60, 36, 60); put('c', CYL, 0xff4500, s.x, 36.2, s.z, 10, 0.5, 10, 0, { emissive: 0xff2200, emissiveIntensity: 1.5 }); solid(s.x, s.z, 40, 40); for (let i = 0; i < 40; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < 34) continue; put('o', BALL, 0x3f3f46, p.x, 0.6, p.z, 2.4, 1.6, 2.2); } for (let i = 0; i < 10; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < 34) continue; put('k', CONE, 0xf97316, p.x, 1.6, p.z, 1.4, 3.2, 1.4, 0, { emissive: 0xea580c, emissiveIntensity: 0.8 }); } label(T('CAMP', 'الكامب'), '#fdba74', 2, s.x + 50, 6, s.z + 50); block(s.x + 50, s.z + 54, 6, 6, 3, 0x7c2d12); break; }
+    case BDead: { for (let i = 0; i < 110; i++) { const p = inIsl(s); deadTree(p.x, p.z); } for (let i = 0; i < 12; i++) { const p = inIsl(s); deco(p.x, p.z, 1.2, 0.4, 1.6, 0x71717a, 0); } label(T('HALLOWEEN EVENTS ONLY', 'إيفنتات الهالوين بس'), '#fb923c', 2, s.x, 7, s.z); break; }
+    case BZombie: { for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28; block(s.x + Math.sin(a) * 50, s.z + Math.cos(a) * 50, 2.4, 2.4, 9, 0xb91c1c); put('o', BALL, 0xef4444, s.x + Math.sin(a) * 50, 10, s.z + Math.cos(a) * 50, 2, 2, 2, 0, { emissive: 0xdc2626, emissiveIntensity: 1 }); } for (let i = 0; i < 50; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < 60) continue; deadTree(p.x, p.z); } block(PLACES.dungeon.x, PLACES.dungeon.z, 12, 3, 10, 0x312e81); deco(PLACES.dungeon.x, PLACES.dungeon.z, 8, 3.2, 7, 0x7c3aed, 0); label(T('DUNGEON', 'الدانجن'), '#c4b5fd', 2.2, PLACES.dungeon.x, 13, PLACES.dungeon.z); break; }
+    case BCave: { block(s.x, s.z, 10, 10, 14, 0x57534e); deco(s.x, s.z - 5.2, 5, 0.4, 7, 0xfacc15, 0); label(T('ELEVATOR', 'الأسانسير'), '#fde68a', 2.2, s.x, 17, s.z); for (let i = 0; i < 70; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < 30) continue; const h = 2 + rnd() * 6; put('o', BALL, [0x78716c, 0x57534e, 0xa8a29e][i % 3], p.x, h / 3, p.z, 3 + rnd() * 4, h, 3 + rnd() * 4); solid(p.x, p.z, 3, 3); } for (let i = 0; i < 18; i++) { const p = inIsl(s); put('k', CONE, [0x38bdf8, 0xfacc15, 0xa855f7][i % 3], p.x, 1, p.z, 1, 2, 1, 0, { emissive: 0x334155, emissiveIntensity: 0.6 }); } label(T('QUARRY', 'المحجر'), '#e7e5e4', 2, s.x - 50, 6, s.z + 50); break; }
+    case BFun: { const a = PLACES.arcade; block(a.x, a.z - 26, 70, 1, 9, 0x7c3aed); block(a.x, a.z + 26, 70, 1, 9, 0x7c3aed); block(a.x - 35, a.z, 1, 52, 9, 0x7c3aed); block(a.x + 35, a.z - 14, 1, 24, 9, 0x7c3aed); block(a.x + 35, a.z + 14, 1, 24, 9, 0x7c3aed); deco(a.x, a.z, 70, 52, 0.6, 0x4c1d95, 9);
+      for (let i = 0; i < 24; i++) { const x = a.x - 22.5 + (i % 6) * 9, z = a.z - 16 + Math.floor(i / 6) * 10.5; block(x, z, 2, 1.4, 2.6, [0xef4444, 0x22c55e, 0x3b82f6, 0xeab308, 0xec4899, 0x06b6d4, 0xf97316, 0xa855f7][i % 8]); deco(x, z + 0.72, 1.6, 0.05, 1, 0x0f172a, 1.3); }
+      label(T('ARCADE — 24 machines · 8 games', 'الأركيد — 24 ماكينة · 8 ألعاب'), '#f0abfc', 2.4, a.x, 13, a.z);
+      const rp = PLACES.racePortal; put('o', BALL, 0x22d3ee, rp.x, 3.5, rp.z, 5, 7, 1, 0, { emissive: 0x06b6d4, emissiveIntensity: 1.2 }); label(T('RACE TRACK →', 'حلبة السباق ←'), '#a5f3fc', 2, rp.x, 9, rp.z);
+      for (let i = 0; i < 40; i++) { const p = inIsl(s); if (Math.abs(p.x - a.x) < 42 && Math.abs(p.z - a.z) < 32) continue; if (Math.hypot(p.x - rp.x, p.z - rp.z) < 8) continue; tree(p.x, p.z, 0x16a34a); } break; }
+  }
+}
+// ---------- race track (far island, portal only) ----------
+{
+  const s = race, tr = s.size / 2 - 12;
+  for (let i = 0; i < 64; i++) { const a = i / 64 * 6.28, b = (i + 1) / 64 * 6.28; const x1 = s.x + Math.sin(a) * tr * 0.9, z1 = s.z + Math.cos(a) * tr * 0.6, x2 = s.x + Math.sin(b) * tr * 0.9, z2 = s.z + Math.cos(b) * tr * 0.6; put('b', BOX, 0x374151, (x1 + x2) / 2, 0.03, (z1 + z2) / 2, 10, 0.06, Math.hypot(x2 - x1, z2 - z1) + 0.5, Math.atan2(x2 - x1, z2 - z1)); }
+  label(T('RACE TRACK — GREEN VALLEY · DESERT DUNES · SNOW PEAK · NEON CITY', 'حلبة السباق — GREEN VALLEY · DESERT DUNES · SNOW PEAK · NEON CITY'), '#fef08a', 2.4, s.x, 10, s.z);
+  const rr = PLACES.raceReturn; put('o', BALL, 0x22d3ee, rr.x, 3.5, rr.z, 5, 7, 1, 0, { emissive: 0x06b6d4, emissiveIntensity: 1.2 }); label(T('← ARCADE ISLAND', '← جزيرة الألعاب'), '#a5f3fc', 2, rr.x, 9, rr.z);
+}
+flush();
+
+// ================= PLAYER =================
+const me = store.get('aw_web', { lvl: 1, xp: 0, hp: 100, money: 0, seen: [] });
+const player = makeChar({ shirt: 0x2563eb }); scene.add(player);
+const pos = player.position; let vy = 0, onGround = true;
+function spawn() { pos.set(0, 0, 30); vy = 0; }
+spawn();
+const ISL = islands.filter(s => !s.hidden && !s.eventOnly);
+const islandAt = p => ISL.find(s => Math.abs(p.x - s.x) <= s.size / 2 && Math.abs(p.z - s.z) <= s.size / 2);
+function onBridge(p) { for (const b of bridges) { const dx = b.bx - b.ax, dz = b.bz - b.az, t = Math.max(0, Math.min(1, ((p.x - b.ax) * dx + (p.z - b.az) * dz) / (b.len * b.len))); if (Math.hypot(p.x - (b.ax + dx * t), p.z - (b.az + dz * t)) < 4.2) return true; } return false; }
+const hasFloor = p => !!islandAt(p) || onBridge(p);
+function maxHp() { return 100 + Math.min(me.lvl, 100) * 10 + Math.max(0, me.lvl - 100) * 2; }   // HP grows slower after level 100 (Unity)
+const needXp = l => Math.round(60 * Math.pow(l, 1.35));
+function gainXp(n) { me.xp += n; while (me.xp >= needXp(me.lvl) && me.lvl < 3400) { me.xp -= needXp(me.lvl); me.lvl++; me.hp = maxHp(); toast(T('LEVEL UP! ', 'مستوى جديد! ') + me.lvl); beep(880, 0.2, 'triangle', 0.06); } save(); }
+const save = () => store.set('aw_web', me);
+
+// ================= HUD =================
+let tT = 0; function toast(m) { const e = $('toast'); e.textContent = m; e.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => e.classList.remove('on'), 2200); }
+function hud() {
+  const mh = maxHp(); me.hp = Math.min(me.hp, mh);
+  $('hpI').style.width = (me.hp / mh * 100) + '%'; $('hpT').textContent = 'HP ' + Math.round(me.hp) + ' / ' + mh;
+  $('xpI').style.width = (me.xp / needXp(me.lvl) * 100) + '%'; $('xpT').textContent = 'XP ' + me.xp + ' / ' + needXp(me.lvl);
+  $('lvl').textContent = 'LV ' + me.lvl; $('money').textContent = '$' + me.money.toLocaleString('en');
+}
+const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+function drawMap(cv, span, cx, cz, big) {
+  const g = cv.getContext('2d'), W = cv.width, sc = W / span; g.clearRect(0, 0, W, W);
+  const X = x => W / 2 + (x - cx) * sc, Z = z => W / 2 + (z - cz) * sc;
+  g.strokeStyle = '#a16207'; g.lineWidth = Math.max(2, 8 * sc);
+  for (const b of bridges) { g.beginPath(); g.moveTo(X(b.ax), Z(b.az)); g.lineTo(X(b.bx), Z(b.bz)); g.stroke(); }
+  for (const s of ISL) {
+    g.fillStyle = '#' + new THREE.Color(s.top).getHexString(); const h = s.size / 2 * sc; g.fillRect(X(s.x) - h, Z(s.z) - h, h * 2, h * 2);
+    if (big || s === islandAt(pos)) { g.fillStyle = '#fff'; g.font = '800 ' + (big ? 18 : 16) + 'px system-ui'; g.textAlign = 'center'; g.fillText(nameOf(s), X(s.x), Z(s.z) + (big ? 0 : 5)); }
+  }
+  g.fillStyle = '#ef4444'; g.beginPath(); g.arc(X(pos.x), Z(pos.z), big ? 9 : 7, 0, 7); g.fill();
+}
+
+// ================= PHONE (same sections as Unity) =================
+const TABS = [['GO PLACES', 'روح أماكن'], ['RIDE', 'اركب'], ['SHOPS', 'المحلات'], ['PLAY', 'العب'], ['FRIENDS', 'الأصحاب'], ['PHONE', 'التليفون']];
+let tab = 0;
+function phone(open) {
+  $('phone').hidden = !open; if (!open) return;
+  $('pTabs').innerHTML = ''; TABS.forEach((t, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = T(t[0], t[1]); b.className = i === tab ? 'on' : ''; b.onclick = () => { tab = i; phone(true); }; $('pTabs').appendChild(b); });
+  const apps = $('pApps'); apps.innerHTML = '';
+  const app = (icon, en, ar, fn) => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = '<i>' + icon + '</i>'; b.append(T(en, ar)); if (fn) b.onclick = fn; else { b.disabled = true; b.title = T('Coming in a next version', 'جاي في نسخة جاية'); } apps.appendChild(b); };
+  if (tab === 0) {
+    const ICON = { [BMain]: '🏘️', [BLake]: '🎣', [BIce]: '❄️', [BEstate]: '🏙️', [BLava]: '🌋', [BDead]: '🌲', [BZombie]: '🧟', [BCave]: '⛏️', [BFun]: '🕹️', [BRace]: '🏁' };
+    for (const s of ISL) app(ICON[s.biome] || '📍', s.name, AR[s.name], () => { const g = s.biome === BMain ? { x: 0, z: 30 } : s.biome === BRace ? PLACES.raceReturn : (s.gates[0] || s); const dx = s.x - g.x, dz = s.z - g.z, d = Math.hypot(dx, dz) || 1; pos.set(g.x + dx / d * (s.biome === BRace ? 8 : 12), 0, g.z + dz / d * (s.biome === BRace ? 8 : 12)); phone(false); toast(nameOf(s)); });
+    app('📍', 'WHERE AM I', 'أنا فين', () => { const s = islandAt(pos); toast(s ? nameOf(s) : T('On a bridge', 'على كوبري')); });
+  } else if (tab === 1) { app('🚗', 'CAR + GARAGE', 'العربية + الجراج'); app('✈️', 'PLANE + MY PLANE', 'الطيارة + طيارتي'); app('⛵', 'BOATS', 'السفن'); }
+  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور'); app('💎', 'RARE SHOP', 'المحل النادر'); app('🍉', 'FRUIT', 'الفاكهة'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك'); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
+  else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة'); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
+  else if (tab === 4) { app('👥', 'FRIENDS', 'الأصحاب'); app('💬', 'CHAT', 'الشات'); }
+  else { app('🌐', 'LANGUAGE', 'اللغة', () => { setLang(L() === 'ar' ? 'en' : 'ar'); rebuildLabelsNote(); phone(true); }); app('📊', 'CHARTS', 'الترتيب'); app('🎁', 'CODES + REDEEM', 'الأكواد'); app('🛟', 'HELP + SUPPORT', 'المساعدة', () => toast(T('Support is on Discord only', 'الدعم على Discord بس'))); }
+}
+function rebuildLabelsNote() { toast(T('Reload to change the 3D signs language', 'اعمل ريفريش عشان لغة اليفط تتغير')); }
+
+// ================= INPUT / UI =================
+setupJoystick(); bindButton('jumpB', 'Space'); bindButton('runB', 'Run');
+$('bPhone').onclick = () => phone($('phone').hidden); $('pClose').onclick = () => phone(false);
+$('bMap').onclick = () => { $('bigmap').hidden = !$('bigmap').hidden; }; $('bigmap').onclick = () => { $('bigmap').hidden = true; };
+$('bMenu').onclick = () => { state = 'menu'; $('menu').hidden = false; $('hud').hidden = true; phone(false); };
+let pvp = false; $('bPvp').onclick = () => { pvp = !pvp; $('bPvp').classList.toggle('on', pvp); toast(pvp ? T('PVP ON — only inside the arena', 'PVP شغّال — جوه الحلبة بس') : T('PVP OFF', 'PVP مقفول')); };
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => setLang(b.dataset.l));
+setLang(L());
+let state = 'menu';
+$('mPlay').onclick = () => { state = 'play'; $('menu').hidden = true; $('hud').hidden = false; hud(); toast(T('Welcome to ASER TOWN', 'أهلًا بيك في ASER TOWN')); };
+$('mBack').onclick = () => { location.href = '../index.html'; };
+
+// ================= LOOP =================
+const clock = new THREE.Clock(); let lastIsl = null, hudT = 0;
+function frame() {
+  const dt = Math.min(0.05, clock.getDelta()), now = performance.now();
+  if (state === 'play' && $('phone').hidden) {
+    const inp = readInput(); const sp = (inp.run ? 16 : 8) * dt, mx = inp.x * sp, mz = inp.z * sp;
+    if (hit('KeyP')) phone(true); if (hit('KeyM')) $('bigmap').hidden = !$('bigmap').hidden;
+    if (onGround) { const old = { x: pos.x, z: pos.z }; moveCircle(pos, mx, mz, 0.45); }
+    else { pos.x += mx * 0.6; pos.z += mz * 0.6; }
+    if ((mx || mz)) player.rotation.y = Math.atan2(mx, mz);
+    if (hit('Space') && onGround) { vy = 9; onGround = false; beep(520, 0.08, 'sine', 0.04); }
+    const floorHere = hasFloor(pos);
+    if (!onGround || !floorHere) { vy -= 24 * dt; pos.y += vy * dt; if (floorHere && pos.y <= 0 && vy <= 0) { pos.y = 0; vy = 0; onGround = true; } else onGround = false; }
+    if (pos.y < -60) { spawn(); onGround = true; me.hp = Math.max(1, me.hp - 10); toast(T('You fell! Back to ASER TOWN (−10 HP)', 'وقعت! رجعت ASER TOWN (−10 HP)')); save(); }
+    player.userData.anim && player.userData.anim(dt, Math.hypot(inp.x, inp.z) * (inp.run ? 1.6 : 1));
+    const s = islandAt(pos);
+    if (s !== lastIsl) { lastIsl = s; $('areaName').textContent = s ? nameOf(s) : T('BRIDGE', 'كوبري'); if (s && !me.seen.includes(s.name)) { me.seen.push(s.name); gainXp(25); toast(T('New place: ', 'مكان جديد: ') + nameOf(s) + ' +25 XP'); } }
+    // portals: arcade island ↔ race track (Unity AserIslands2)
+    const rp = PLACES.racePortal, rr = PLACES.raceReturn;
+    if (Math.hypot(pos.x - rp.x, pos.z - rp.z) < 3.5) { pos.set(rr.x, 0, rr.z + 10); toast(nameOf(race)); }
+    else if (Math.hypot(pos.x - rr.x, pos.z - rr.z) < 3.5) { pos.set(rp.x, 0, rp.z + 10); toast(nameOf(fun)); }
+    me.hp = Math.min(maxHp(), me.hp + dt * 2);
+    follow(camera, pos, dt, 3.4, 5.6, player);
+    if (pos.y < 0) camera.position.y += pos.y * 0.7;
+    const yaw = ((-view.yaw % 6.283) + 6.283) % 6.283; $('compass').textContent = DIRS[Math.round(yaw / 0.785) % 8];
+    if ((hudT += dt) > 0.15) { hudT = 0; hud(); drawMap($('mini'), 420, pos.x, pos.z, false); if (!$('bigmap').hidden) drawMap($('bigC'), 2050, -475, 0, true); }
+  } else if (state === 'menu') { const a = now / 9000; camera.position.set(Math.sin(a) * 160, 90, Math.cos(a) * 160); camera.lookAt(0, 0, 0); }
+  sun.position.set(pos.x + 30, 60, pos.z + 20); sun.target.position.set(pos.x, 0, pos.z);
+  renderer.render(scene, camera); endFrame();
+  requestAnimationFrame(frame);
+}
+window.DS_GAME = { name: 'ASER WORLD', cmds: [['town', 'Back to ASER TOWN', 'ارجع ASER TOWN']], run: c => { if (c === 'town') spawn(); } };
+requestAnimationFrame(frame);
+</script>
+<script src="../assets/vendor/supabase-2.45.4.js"></script>
+<script src="../key.js"></script>
+<script src="../assets/js/game_admin.js?v=V49" defer></script>
+</body>
+</html>
