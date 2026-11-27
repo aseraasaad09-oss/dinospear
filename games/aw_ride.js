@@ -1,6 +1,6 @@
 // ASER WORLD web — phase 5: cars, plane, ships + harbor and sea, lane races (numbers from Unity AserCars.cs, AserVehicles.cs, AserFlight.cs, AserSea.cs, AserLaneRace.cs)
 import { THREE, mat, model, T, beep, view, input } from './engine.js';
-import { egp } from './aw_eco.js?v=V53';
+import { egp } from './aw_eco.js?v=V54';
 
 const C = (n, ar, price, speed, len, bike) => ({ n, ar, price, speed, len, bike });
 export const CARS = [

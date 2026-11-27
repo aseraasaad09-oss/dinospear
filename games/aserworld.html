@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#3b82f6">
-<title>ASER WORLD — WEB V05</title>
+<title>ASER WORLD — WEB V06</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V53" defer></script>
+<script src="../assets/js/rotate.js?v=V54" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 /* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
@@ -44,6 +44,8 @@
 .badge,.money{white-space:nowrap}
 #speedo{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(15,23,42,.85);border:2px solid #38bdf8;color:#e0f2fe;font:900 20px system-ui;padding:10px 14px;border-radius:16px;direction:ltr;pointer-events:none}
 #speedo[hidden]{display:none}
+#heist{position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 136px);left:50%;transform:translateX(-50%);background:rgba(127,29,29,.9);border:2px solid #f87171;color:#fff;font-weight:900;font-size:16px;padding:6px 16px;border-radius:999px;pointer-events:none;direction:ltr;white-space:nowrap}
+#heist[hidden]{display:none}
 #mv{position:absolute;right:max(110px,calc(env(safe-area-inset-right) + 110px));bottom:max(26px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(2,52px);gap:8px;direction:ltr}
 #mv[hidden],#mv button[hidden]{display:none}
 #mv button{width:52px;height:52px;border-radius:50%;background:rgba(124,58,237,.88);color:#fff;font-weight:900;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.35);touch-action:none}
@@ -96,6 +98,7 @@
   <span class="money" id="money">$0</span>
  </div>
  <div id="speedo" hidden></div>
+ <div id="heist" hidden></div>
  <div id="equip"></div>
  <div id="mv" hidden><button type="button" id="mAtk">⚔️</button><button type="button" id="mZ">Z</button><button type="button" id="mX">X</button><button type="button" id="mC">C</button><button type="button" id="mV">V</button></div>
  <p id="prompt" hidden></p>
@@ -126,17 +129,18 @@
  <div class="card">
   <h1>ASER WORLD</h1>
   <p data-en="The web version of the Unity game, built step by step. This is not the full game yet — it is part of the game." data-ar="نسخة الويب من لعبة Unity، بتتبني خطوة خطوة. اللعبة دي مش اللعبة الكاملة، دي جزئية من اللعبة بس."></p>
-  <p style="opacity:.75;font-size:14px" data-en="V05: the full map, farming, mining, the workshop, fruits, fighting styles, monsters, gates and dungeons, plus 14 cars, a plane, 5 ships on the sea and lane races — same numbers as Unity." data-ar="V05: الخريطة والزراعة والتعدين والورشة والفاكهة والقتال والوحوش والبوابات والدانجن، وكمان 14 عربية وطيارة و5 سفن في البحر وسباقات — بنفس أرقام Unity."></p>
+  <p style="opacity:.75;font-size:14px" data-en="V06: the full map, farming, mining, the workshop, fruits, fighting styles, monsters, gates and dungeons, 14 cars, a plane, ships, races, plus the bank, the bank heist and the police — same numbers as Unity." data-ar="V06: الخريطة والزراعة والتعدين والورشة والفاكهة والقتال والوحوش والبوابات والدانجن، والعربيات والطيارة والسفن والسباقات، وكمان البنك وسرقة البنك والبوليس — بنفس أرقام Unity."></p>
   <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="Back" data-ar="رجوع"></button></div>
  </div>
 </div>
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
-import { setupEco, xpFor, egp } from './aw_eco.js?v=V53';
-import { setupFight } from './aw_fight.js?v=V53';
-import { setupDungeon } from './aw_dungeon.js?v=V53';
-import { setupRide } from './aw_ride.js?v=V53';
+import { setupEco, xpFor, egp } from './aw_eco.js?v=V54';
+import { setupFight } from './aw_fight.js?v=V54';
+import { setupDungeon } from './aw_dungeon.js?v=V54';
+import { setupRide } from './aw_ride.js?v=V54';
+import { setupBank } from './aw_bank.js?v=V54';
 const $ = id => document.getElementById(id);
 await preload(['person', 'car', 'bike', 'boat']);
 
@@ -355,7 +359,7 @@ function phone(open) {
     for (const s of ISL) app(ICON[s.biome] || '📍', s.name, AR[s.name], () => { const g = s.biome === BMain ? { x: 0, z: 30 } : s.biome === BRace ? PLACES.raceReturn : (s.gates[0] || s); const dx = s.x - g.x, dz = s.z - g.z, d = Math.hypot(dx, dz) || 1; pos.set(g.x + dx / d * (s.biome === BRace ? 8 : 12), 0, g.z + dz / d * (s.biome === BRace ? 8 : 12)); phone(false); toast(nameOf(s)); });
     app('📍', 'WHERE AM I', 'أنا فين', () => { const s = islandAt(pos); toast(s ? nameOf(s) : T('On a bridge', 'على كوبري')); });
   } else if (tab === 1) { app('🚗', 'CALL CAR', 'هات العربية', () => { phone(false); ride.callCar(); }); app('🏪', 'CAR + GARAGE', 'العربية + الجراج', () => goShop({ x: -42, z: 28 })); app('✈️', 'CALL PLANE', 'هات الطيارة', () => { phone(false); ride.callPlane(); }); app('⛵', 'GO TO SEA', 'روح البحر', () => { phone(false); ride.goSea(); toast('⚓ ASER HARBOR'); }); app('🏁', 'RACE', 'السباق', () => goShop({ x: -42, z: -30 })); }
-  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('🍉', 'FRUIT', 'الفاكهة', () => goShop(SHOP.fruit)); app('🥋', 'FIGHTING STYLES', 'أساليب القتال', () => { phone(false); fight.styleShop(); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك'); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
+  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('🍉', 'FRUIT', 'الفاكهة', () => goShop(SHOP.fruit)); app('🥋', 'FIGHTING STYLES', 'أساليب القتال', () => { phone(false); fight.styleShop(); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك', () => { phone(false); bank.bankPanel(false); }); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
   else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة', () => { phone(false); dng.open(); }); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
   else if (tab === 4) { app('👥', 'FRIENDS', 'الأصحاب'); app('💬', 'CHAT', 'الشات'); }
   else { app('🎒', 'BACKPACK', 'الشنطة', () => { phone(false); eco.bag(); }); app('🌐', 'LANGUAGE', 'اللغة', () => { setLang(L() === 'ar' ? 'en' : 'ar'); rebuildLabelsNote(); phone(true); }); app('📊', 'CHARTS', 'الترتيب'); app('🎁', 'CODES + REDEEM', 'الأكواد'); app('🛟', 'HELP + SUPPORT', 'المساعدة', () => toast(T('Support is on Discord only', 'الدعم على Discord بس'))); }
@@ -373,7 +377,7 @@ const FIGHT_ISL = ring.map(s => ({ name: s.name, x: s.x, z: s.z, size: s.size, z
 const pillars = []; for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28; pillars.push({ x: zom.x + Math.sin(a) * 50, z: zom.z + Math.cos(a) * 50 }); }
 const fight = setupFight({ scene, me, pos, player, camera, toast: m => toast(m), save, gainXp, panel, maxHp: () => maxHp(), islands: FIGHT_ISL, zombie: { pillars },
   redraw: () => eco.drawBar(), move: (dx, dz) => moveCircle(pos, dx, dz, 0.45), jump: v => { vy = v; onGround = false; },
-  hurtMe: d => { if (state !== 'play') return; me.hp -= d; beep(120, 0.1, 'square', 0.05); if (me.hp <= 0) { spawn(); onGround = true; me.hp = maxHp(); toast(T('You were defeated! Back to ASER TOWN', 'خسرت! رجعت ASER TOWN')); save(); } } });
+  hurtMe: d => { if (state !== 'play') return; me.hp -= d; beep(120, 0.1, 'square', 0.05); if (me.hp <= 0) { const lose = Math.floor(me.money / 20); me.money -= lose; spawn(); onGround = true; me.hp = maxHp(); toast(T('You were defeated! Back to ASER TOWN', 'خسرت! رجعت ASER TOWN') + (lose ? ' (−' + egp(lose) + T(' · keep money in the BANK', ' · خلّي فلوسك في البنك') + ')' : '')); save(); } } });
 // ================= PHASE 4: dungeon gates E–S + 6 far dungeons (aw_dungeon.js) =================
 const dng = setupDungeon({ scene, me, pos, fight, toast: m => toast(m), save, gainXp, panel, floors: EXTRA_FLOORS, label, goTown: () => { spawn(); onGround = true; } });
 // ================= PHASE 5: cars · plane · ships + sea · lane races (aw_ride.js) =================
@@ -381,7 +385,11 @@ const ride = setupRide({ scene, me, pos, player, camera, toast: m => toast(m), s
   move: (dx, dz) => moveCircle(pos, dx, dz, 1.1), setVy: v => { vy = v; onGround = false; },
   places: { dealer: { x: -42, z: 28 }, race: { x: -42, z: -30 }, sea: { x0: -600, z0: -1400, x1: 600, z1: -600 }, harbor: { x: 0, z: -640 }, raceOrigin: { x: 2500, z: -200 } } });
 flush();   // the two new buildings
-eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: () => ride.prompt() || dng.prompt() });
+// ================= PHASE 6: bank + card · bank heist · police · jail (aw_bank.js) =================
+const JAIL_AT = { x: PLACES.police.x + 40 * K + 9, z: PLACES.police.z + 3 * K + 6 };
+const bank = setupBank({ scene, me, pos, toast: m => toast(m), save, panel, extraFloors: EXTRA_FLOORS, ground: () => { vy = 0; onGround = true; }, goTo: (x, z) => pos.set(x, 0, z),
+  places: { bank: { x: 22, z: -18 }, jail: JAIL_AT, vault: { x: -2000, z: -400 } } });
+eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: () => bank.prompt() || ride.prompt() || dng.prompt() });
 // phone buttons for moves (Z X C V) + attack, shown when you hold the fruit (2) or a style (3) / sword (1)
 function moveButtons() { const h = me.held; $('mv').hidden = !(h === 1 || h === 2 || h === 3); ['mZ', 'mX', 'mC', 'mV'].forEach((id, i) => { $(id).hidden = !(h === 2 || (h === 3 && i < 2)); }); }
 
@@ -402,7 +410,7 @@ $('mBack').onclick = () => { location.href = '../index.html'; };
 const clock = new THREE.Clock(); let lastIsl = null, hudT = 0;
 function frame() {
   const dt = Math.min(0.05, clock.getDelta()), now = performance.now();
-  if (state === 'play') { eco.update(dt); fight.update(dt); dng.update(dt); moveButtons(); }
+  if (state === 'play') { eco.update(dt); fight.update(dt); dng.update(dt); bank.update(dt); moveButtons(); const st = bank.status(); $('heist').hidden = !st; if (st) $('heist').textContent = st; }
   if (state === 'play' && !$('panel').hidden && hit('Escape')) $('panel').hidden = true;
   if (state === 'play' && $('phone').hidden && $('panel').hidden) {
     if (hit('KeyE')) eco.use(); if (hit('KeyB')) eco.bag();
@@ -448,6 +456,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V53" defer></script>
+<script src="../assets/js/game_admin.js?v=V54" defer></script>
 </body>
 </html>
