@@ -1,0 +1,42 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>TUG OF WAR</title></head><body>
+<script type="module">
+// 8) TUG OF WAR — dino vs cat. Pull when the marker is in the green zone (timing, not mashing). 1 player vs the computer, or 2 players on one device.
+import { game, T, beep, blob, rr, tri, ink, text, dino, eye } from './arcade.js';
+game({
+  id: 'tug', title: ['TUG OF WAR', 'شد الحبل'], sky: ['#a7f3d0', '#16a34a'], noScore: true,
+  help: ['Pull when your marker is in the GREEN zone — perfect timing pulls hard, bad timing slips. Pull the flag past your line to win. Player 1: A (left half of the screen). Player 2: L (right half) — or play against the computer.', 'اشد لما المؤشر بتاعك يبقى في المنطقة الخضرا — التوقيت الصح بيشد جامد، والغلط بيزحلقك. اسحب العلم لحد خطك عشان تكسب. لاعب 1: A (نص الشاشة الشمال). لاعب 2: L (النص اليمين) — أو العب ضد الكمبيوتر.'],
+  btns: [{ k: 'b', label: ['P1 Pull', 'لاعب 1 شد'], col: '#16a34a' }, { k: 'a', label: ['P2 Pull', 'لاعب 2 شد'], col: '#ea580c' }],
+  keys: [['KeyA', 'b'], ['KeyL', 'a'], ['Space', 'b'], ['Enter', 'a']],
+  init(G) { G.rope = 0; G.vel = 0; G.m = [0, 0.5]; G.sp = [1.6, 1.9]; G.cpu = true; G.lean = [0, 0]; G.round = 1; G.wins = [0, 0]; G.fb = [null, null]; G.cpuT = 0.6; },
+  update(G, dt) {
+    G.m[0] = (G.m[0] + dt * G.sp[0]) % 2; G.m[1] = (G.m[1] + dt * G.sp[1]) % 2;
+    const pos = k => { const v = G.m[k]; return v < 1 ? v : 2 - v; };   // 0..1..0
+    const pull = (k) => { const d = Math.abs(pos(k) - 0.5), good = d < 0.1 ? 2 : d < 0.22 ? 1 : 0; const f = [-0.6, 1, 2.2][good]; G.vel += (k === 0 ? -1 : 1) * f * 26; G.lean[k] = 0.4; G.fb[k] = { t: [T('Slip!', 'زحلقة!'), T('Pull', 'شد'), T('POWER!', 'قوة!')][good], l: 0.5 }; beep(good === 2 ? 880 : good ? 520 : 160, 0.07, good ? 'triangle' : 'sawtooth', 0.05); if (good === 2) G.burst(k === 0 ? 300 : 660, 380, '#fde047', 8); };
+    if (G.hit('b') || (G.hit('tap') && G.mouse.x < 480)) pull(0);
+    if (G.hit('a') || (G.hit('tap') && G.mouse.x >= 480)) { G.cpu = false; pull(1); }
+    if (G.cpu && (G.cpuT -= dt) <= 0) { const skill = 0.55 + Math.min(0.35, G.round * 0.07); if (Math.abs(pos(1) - 0.5) < (Math.random() < skill ? 0.1 : 0.3)) { pull(1); G.cpuT = 0.35 + Math.random() * 0.3; } else G.cpuT = 0.03; }
+    G.vel *= Math.pow(0.15, dt); G.rope += G.vel * dt; G.lean = G.lean.map(l => Math.max(0, l - dt));
+    G.fb = G.fb.map(f => f && (f.l -= dt) > 0 ? f : null);
+    if (Math.abs(G.rope) > 160) { const w = G.rope < 0 ? 0 : 1; G.wins[w]++; G.burst(G.rope < 0 ? 200 : 760, 380, '#fde047', 30); G.shake = 0.4; if (G.wins[w] >= 2) { G.score = G.wins[0] * 10; if (w === 0) G.win(T('Dino wins the match!', 'الداينو كسب الماتش!')); else G.over(G.cpu ? T('The cat wins… rematch?', 'القطة كسبت… ماتش تاني؟') : T('Player 2 (cat) wins!', 'لاعب 2 (القطة) كسب!')); } else { G.round++; G.rope = 0; G.vel = 0; G.sp = [1.6 + G.round * 0.25, 1.9 + G.round * 0.25]; } }
+  },
+  draw(G, cx) {
+    const t = G.t, cx0 = 480 + G.rope;
+    // field + mud pit in the middle
+    cx.fillStyle = '#65a30d'; cx.fillRect(0, 430, 960, 110); blob(cx, 480, 450, 90, 22, '#78350f', 4);
+    cx.beginPath(); cx.moveTo(320, 420); cx.lineTo(320, 470); cx.moveTo(640, 420); cx.lineTo(640, 470); cx.strokeStyle = '#fff'; cx.lineWidth = 6; cx.stroke();
+    // rope
+    cx.beginPath(); cx.moveTo(cx0 - 330, 372); cx.quadraticCurveTo(cx0, 384 + Math.sin(t * 8) * 3, cx0 + 330, 372); cx.strokeStyle = '#a16207'; cx.lineWidth = 10; cx.stroke(); ink(cx, 2);
+    tri(cx, [cx0, 378], [cx0, 330], [cx0 + 30, 342], '#ef4444', 3);
+    // dino (left) and cat (right)
+    cx.save(); cx.translate(cx0 - 300, 432); cx.rotate(-0.25 - G.lean[0]); dino(cx, 0, 0, 1.5, '#22c55e', 1, t, 'run'); cx.restore();
+    cx.save(); cx.translate(cx0 + 300, 432); cx.rotate(0.25 + G.lean[1]); cx.scale(-1, 1);
+    rr(cx, -14, -20, 10, 20, 4, '#334155', 3); rr(cx, 4, -20, 10, 20, 4, '#334155', 3); blob(cx, 0, -40, 22, 24, '#f97316', 4);
+    blob(cx, 6, -80, 22, 20, '#f97316', 4); tri(cx, [-12, -92], [-8, -118], [4, -98], '#f97316', 3); tri(cx, [12, -98], [22, -120], [26, -94], '#f97316', 3); eye(cx, 10, -84, 5, -200, -84); eye(cx, 22, -82, 5, -200, -84);
+    cx.beginPath(); cx.moveTo(-20, -34); cx.quadraticCurveTo(-50, -60 + Math.sin(t * 6) * 6, -40, -86); ink(cx, 6); cx.restore();
+    // timing meters
+    [[0, 120, '#16a34a'], [1, 840, '#ea580c']].forEach(([k, x, c]) => { const v = G.m[k] < 1 ? G.m[k] : 2 - G.m[k]; rr(cx, x - 20, 120, 40, 200, 12, 'rgba(0,0,0,.4)', 3); rr(cx, x - 18, 120 + 200 * 0.4, 36, 40, 6, 'rgba(34,197,94,.7)', 0); rr(cx, x - 18, 120 + 200 * 0.28, 36, 64, 6, 'rgba(250,204,21,.25)', 0); rr(cx, x - 26, 120 + v * 200 - 5, 52, 10, 5, c, 3); if (G.fb[k]) text(cx, G.fb[k].t, x, 100, 24, '#fff'); });
+    text(cx, T('Dino ', 'الداينو ') + G.wins[0] + ' – ' + G.wins[1] + T(' Cat', ' القطة'), 480, 60, 34, '#fff');
+    text(cx, G.cpu ? T('vs computer · press L to play 2 players', 'ضد الكمبيوتر · دوس L للعب لاعبين') : T('2 players', 'لاعبين'), 480, 96, 18, '#ecfccb');
+  }
+});
+</script></body></html>

@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>BALLOON DINO</title></head><body>
+<script type="module">
+// 3) BALLOON DINO — a little dino holds a bunch of balloons. HOLD to blow air (go up), let go to sink. Birds pop balloons; stars give points.
+import { game, T, beep, blob, rr, tri, ink, text, dino, eye } from './arcade.js';
+game({
+  id: 'balloon', title: ['BALLOON DINO', 'داينو البالونة'], sky: ['#7dd3fc', '#e0f2fe'],
+  help: ['HOLD (tap / Space) to blow into the balloons and go up, let go to go down. Dodge birds and cactus, collect stars. A bird pops one balloon — 0 balloons = you fall!', 'اضغط ودوس على طول (لمس / Space) عشان تنفخ وتطلع، وسيب عشان تنزل. اهرب من العصافير والصبار، ولمّ النجوم. العصفورة بتفرقع بالونة — مفيش بالونات = تقع!'],
+  btns: [{ k: 'a', label: ['Blow', 'انفخ'], col: '#ec4899' }],
+  init(G) { G.p = { y: 260, vy: 0, b: 4, inv: 0 }; G.obs = []; G.stars = []; G.clouds = Array.from({ length: 6 }, (_, k) => ({ x: k * 180, y: 60 + (k * 53) % 200, s: 0.6 + (k % 3) * 0.3 })); G.spawn = 1; G.starT = 1.5; G.x = 0; G.pops = []; },
+  update(G, dt) {
+    const p = G.p, sp = 220 + G.t * 4; G.x += sp * dt; G.score += dt * 2;
+    const up = G.key('a') || G.key('tap') || G.key('up');
+    p.vy += (up ? -900 : 520) * dt * (0.6 + p.b * 0.1); p.vy *= Math.pow(0.4, dt); p.y += p.vy * dt;
+    if (p.y < 40) { p.y = 40; p.vy = 0; } if (up && Math.random() < 0.3) G.parts.push({ x: 222, y: p.y - 90, vx: -60, vy: -40, t: 0.4, col: 'rgba(255,255,255,.8)', r: 3 });
+    p.inv -= dt;
+    if ((G.spawn -= dt) <= 0) { G.spawn = Math.max(0.6, 1.5 - G.t / 50); const r = Math.random(); if (r < 0.55) G.obs.push({ k: 'bird', x: 1000, y: 60 + Math.random() * 330, wob: Math.random() * 6 }); else G.obs.push({ k: 'cactus', x: 1000, h: 90 + Math.random() * 120 }); }
+    if ((G.starT -= dt) <= 0) { G.starT = 0.9 + Math.random(); G.stars.push({ x: 1000, y: 70 + Math.random() * 330 }); }
+    G.obs.forEach(o => { o.x -= sp * dt * (o.k === 'bird' ? 1.35 : 1); if (o.k === 'bird') o.y += Math.sin(G.t * 4 + o.wob) * 60 * dt;
+      if (p.inv > 0 || o.done) return;
+      const hitB = o.k === 'bird' && Math.abs(o.x - 230) < 40 && o.y > p.y - 160 && o.y < p.y - 60, hitD = o.k === 'bird' ? Math.abs(o.x - 230) < 34 && Math.abs(o.y - (p.y - 30)) < 36 : Math.abs(o.x - 230) < 34 && p.y > 470 - o.h - 10;
+      if (hitB || hitD) { o.done = 1; p.b--; p.inv = 1; G.shake = 0.3; G.pops.push({ y: p.y - 120, t: 0.4 }); G.burst(230, p.y - 120, '#f472b6', 16); beep(900, 0.06, 'square', 0.06); beep(200, 0.2, 'sawtooth', 0.05); if (p.b <= 0) G.over(T('No balloons left… splat!', 'البالونات خلصت… طاخ!')); } });
+    G.obs = G.obs.filter(o => o.x > -80);
+    G.stars.forEach(s => { s.x -= sp * dt; if (!s.got && Math.abs(s.x - 230) < 36 && Math.abs(s.y - (p.y - 80)) < 90) { s.got = 1; G.score += 5; G.burst(s.x, s.y, '#fde047', 12); beep(1200, 0.06, 'sine', 0.05); } });
+    G.stars = G.stars.filter(s => s.x > -40 && !s.got);
+    if (p.y > 470) { p.y = 470; p.vy = -300; if (p.inv <= 0) { p.b--; p.inv = 1; G.burst(230, 440, '#a16207', 10); beep(160, 0.2, 'sawtooth', 0.05); if (p.b <= 0) G.over(T('Bonk! Too low.', 'طاخ! نزلت أوي.')); } }
+    if (G.t > 5 && Math.floor(G.t) % 20 === 0 && !G.gift && p.b < 6) { G.gift = 1; p.b++; G.burst(230, p.y - 120, '#22c55e', 12); }
+    if (Math.floor(G.t) % 20 !== 0) G.gift = 0;
+    G.clouds.forEach(c => { c.x -= sp * dt * 0.2 * c.s; if (c.x < -200) c.x += 1200; });
+    G.pops.forEach(q => q.t -= dt); G.pops = G.pops.filter(q => q.t > 0);
+  },
+  draw(G, cx) {
+    const p = G.p, t = G.t;
+    G.clouds.forEach(c => { cx.fillStyle = 'rgba(255,255,255,.85)'; [[0, 0, 40], [36, 8, 32], [-36, 10, 30]].forEach(d => { cx.beginPath(); cx.arc(c.x + d[0] * c.s, c.y + d[1] * c.s, d[2] * c.s, 0, 6.28); cx.fill(); }); });
+    // far hills + desert floor
+    cx.fillStyle = '#86efac'; cx.beginPath(); cx.moveTo(0, 540); for (let x = 0; x <= 960; x += 30) cx.lineTo(x, 440 - Math.sin((x + G.x * 0.3) / 120) * 30); cx.lineTo(960, 540); cx.fill();
+    cx.fillStyle = '#fbbf24'; cx.fillRect(0, 470, 960, 70); cx.beginPath(); cx.moveTo(0, 470); cx.lineTo(960, 470); ink(cx, 5);
+    G.stars.forEach(s => { cx.save(); cx.translate(s.x, s.y); cx.rotate(t * 2); cx.beginPath(); for (let k = 0; k < 10; k++) { const r = k % 2 ? 7 : 16, a = k * Math.PI / 5; cx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } cx.closePath(); cx.fillStyle = '#fde047'; cx.fill(); ink(cx, 3); cx.restore(); });
+    G.obs.forEach(o => { if (o.k === 'bird') { cx.save(); cx.translate(o.x, o.y); blob(cx, 0, 0, 24, 18, '#ef4444', 3); tri(cx, [-22, -2], [-34, -6 - Math.sin(t * 20) * 10], [-12, -10], '#b91c1c', 3); tri(cx, [-26, 4], [-42, 2], [-30, 12], '#b91c1c', 3); eye(cx, -8, -6, 5, -100, 0); tri(cx, [-22, 2], [-34, 6], [-22, 8], '#f59e0b', 2); cx.beginPath(); cx.moveTo(-16, -14); cx.lineTo(-2, -10); ink(cx, 3); cx.restore(); }
+      else { cx.save(); cx.translate(o.x, 470); rr(cx, -16, -o.h, 32, o.h, 16, '#15803d', 4); rr(cx, -44, -o.h * 0.7, 18, 40, 9, '#15803d', 4); rr(cx, 26, -o.h * 0.5, 18, 36, 9, '#15803d', 4); for (let k = 0; k < 5; k++) { cx.fillStyle = '#fff'; cx.fillRect(-8 + (k % 2) * 12, -o.h + 14 + k * 18, 3, 3); } cx.restore(); } });
+    // balloons + dino
+    if (!(p.inv > 0 && Math.floor(p.inv * 12) % 2)) {
+      const cols = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#a855f7', '#f97316'];
+      for (let k = 0; k < p.b; k++) { const bx = 230 + (k - (p.b - 1) / 2) * 24 + Math.sin(t * 2 + k) * 4, by = p.y - 130 - (k % 2) * 16; cx.beginPath(); cx.moveTo(230, p.y - 66); cx.lineTo(bx, by + 24); ink(cx, 1.5); blob(cx, bx, by, 18, 24, cols[k % 6], 3); blob(cx, bx - 6, by - 8, 4, 7, 'rgba(255,255,255,.6)', 0); }
+      dino(cx, 230, p.y, 1, '#22c55e', 1, t, '');
+    }
+    G.pops.forEach(q => text(cx, T('POP!', 'طاخ!'), 260, q.y, 30, '#fff'));
+    text(cx, '🎈×' + p.b, 40, 50, 28, '#fff', 'left');
+  }
+});
+</script></body></html>

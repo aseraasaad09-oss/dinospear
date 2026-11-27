@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>ROOFTOP POSTMAN</title></head><body>
+<script type="module">
+// 5) ROOFTOP POSTMAN — a postman with a jet-pack delivers parcels to the glowing rooftop. Land SOFTLY (slow and straight). Fuel is limited!
+import { game, T, beep, blob, rr, tri, ink, text, eye } from './arcade.js';
+game({
+  id: 'postman', title: ['ROOFTOP POSTMAN', 'بوسطجي السطوح'], sky: ['#0ea5e9', '#bae6fd'], pads: 'lr',
+  help: ['Fly with the jet-pack (hold Jet / Space / ↑) and steer ◀ ▶. Land SOFTLY on the roof with the arrow to deliver the parcel. Fast landing = crash. Watch your fuel!', 'طير بالجت باك (اضغط طير / Space / ↑) واتحكم ◀ ▶. انزل براحة على السطح اللي عليه السهم عشان تسلّم الطرد. لو نزلت بسرعة = تتخبط. خلّي بالك من البنزين!'],
+  btns: [{ k: 'a', label: ['Jet', 'طير'], col: '#f97316' }],
+  init(G) { G.level = 0; G.next = () => { G.level++; const n = 7; G.roofs = []; for (let k = 0; k < n; k++) { const w = 90 + Math.random() * 50; G.roofs.push({ x: 40 + k * 130 + Math.random() * 20, w, h: 120 + Math.random() * 230, col: ['#fca5a5', '#fde68a', '#a5f3fc', '#c4b5fd', '#bbf7d0'][k % 5] }); } G.from = Math.floor(Math.random() * 2); G.to = 4 + Math.floor(Math.random() * 3); if (G.level % 2 === 0) { const tmp = G.from; G.from = G.to; G.to = tmp; } const r = G.roofs[G.from]; G.p = { x: r.x + r.w / 2, y: 540 - r.h - 2, vx: 0, vy: 0, on: true, tilt: 0 }; G.fuel = 100; G.wind = (Math.random() - 0.5) * (20 + G.level * 6); }; G.next(); G.msg = { t: T('Deliver to the roof with the arrow!', 'سلّم على السطح اللي عليه السهم!'), l: 2 }; },
+  update(G, dt) {
+    const p = G.p, jet = (G.key('a') || G.key('up') || G.key('tap')) && G.fuel > 0, mv = (G.key('right') ? 1 : 0) - (G.key('left') ? 1 : 0);
+    if (jet) { p.vy -= 900 * dt; G.fuel -= 14 * dt; p.on = false; if (Math.random() < 0.7) G.parts.push({ x: p.x - 10, y: p.y - 10, vx: (Math.random() - 0.5) * 60, vy: 220, t: 0.35, col: Math.random() < 0.5 ? '#f97316' : '#fde047', r: 4 }); if (Math.random() < 0.15) beep(90 + Math.random() * 40, 0.05, 'sawtooth', 0.015); }
+    if (!p.on) { p.vx += (mv * 380 + G.wind) * dt; p.vy += 520 * dt; p.vx *= Math.pow(0.6, dt); p.x += p.vx * dt; p.y += p.vy * dt; if (mv) G.fuel -= 4 * dt; }
+    p.tilt += (mv * 0.3 - p.tilt) * Math.min(1, dt * 8);
+    if (p.x < 10 || p.x > 950 || p.y > 560) { G.over(T('Lost the parcel!', 'الطرد ضاع!')); return; }
+    if (p.y < 20) { p.y = 20; p.vy = 0; }
+    G.roofs.forEach((r, k) => {
+      const top = 540 - r.h;
+      if (p.vy >= 0 && p.x > r.x - 6 && p.x < r.x + r.w + 6 && p.y >= top && p.y - p.vy * dt <= top + 2) {
+        if (p.vy > 300 || Math.abs(p.vx) > 170) { G.burst(p.x, top, '#ef4444', 24); G.shake = 0.5; G.over(T('CRASH! Too fast…', 'اتخبطت! كنت سريع…')); return; }
+        p.y = top; p.vy = 0; p.vx = 0; if (!p.on) beep(300, 0.06, 'triangle', 0.03); p.on = true;
+        if (k === G.to) { const soft = Math.max(0, 300 - Math.round(Math.abs(p.vy))) / 30; G.score += 10 + Math.round(G.fuel / 5) + G.level * 2; G.burst(p.x, top - 30, '#fde047', 26); beep(880, 0.15, 'triangle', 0.06); beep(1320, 0.2, 'triangle', 0.05); G.msg = { t: T('Delivered! +', 'اتسلم! +') + (10 + Math.round(G.fuel / 5) + G.level * 2), l: 1.4 }; G.next(); }
+      } else if (p.y > top + 4 && p.x > r.x && p.x < r.x + r.w && !p.on) { G.burst(p.x, p.y, '#ef4444', 20); G.over(T('Bonk! Into the wall.', 'طاخ! في الحيطة.')); }
+    });
+    if (G.fuel <= 0 && p.on && G.p) { const r = G.roofs[G.to]; if (Math.abs(p.x - (r.x + r.w / 2)) > r.w) G.over(T('Out of fuel!', 'البنزين خلص!')); }
+    if (G.msg && (G.msg.l -= dt) <= 0) G.msg = null;
+  },
+  draw(G, cx) {
+    const p = G.p, t = G.t;
+    cx.fillStyle = '#fde68a'; cx.beginPath(); cx.arc(820, 90, 46, 0, 6.28); cx.fill();
+    for (let k = 0; k < 9; k++) { cx.fillStyle = 'rgba(30,58,138,.25)'; const h = 120 + (k * 67) % 160; cx.fillRect(k * 110 - 20, 540 - h - 40, 90, h + 40); }
+    G.roofs.forEach((r, k) => { const top = 540 - r.h; rr(cx, r.x, top, r.w, r.h + 10, 4, r.col, 4); for (let y = top + 24; y < 520; y += 46) for (let x = r.x + 14; x < r.x + r.w - 20; x += 34) rr(cx, x, y, 20, 26, 3, (x + y) % 3 ? '#1e3a8a' : '#fde047', 2);
+      rr(cx, r.x - 6, top - 8, r.w + 12, 12, 4, '#475569', 3);
+      if (k === G.to) { const a = Math.sin(t * 6) * 8; tri(cx, [r.x + r.w / 2 - 16, top - 70 + a], [r.x + r.w / 2 + 16, top - 70 + a], [r.x + r.w / 2, top - 40 + a], '#22c55e', 4); rr(cx, r.x + r.w / 2 - 22, top - 32, 44, 22, 6, '#bbf7d0', 3); text(cx, '📮', r.x + r.w / 2, top - 15, 18); }
+      if (k === G.from) rr(cx, r.x + r.w / 2 - 22, top - 10, 44, 6, 3, '#e2e8f0', 2); });
+    // wind arrows
+    if (Math.abs(G.wind) > 5) { cx.globalAlpha = 0.5; for (let k = 0; k < 6; k++) { const x = ((k * 170 + t * G.wind * 4) % 960 + 960) % 960, y = 120 + k * 50; cx.beginPath(); cx.moveTo(x, y); cx.lineTo(x + Math.sign(G.wind) * 40, y); cx.strokeStyle = '#fff'; cx.lineWidth = 3; cx.stroke(); } cx.globalAlpha = 1; }
+    // postman
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.tilt);
+    rr(cx, -22, -50, 12, 30, 5, '#64748b', 3); rr(cx, -8, -44, 20, 26, 8, '#1d4ed8', 3.5); rr(cx, -8, -20, 8, 20, 3, '#1e293b', 2.5); rr(cx, 3, -20, 8, 20, 3, '#1e293b', 2.5);
+    blob(cx, 2, -58, 13, 13, '#d4a373', 3.5); rr(cx, -12, -74, 28, 10, 4, '#1d4ed8', 3); rr(cx, 8, -70, 14, 5, 2, '#1e3a8a', 2); eye(cx, 7, -60, 4, 200, -60);
+    rr(cx, 12, -38, 22, 18, 3, '#a16207', 3); cx.beginPath(); cx.moveTo(12, -29); cx.lineTo(34, -29); ink(cx, 2);
+    cx.restore();
+    // fuel bar
+    rr(cx, 20, 26, 204, 22, 11, 'rgba(0,0,0,.4)', 3); if (G.fuel > 0) rr(cx, 22, 28, 200 * G.fuel / 100, 18, 9, G.fuel > 30 ? '#22c55e' : '#ef4444', 0); text(cx, '⛽', 240, 46, 20, '#fff', 'left');
+    text(cx, T('Delivery ', 'طرد ') + G.level, 900, 46, 24, '#fff', 'right');
+    if (G.msg) text(cx, G.msg.t, 480, 140, 34, '#fff');
+  }
+});
+</script></body></html>

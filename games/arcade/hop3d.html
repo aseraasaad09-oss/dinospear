@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>SKY HOP 3D — DINOSPEAR ARCADE</title>
+<link rel="stylesheet" href="../ui.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="app"></div>
+<div class="hud" id="hud" hidden>
+ <div class="bar"><button class="chip btn" id="bBack" type="button">✕</button><div class="chip" id="hInfo"></div><div class="chip" id="hTime"></div></div>
+ <div class="toast" id="toast"></div>
+ <div id="joy"><div id="knob"></div></div>
+ <div class="acts"><button class="act" id="bJump" type="button" data-en="Jump" data-ar="نط"></button></div>
+ <div class="keys" data-en="Move: WASD · Jump: Space · Camera: drag / V" data-ar="الحركة: WASD · النط: Space · الكاميرا: اسحب أو V"></div>
+</div>
+<div class="lang"><button type="button" data-l="ar">عربي</button><button type="button" data-l="en">English</button></div>
+<div class="screen" id="menu" style="--c1:#0369a1"><div class="card">
+ <h1>SKY HOP 3D</h1>
+ <p data-en="Floating islands in the sky. Jump from island to island, collect the coins and reach the flag before the time ends. Some islands move — some fall when you stand on them!" data-ar="جزر طايرة في السما. نط من جزيرة لجزيرة، لمّ العملات، واوصل للعلم قبل ما الوقت يخلص. فيه جزر بتتحرك — وفيه جزر بتقع لما تقف عليها!"></p>
+ <p id="mBest" style="font-weight:800"></p>
+ <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="All games" data-ar="كل الألعاب"></button></div>
+</div></div>
+<script type="module">
+// 10) SKY HOP 3D — third-person platform jumping on floating islands (never from the top). 5 levels, each longer.
+import { THREE, makeWorld, mat, makeChar, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view } from '../engine.js';
+const $ = id => document.getElementById(id);
+const { renderer, scene, camera, sun } = makeWorld({ sky: 0x7dd3fc, fog: 0xbae6fd, fogNear: 60, fogFar: 220, ambient: 0.8, sun: 1.5 });
+camera.far = 400; camera.updateProjectionMatrix();
+let plats = [], coins = [], flag = null, level = 1, state = 'menu', time = 0, got = 0, total = 0, score = 0;
+const player = makeChar({ shirt: 0x22c55e, pants: 0x1e293b, hair: 0xfde047 }); scene.add(player);
+const pos = player.position; let vy = 0, ground = null, lastSafe = new THREE.Vector3();
+const world = new THREE.Group(); scene.add(world);
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.6 })); sea.rotation.x = -Math.PI / 2; sea.position.y = -40; scene.add(sea);
+function island(x, y, z, r, kind) {
+  const g = new THREE.Group(); g.position.set(x, y, z);
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.92, 1, 20), mat(kind === 'fall' ? 0xfbbf24 : kind === 'move' ? 0xa78bfa : 0x4ade80)); top.position.y = -0.5; top.receiveShadow = top.castShadow = true; g.add(top);
+  const rock = new THREE.Mesh(new THREE.ConeGeometry(r * 0.9, r * 1.6, 8), mat(0x92400e)); rock.rotation.x = Math.PI; rock.position.y = -1 - r * 0.8; rock.castShadow = true; g.add(rock);
+  if (kind === 'normal' && r > 3) { const tr = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.4, 7), mat(0x15803d)); tr.position.set(r * 0.5, 1.2, -r * 0.3); tr.castShadow = true; g.add(tr); }
+  world.add(g); const p = { g, r, kind, base: g.position.clone(), t: Math.random() * 6, fallT: 0, vy: 0 }; plats.push(p); return p;
+}
+function coin(x, y, z) { const m = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.16, 8, 20), mat(0xfacc15, { emissive: 0xb45309, emissiveIntensity: 0.5, metalness: 0.5 })); m.position.set(x, y, z); m.castShadow = true; world.add(m); coins.push(m); }
+function build() {
+  plats.forEach(p => world.remove(p.g)); coins.forEach(c => world.remove(c)); if (flag) world.remove(flag); plats = []; coins = [];
+  let x = 0, y = 0, z = 0; island(0, 0, 0, 6, 'normal');
+  const n = 7 + level * 3;
+  for (let k = 0; k < n; k++) {
+    const a = (Math.random() - 0.5) * 1.6, d = 6 + Math.random() * 3 + level * 0.4;
+    x += Math.sin(a) * d; z -= Math.cos(a) * d; y += (Math.random() - 0.35) * 2.2;
+    const r = Math.random(), kind = k > 2 && r < 0.15 + level * 0.04 ? 'fall' : k > 3 && r > 0.82 - level * 0.03 ? 'move' : 'normal';
+    island(x, y, z, kind === 'normal' ? 2.4 + Math.random() * 1.6 : 2.2, kind);
+    if (Math.random() < 0.7) coin(x, y + 1.6, z);
+  }
+  island(x, y, z - 9, 5, 'normal');
+  flag = new THREE.Group(); const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 5, 8), mat(0xe5e7eb)); pole.position.y = 2.5; flag.add(pole); const cloth = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1, 0.08), mat(0xef4444)); cloth.position.set(0.8, 4.4, 0); flag.add(cloth); flag.position.set(x, y, z - 9); world.add(flag);
+  total = coins.length; got = 0; time = 30 + n * 3.2; pos.set(0, 0.01, 2); vy = 0; lastSafe.copy(pos); view.yaw = 0;
+}
+function hud() { $('hInfo').textContent = T('Level ', 'المرحلة ') + level + ' · 🪙 ' + got + '/' + total + ' · ' + score; $('hTime').textContent = '⏱ ' + Math.max(0, Math.ceil(time)); }
+let tT = 0; function toast(m) { const e = $('toast'); e.textContent = m; e.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => e.classList.remove('on'), 1800); }
+function gameOver(msg) { state = 'menu'; const best = Math.max(store.get('arc_best_hop3d', 0), score); store.set('arc_best_hop3d', best); $('menu').hidden = false; $('hud').hidden = true; $('mBest').textContent = msg + ' · ' + T('Score ', 'النقط ') + score + ' · ' + T('Best ', 'الأحسن ') + best; $('mPlay').textContent = T('Play again', 'العب تاني'); }
+setupJoystick(); bindButton('bJump', 'Space');
+$('mPlay').onclick = () => { level = 1; score = 0; build(); state = 'play'; $('menu').hidden = true; $('hud').hidden = false; hud(); toast(T('Reach the flag!', 'اوصل للعلم!')); };
+$('mBack').onclick = $('bBack').onclick = () => { location.href = 'index.html'; };
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => setLang(b.dataset.l)); setLang(L());
+$('mBest').textContent = store.get('arc_best_hop3d', 0) ? T('Best ', 'الأحسن ') + store.get('arc_best_hop3d', 0) : '';
+const clock = new THREE.Clock(), camWant = new THREE.Vector3();
+function frame() {
+  const dt = Math.min(0.05, clock.getDelta()), now = performance.now() / 1000;
+  plats.forEach(p => { p.t += dt; if (p.kind === 'move') p.g.position.x = p.base.x + Math.sin(p.t * 1.2) * 3; if (p.kind === 'fall' && p.fallT > 0) { p.fallT += dt; if (p.fallT > 0.8) { p.vy -= 20 * dt; p.g.position.y += p.vy * dt; } else p.g.position.x = p.base.x + Math.sin(p.fallT * 60) * 0.08; } });
+  coins.forEach(c => c.rotation.y += dt * 3);
+  if (state === 'play') {
+    const inp = readInput(), sp = 7 * dt;
+    pos.x += inp.x * sp; pos.z += inp.z * sp; if (inp.x || inp.z) player.rotation.y = Math.atan2(inp.x, inp.z);
+    // ground = the island under your feet
+    const prevY = pos.y; ground = null;
+    for (const p of plats) { const gp = p.g.position; if (Math.hypot(pos.x - gp.x, pos.z - gp.z) < p.r && prevY >= gp.y - 0.6 && prevY <= gp.y + 0.6) { if (!ground || gp.y > ground.g.position.y) ground = p; } }
+    if (ground && vy <= 0) { pos.y = ground.g.position.y; vy = 0; if (ground.kind === 'move') pos.x += Math.cos(ground.t * 1.2) * 1.2 * 3 * dt; if (ground.kind === 'fall' && !ground.fallT) { ground.fallT = 0.001; beep(300, 0.1, 'sawtooth', 0.03); } if (ground.kind !== 'fall') lastSafe.copy(pos); }
+    else { vy -= 26 * dt; pos.y += vy * dt; }
+    if (hit('Space') && ground) { vy = 11; beep(520, 0.06, 'sine', 0.04); }
+    if (pos.y < -25) { pos.copy(lastSafe); pos.y += 0.5; vy = 0; time -= 5; toast(T('Splash! −5 seconds', 'وقعت! −5 ثواني')); beep(140, 0.3, 'sawtooth', 0.05); }
+    coins.forEach(c => { if (c.visible && c.position.distanceTo(new THREE.Vector3(pos.x, pos.y + 1, pos.z)) < 1.3) { c.visible = false; got++; score += 10; beep(1200, 0.06, 'sine', 0.05); } });
+    if (flag && Math.hypot(pos.x - flag.position.x, pos.z - flag.position.z) < 2.5 && Math.abs(pos.y - flag.position.y) < 1.5) { score += 50 + Math.ceil(time) * 2 + (got === total ? 50 : 0); level++; beep(880, 0.2, 'triangle', 0.06); beep(1320, 0.3, 'triangle', 0.05); if (level > 5) gameOver(T('You crossed all 5 skies! 🏆', 'عدّيت الخمس سموات! 🏆')); else { build(); toast(T('Level ', 'المرحلة ') + level + '!'); } }
+    time -= dt; if (time <= 0) gameOver(T('Time is up!', 'الوقت خلص!'));
+    player.userData.anim && player.userData.anim(dt, ground ? Math.hypot(inp.x, inp.z) : 0);
+    // third-person camera behind the player at the player's height (the engine camera assumes flat ground)
+    const s = Math.sin(view.yaw), c = Math.cos(view.yaw), bk = 6.5 * (view.zoom || 1);
+    camWant.set(pos.x + s * bk, Math.max(pos.y, -20) + 3.8, pos.z + c * bk); camera.position.lerp(camWant, 1 - Math.pow(0.002, dt)); camera.lookAt(pos.x - s * 2, Math.max(pos.y, -20) + 1.3, pos.z - c * 2);
+    if ((hud.t = (hud.t || 0) + dt) > 0.2) { hud.t = 0; hud(); }
+  } else { const a = now * 0.15; camera.position.set(Math.sin(a) * 30, 18, Math.cos(a) * 30); camera.lookAt(0, 0, 0); }
+  sun.position.set(pos.x + 20, pos.y + 40, pos.z + 15); sun.target.position.copy(pos);
+  renderer.render(scene, camera); endFrame(); requestAnimationFrame(frame);
+}
+build(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>

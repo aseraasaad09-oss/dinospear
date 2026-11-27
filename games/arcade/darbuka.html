@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>DARBUKA BEAT</title></head><body>
+<script type="module">
+// 7) DARBUKA BEAT — Egyptian rhythms (maqsum, baladi, saidi, malfuf). DUM = the deep beat, TAK = the sharp one. Hit when the beat reaches the circle.
+import { game, T, beep, blob, rr, tri, ink, text, eye } from './arcade.js';
+// D = dum, T = tak, . = rest (8 steps per bar)
+const RHYTHMS = [['MAQSUM', 'مقسوم', 'DT.TD.T.'], ['BALADI', 'بلدي', 'DD.TD.T.'], ['SAIDI', 'صعيدي', 'DT.DD.T.'], ['MALFUF', 'ملفوف', 'D..T..T.'], ['AYOUB', 'أيوب', 'D.TD.T..']];
+const HIT_X = 200, LANE_D = 300, LANE_T = 200;
+let audio = null; function drum(dum) { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); const o = audio.createOscillator(), g = audio.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(dum ? 140 : 520, audio.currentTime); o.frequency.exponentialRampToValueAtTime(dum ? 60 : 300, audio.currentTime + (dum ? 0.25 : 0.08)); g.gain.setValueAtTime(dum ? 0.35 : 0.15, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + (dum ? 0.3 : 0.1)); o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + 0.32); } catch (e) {} }
+game({
+  id: 'darbuka', title: ['DARBUKA BEAT', 'إيقاع الدربكة'], sky: ['#7c2d12', '#1c1917'],
+  help: ['Real Egyptian rhythms! Press DUM (J / left button) for the deep beats and TAK (K / right button) for the sharp ones, right when they reach the circle. Combos give more points. 10 misses = the band stops!', 'إيقاعات مصري بجد! دوس دُم (J / الزرار الشمال) للضربة التقيلة وتَك (K / الزرار اليمين) للضربة الرفيعة، بالظبط لما توصل الدايرة. الكومبو بيدّيك نقط أكتر. 10 غلطات = الفرقة تقف!'],
+  btns: [{ k: 'b', label: ['DUM', 'دُم'], col: '#b45309' }, { k: 'a', label: ['TAK', 'تَك'], col: '#0ea5e9' }],
+  keys: [['KeyJ', 'b'], ['KeyF', 'b'], ['KeyK', 'a'], ['KeyD', 'a'], ['ArrowLeft', 'b'], ['ArrowRight', 'a']],
+  init(G) { G.notes = []; G.bpm = 92; G.step = 0; G.stepT = 0; G.rh = 0; G.bar = 0; G.combo = 0; G.miss = 0; G.fb = null; G.hitD = 0; G.hitT = 0; G.speed = 300; },
+  update(G, dt) {
+    const stepDur = 60 / G.bpm / 2;   // 8th notes
+    G.stepT += dt;
+    while (G.stepT >= stepDur) { G.stepT -= stepDur; const pat = RHYTHMS[G.rh][2], c = pat[G.step % 8];
+      if (c !== '.') G.notes.push({ x: 960 + 40, dum: c === 'D', t: G.t + (960 + 40 - HIT_X) / G.speed });
+      G.step++; if (G.step % 8 === 0) { G.bar++; if (G.bar % 4 === 0) { G.rh = (G.rh + 1) % RHYTHMS.length; G.bpm = Math.min(150, G.bpm + 6); G.fb = { t: T(RHYTHMS[G.rh][0], RHYTHMS[G.rh][1]) + ' · ' + G.bpm + ' BPM', l: 1.4, c: '#fde047' }; } } }
+    G.notes.forEach(n => { n.x -= G.speed * dt; });
+    const tryHit = dum => { if (dum) G.hitD = 0.12; else G.hitT = 0.12; drum(dum);
+      let best = null, bd = 1e9; G.notes.forEach(n => { if (n.done || n.dum !== dum) return; const d = Math.abs(n.x - HIT_X); if (d < bd) { bd = d; best = n; } });
+      if (best && bd < 70) { best.done = 1; const perfect = bd < 22; G.combo++; G.score += (perfect ? 3 : 1) * (1 + Math.floor(G.combo / 10)); G.fb = { t: perfect ? T('PERFECT', 'مظبوط') : T('GOOD', 'حلو'), l: 0.4, c: perfect ? '#fde047' : '#86efac' }; G.burst(HIT_X, dum ? LANE_D : LANE_T, dum ? '#f59e0b' : '#38bdf8', perfect ? 14 : 6); }
+      else { G.combo = 0; } };
+    if (G.hit('b') || G.hit('left')) tryHit(true); if (G.hit('a') || G.hit('right')) tryHit(false);
+    if (G.hit('tap')) tryHit(G.mouse.x < 480);
+    G.notes.forEach(n => { if (!n.done && n.x < HIT_X - 70) { n.done = 1; G.miss++; G.combo = 0; G.fb = { t: T('MISS', 'فاتت'), l: 0.4, c: '#ef4444' }; if (G.miss >= 10) G.over(T('The band stopped playing!', 'الفرقة وقفت!')); } });
+    G.notes = G.notes.filter(n => n.x > -60 && !(n.done && n.x < HIT_X - 80));
+    G.hitD = Math.max(0, G.hitD - dt); G.hitT = Math.max(0, G.hitT - dt); if (G.fb && (G.fb.l -= dt) <= 0) G.fb = null;
+  },
+  draw(G, cx) {
+    const t = G.t;
+    // stage: tent pattern, lights
+    for (let k = 0; k < 16; k++) { tri(cx, [k * 64, 0], [k * 64 + 64, 0], [k * 64 + 32, 70], k % 2 ? '#dc2626' : '#facc15', 2); }
+    for (let k = 0; k < 6; k++) { cx.fillStyle = 'rgba(253,224,71,' + (0.15 + 0.1 * Math.sin(t * 4 + k)) + ')'; cx.beginPath(); cx.arc(80 + k * 160, 90, 10, 0, 6.28); cx.fill(); }
+    // lanes
+    [[LANE_D, '#b45309', T('DUM', 'دُم')], [LANE_T, '#0369a1', T('TAK', 'تَك')]].forEach(l => { rr(cx, 0, l[0] - 36, 960, 72, 0, 'rgba(0,0,0,.35)', 0); cx.beginPath(); cx.moveTo(0, l[0]); cx.lineTo(960, l[0]); cx.strokeStyle = 'rgba(255,255,255,.12)'; cx.lineWidth = 2; cx.stroke(); text(cx, l[2], 60, l[0] + 10, 26, '#fff'); });
+    // the beat lines
+    blob(cx, HIT_X, LANE_D, 34 + G.hitD * 60, 34 + G.hitD * 60, 'rgba(245,158,11,.25)', 4); blob(cx, HIT_X, LANE_T, 28 + G.hitT * 60, 28 + G.hitT * 60, 'rgba(56,189,248,.25)', 4);
+    G.notes.forEach(n => { if (n.done) return; const y = n.dum ? LANE_D : LANE_T; blob(cx, n.x, y, n.dum ? 26 : 18, n.dum ? 26 : 18, n.dum ? '#f59e0b' : '#38bdf8', 4); text(cx, n.dum ? T('D', 'دُ') : T('T', 'تَ'), n.x, y + 8, 20, '#fff'); });
+    // the drummer: a dino with a darbuka
+    cx.save(); cx.translate(820, 470); const bounce = Math.abs(Math.sin(t * G.bpm / 60 * Math.PI)) * 6;
+    blob(cx, 0, -60 - bounce, 34, 40, '#22c55e', 4); blob(cx, 6, -112 - bounce, 26, 22, '#22c55e', 4); blob(cx, 26, -106 - bounce, 16, 11, '#22c55e', 4); eye(cx, 12, -118 - bounce, 6, -400, 0);
+    rr(cx, -30, -14, 18, 16, 6, '#1e293b', 3); rr(cx, 12, -14, 18, 16, 6, '#1e293b', 3);
+    cx.beginPath(); cx.moveTo(-50, -70); cx.quadraticCurveTo(-90, -40, -60, -20); cx.lineTo(-20, -20); cx.quadraticCurveTo(-10, -40, -50, -70); cx.fillStyle = '#b45309'; cx.fill(); ink(cx, 4); blob(cx, -50, -70, 26, 9, '#fef3c7', 4);
+    for (let k = 0; k < 3; k++) { cx.fillStyle = '#fde047'; cx.fillRect(-72 + k * 14, -44, 8, 8); }
+    cx.restore();
+    text(cx, T(RHYTHMS[G.rh][0], RHYTHMS[G.rh][1]) + ' · ' + G.bpm, 480, 470, 24, '#fde68a');
+    if (G.combo > 2) text(cx, '×' + G.combo, 480, 120, 34, '#fde047');
+    text(cx, '✖'.repeat(G.miss), 30, 520, 18, '#ef4444', 'left');
+    if (G.fb) text(cx, G.fb.t, HIT_X + 120, 130, 34, G.fb.c);
+  }
+});
+</script></body></html>

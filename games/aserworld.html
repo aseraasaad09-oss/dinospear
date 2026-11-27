@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#3b82f6">
 <title>ASER WORLD — WEB V07</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V56" defer></script>
+<script src="../assets/js/rotate.js?v=V57" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 /* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
@@ -136,12 +136,12 @@
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
-import { setupEco, xpFor, egp } from './aw_eco.js?v=V56';
-import { setupFight } from './aw_fight.js?v=V56';
-import { setupDungeon } from './aw_dungeon.js?v=V56';
-import { setupRide } from './aw_ride.js?v=V56';
-import { setupBank } from './aw_bank.js?v=V56';
-import { setupHome } from './aw_home.js?v=V56';
+import { setupEco, xpFor, egp } from './aw_eco.js?v=V57';
+import { setupFight } from './aw_fight.js?v=V57';
+import { setupDungeon } from './aw_dungeon.js?v=V57';
+import { setupRide } from './aw_ride.js?v=V57';
+import { setupBank } from './aw_bank.js?v=V57';
+import { setupHome } from './aw_home.js?v=V57';
 const $ = id => document.getElementById(id);
 await preload(['person', 'car', 'bike', 'boat']);
 
@@ -458,6 +458,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V56" defer></script>
+<script src="../assets/js/game_admin.js?v=V57" defer></script>
 </body>
 </html>

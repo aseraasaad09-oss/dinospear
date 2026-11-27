@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>GOLD HOOK</title></head><body>
+<script type="module">
+// 9) GOLD HOOK — the hook swings by itself; tap to drop it. Heavy things come up slowly. Reach the money goal before the time ends.
+import { game, T, beep, blob, rr, tri, ink, text, eye } from './arcade.js';
+const OX = 480, OY = 112;
+const KINDS = { gold: { v: 50, w: 1.6, r: 22, c: '#facc15' }, big: { v: 250, w: 3.6, r: 40, c: '#eab308' }, rock: { v: 10, w: 3.2, r: 30, c: '#78716c' }, gem: { v: 400, w: 0.9, r: 13, c: '#22d3ee' }, bag: { v: 0, w: 1.2, r: 20, c: '#a16207' }, bone: { v: 20, w: 1.1, r: 18, c: '#f5f5f4' } };
+game({
+  id: 'hook', title: ['GOLD HOOK', 'صنارة الدهب'], sky: ['#fde68a', '#fbbf24'],
+  help: ['The hook swings. Tap / Space to drop it and grab gold, gems and lucky bags. Rocks are heavy and cheap! Reach the goal before the time ends to go to the next level.', 'الصنارة بتتمرجح. دوس / Space تنزلها تمسك دهب وجواهر وأكياس الحظ. الصخر تقيل ورخيص! اوصل للهدف قبل ما الوقت يخلص عشان تروح المرحلة اللي بعدها.'],
+  btns: [{ k: 'a', label: ['Drop', 'نزّل'], col: '#ca8a04' }],
+  init(G) { G.level = 0; G.money = 0; G.setup = () => { G.level++; G.goal = 300 + G.level * 350; G.time = 45; G.items = []; const add = (k, n) => { for (let i = 0; i < n; i++) { let x, y, tries = 0; do { x = 60 + Math.random() * 840; y = 230 + Math.random() * 280; tries++; } while (tries < 40 && G.items.some(o => Math.hypot(o.x - x, o.y - y) < o.r + KINDS[k].r + 10)); G.items.push(Object.assign({ k, x, y }, KINDS[k])); } }; add('gold', 6); add('big', 2 + (G.level > 2 ? 1 : 0)); add('rock', 4 + G.level); add('gem', 1 + Math.floor(G.level / 2)); add('bag', 2); add('bone', 2); G.h = { a: 0, s: 1, len: 40, st: 'swing', got: null }; }; G.setup(); G.msg = { t: T('Goal: ', 'الهدف: ') + G.goal, l: 2 }; },
+  update(G, dt) {
+    const h = G.h; G.time -= dt;
+    if (h.st === 'swing') { h.a += h.s * dt * 1.6; if (Math.abs(h.a) > 1.25) h.s *= -1; if (G.hit('a') || G.hit('tap') || G.hit('down')) { h.st = 'out'; beep(300, 0.06, 'triangle', 0.03); } }
+    else if (h.st === 'out') { h.len += 520 * dt; const x = OX + Math.sin(h.a) * h.len, y = OY + Math.cos(h.a) * h.len;
+      const it = G.items.find(o => Math.hypot(o.x - x, o.y - y) < o.r + 8); if (it) { h.got = it; G.items.splice(G.items.indexOf(it), 1); h.st = 'in'; beep(180, 0.1, 'square', 0.04); }
+      else if (x < 10 || x > 950 || y > 530) h.st = 'in'; }
+    else { h.len -= (520 / (h.got ? h.got.w : 0.6)) * dt; if (h.got) { h.got.x = OX + Math.sin(h.a) * h.len; h.got.y = OY + Math.cos(h.a) * (h.len) + h.got.r; }
+      if (h.len <= 40) { h.len = 40; h.st = 'swing'; if (h.got) { let v = h.got.v; if (h.got.k === 'bag') { const r = Math.random(); v = r < 0.6 ? 100 + Math.floor(Math.random() * 500) : 0; G.msg = { t: v ? T('Lucky bag! +', 'كيس الحظ! +') + v : T('Empty bag…', 'كيس فاضي…'), l: 1.2 }; } else G.msg = { t: '+' + v, l: 0.9 }; G.money += v; G.score = G.money; if (v) { G.burst(OX, OY + 40, '#fde047', 16); beep(1000, 0.1, 'triangle', 0.05); } h.got = null; } } }
+    if (G.money >= G.goal) { G.msg = { t: T('LEVEL ', 'المرحلة ') + (G.level + 1) + '!', l: 1.5 }; beep(880, 0.2, 'triangle'); G.setup(); }
+    if (G.time <= 0) G.over(T('Time is up! Level ', 'الوقت خلص! المرحلة ') + G.level);
+    if (G.msg && (G.msg.l -= dt) <= 0) G.msg = null;
+  },
+  draw(G, cx) {
+    const t = G.t, h = G.h;
+    // ground cross-section
+    cx.fillStyle = '#92400e'; cx.fillRect(0, 150, 960, 390); for (let k = 0; k < 60; k++) { cx.fillStyle = 'rgba(0,0,0,.12)'; cx.beginPath(); cx.arc((k * 197) % 960, 170 + (k * 83) % 360, 6 + k % 5, 0, 6.28); cx.fill(); }
+    cx.fillStyle = '#65a30d'; cx.fillRect(0, 140, 960, 14); cx.beginPath(); cx.moveTo(0, 150); cx.lineTo(960, 150); ink(cx, 5);
+    // the miner on his winch
+    rr(cx, OX - 50, 96, 100, 30, 8, '#475569', 4); blob(cx, OX - 30, 106, 14, 14, '#94a3b8', 3);
+    cx.save(); cx.translate(OX + 70, 140); rr(cx, -16, -46, 32, 40, 10, '#2563eb', 4); blob(cx, 0, -62, 16, 16, '#d4a373', 4); rr(cx, -18, -82, 36, 12, 6, '#facc15', 3); eye(cx, -5, -64, 5, -60, 60); eye(cx, 7, -64, 5, -60, 60); cx.beginPath(); cx.moveTo(-12, -30); cx.lineTo(-40 + (h.st === 'in' ? Math.sin(t * 20) * 6 : 0), -40); ink(cx, 6); cx.restore();
+    // items
+    G.items.concat(h.got ? [h.got] : []).forEach(o => { cx.save(); cx.translate(o.x, o.y);
+      if (o.k === 'rock') blob(cx, 0, 0, o.r, o.r * 0.8, o.c, 4);
+      else if (o.k === 'gem') { tri(cx, [0, -o.r], [o.r, 0], [0, o.r], o.c, 3); tri(cx, [0, -o.r], [-o.r, 0], [0, o.r], '#67e8f9', 3); }
+      else if (o.k === 'bag') { blob(cx, 0, 4, o.r, o.r * 0.9, o.c, 4); text(cx, '?', 0, 12, 22, '#fde047'); }
+      else if (o.k === 'bone') { rr(cx, -o.r, -5, o.r * 2, 10, 5, o.c, 3); blob(cx, -o.r, -5, 7, 7, o.c, 3); blob(cx, o.r, 5, 7, 7, o.c, 3); }
+      else { blob(cx, 0, 0, o.r, o.r * 0.8, o.c, 4); blob(cx, -o.r * 0.3, -o.r * 0.3, o.r * 0.3, o.r * 0.2, 'rgba(255,255,255,.6)', 0); }
+      cx.restore(); });
+    // the line + hook
+    const hx = OX + Math.sin(h.a) * h.len, hy = OY + Math.cos(h.a) * h.len;
+    cx.beginPath(); cx.moveTo(OX, OY); cx.lineTo(hx, hy); ink(cx, 3);
+    cx.save(); cx.translate(hx, hy); cx.rotate(-h.a); cx.beginPath(); cx.arc(-8, 6, 9, 0, Math.PI); cx.moveTo(8, 6); cx.arc(8, 6, 9, Math.PI, 0, true); ink(cx, 5); cx.restore();
+    text(cx, '$' + G.money + ' / ' + G.goal, 30, 50, 28, '#fff', 'left'); text(cx, '⏱ ' + Math.max(0, Math.ceil(G.time)), 930, 50, 28, G.time < 10 ? '#ef4444' : '#fff', 'right'); text(cx, T('Level ', 'مرحلة ') + G.level, 930, 84, 20, '#fff', 'right');
+    if (G.msg) text(cx, G.msg.t, 480, 220, 38, '#fde047');
+  },
+  noScore: true
+});
+</script></body></html>

@@ -1,0 +1,64 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>SLIPPER STORM</title></head><body>
+<script type="module">
+// 1) SLIPPER STORM — Mum is angry and the slippers are flying! Jump the low ones, duck the high ones, grab the snacks.
+import { game, T, beep, blob, rr, tri, ink, eye, text, dino, INK } from './arcade.js';
+const FLOOR = 470;
+game({
+  id: 'slipper', title: ['SLIPPER STORM', 'عاصفة الشباشب'], sky: ['#fde68a', '#f59e0b'], pads: 'lr',
+  help: ['You broke the vase… Mum is throwing slippers! ◀ ▶ move · Jump (Space/↑) over low slippers · Duck (↓) under high ones · grab the snacks. 3 hits and you are grounded!', 'كسرت الفازة… وماما بترمي شباشب! ◀ ▶ اتحرك · نط (Space/↑) فوق الشبشب الواطي · اوطى (↓) تحت العالي · لمّ الأكل. 3 ضربات وتتعاقب!'],
+  btns: [{ k: 'down', label: ['Duck', 'اوطى'], col: '#7c3aed' }, { k: 'a', label: ['Jump', 'نط'], col: '#16a34a' }],
+  init(G) { G.p = { x: 260, y: FLOOR, vy: 0, duck: false, hp: 3, inv: 0, face: 1 }; G.sl = []; G.snacks = []; G.next = 1.2; G.snackT = 4; G.mumArm = 0; G.msg = null; },
+  update(G, dt) {
+    const p = G.p, sp = 1 + G.t / 40;
+    const mv = (G.key('right') ? 1 : 0) - (G.key('left') ? 1 : 0); p.x = Math.max(60, Math.min(700, p.x + mv * 330 * dt)); if (mv) p.face = mv;
+    p.duck = G.key('down') && p.y >= FLOOR;
+    if ((G.hit('a') || G.hit('up')) && p.y >= FLOOR) { p.vy = -760; beep(520, 0.05, 'sine', 0.03); }
+    p.vy += 2100 * dt; p.y = Math.min(FLOOR, p.y + p.vy * dt); if (p.y >= FLOOR) p.vy = 0;
+    p.inv -= dt; G.score += dt * 10;
+    // Mum throws: low (jump), high (duck), lob (falls where you stand), double later on
+    if ((G.next -= dt) <= 0) {
+      G.next = Math.max(0.45, 1.25 - G.t / 60) * (0.8 + Math.random() * 0.4); G.mumArm = 0.3; beep(300, 0.06, 'triangle', 0.03);
+      const r = Math.random(), kinds = G.t > 25 ? 3 : G.t > 8 ? 2 : 1, k = Math.floor(r * kinds);
+      if (k === 0) G.sl.push({ x: 880, y: FLOOR - 22, vx: -480 * sp, vy: 0, g: 0, spin: 0 });
+      else if (k === 1) G.sl.push({ x: 880, y: FLOOR - 92, vx: -520 * sp, vy: 0, g: 0, spin: 0 });
+      else { const t = 1.1 / sp; G.sl.push({ x: 880, y: 300, vx: (p.x - 880) / t, vy: -300, g: (2 * (FLOOR - 20 - 300 + 300 * t)) / (t * t), spin: 0, lob: 1 }); }
+    }
+    G.mumArm = Math.max(0, G.mumArm - dt);
+    G.sl.forEach(s => { s.vy += s.g * dt; s.x += s.vx * dt; s.y += s.vy * dt; s.spin += dt * 14;
+      const top = p.y - (p.duck ? 40 : 78), hit = Math.abs(s.x - p.x) < 26 && s.y > top && s.y < p.y + 4;
+      if (hit && !s.done) { s.done = 1; if (p.inv <= 0) { p.hp--; p.inv = 1.2; G.shake = 0.35; G.burst(p.x, p.y - 40, '#f472b6', 14); beep(140, 0.25, 'sawtooth', 0.06); G.msg = { t: T('OUCH!', 'آي!'), l: 0.8 }; if (p.hp <= 0) G.over(T('Grounded! No video games for a week 😭', 'اتعاقبت! مفيش ألعاب أسبوع 😭')); } }
+      else if (!s.done && s.x < p.x - 30) { s.done = 1; if (Math.abs(s.y - (p.y - 50)) < 70) { G.score += 3; G.msg = { t: T('Close one! +3', 'كانت هتيجي فيك! +3'), l: 0.8 }; } }
+      if (s.y > FLOOR - 14 && s.lob) { s.vx = 0; s.vy = 0; s.g = 0; s.y = FLOOR - 14; s.dead = (s.dead || 0) + dt; } });
+    G.sl = G.sl.filter(s => s.x > -60 && !(s.dead > 0.6));
+    if ((G.snackT -= dt) <= 0) { G.snackT = 3 + Math.random() * 3; G.snacks.push({ x: 120 + Math.random() * 540, y: -20, vy: 60, k: Math.floor(Math.random() * 3) }); }
+    G.snacks.forEach(s => { s.vy += 300 * dt; s.y = Math.min(FLOOR - 16, s.y + s.vy * dt); s.life = (s.life || 5) - dt; if (Math.abs(s.x - p.x) < 34 && Math.abs(s.y - (p.y - 30)) < 50) { s.life = 0; G.score += 10; G.burst(s.x, s.y, '#fde047', 12); beep(1100, 0.08, 'sine', 0.05); G.msg = { t: T('Yum! +10', 'جامد! +10'), l: 0.8 }; } });
+    G.snacks = G.snacks.filter(s => s.life > 0);
+    if (G.msg && (G.msg.l -= dt) <= 0) G.msg = null;
+  },
+  draw(G, cx) {
+    const p = G.p, t = G.t;
+    // living room: wall, window, sofa, the broken vase, carpet
+    cx.fillStyle = '#fef3c7'; cx.fillRect(0, 0, 960, FLOOR); for (let x = 0; x < 960; x += 60) { cx.fillStyle = 'rgba(245,158,11,.12)'; cx.fillRect(x, 0, 30, FLOOR); }
+    rr(cx, 90, 90, 200, 150, 10, '#7dd3fc', 5); cx.beginPath(); cx.moveTo(190, 90); cx.lineTo(190, 240); cx.moveTo(90, 165); cx.lineTo(290, 165); ink(cx, 4);
+    rr(cx, 360, 300, 260, 90, 30, '#be123c', 5); rr(cx, 340, 340, 300, 90, 24, '#e11d48', 5); rr(cx, 380, 120, 140, 100, 6, '#a16207', 5); blob(cx, 450, 170, 30, 30, '#fde047', 3);
+    tri(cx, [690, 460], [700, 430], [712, 462], '#38bdf8', 3); tri(cx, [716, 462], [728, 436], [740, 464], '#38bdf8', 3);
+    cx.fillStyle = '#92400e'; cx.fillRect(0, FLOOR, 960, 70); rr(cx, 100, FLOOR - 6, 600, 14, 7, '#dc2626', 3); cx.beginPath(); cx.moveTo(0, FLOOR); cx.lineTo(960, FLOOR); ink(cx, 5);
+    // Mum (right side): angry, slipper in the hand
+    cx.save(); cx.translate(880, FLOOR);
+    rr(cx, -46, -150, 92, 150, 30, '#ec4899', 5); rr(cx, -36, -110, 72, 90, 14, '#fff', 4);
+    blob(cx, 0, -180, 40, 42, '#d4a373', 5); blob(cx, 0, -214, 46, 24, '#3b2314', 5); blob(cx, 30, -228, 16, 16, '#3b2314', 4);
+    eye(cx, -14, -186, 8, p.x - 880, p.y - FLOOR); eye(cx, 14, -186, 8, p.x - 880, p.y - FLOOR);
+    cx.beginPath(); cx.moveTo(-26, -202); cx.lineTo(-4, -194); cx.moveTo(26, -202); cx.lineTo(4, -194); ink(cx, 5);
+    cx.beginPath(); cx.ellipse(0, -162, 12, 6 + Math.abs(Math.sin(t * 10)) * 4, 0, 0, 6.28); cx.fillStyle = '#7f1d1d'; cx.fill(); ink(cx, 3);
+    const arm = G.mumArm > 0 ? -1.8 : -0.4 + Math.sin(t * 6) * 0.2; cx.save(); cx.translate(-40, -120); cx.rotate(arm); rr(cx, -60, -10, 60, 20, 10, '#d4a373', 4); if (G.mumArm <= 0) rr(cx, -84, -14, 34, 16, 8, '#2563eb', 3); cx.restore();
+    cx.restore();
+    // slippers
+    G.sl.forEach(s => { cx.save(); cx.translate(s.x, s.y); cx.rotate(s.dead ? 0 : -s.spin); rr(cx, -24, -8, 48, 16, 8, '#2563eb', 3); rr(cx, -6, -11, 14, 6, 3, '#fde047', 2); cx.restore(); });
+    G.snacks.forEach(s => { cx.save(); cx.translate(s.x, s.y); if (s.k === 0) { rr(cx, -18, -8, 36, 16, 8, '#f59e0b', 3); rr(cx, -16, -2, 32, 5, 2, '#16a34a', 0); } else if (s.k === 1) { blob(cx, 0, 0, 14, 14, '#dc2626', 3); rr(cx, -1, -18, 3, 6, 1, '#166534', 0); } else { tri(cx, [-14, -10], [14, -10], [0, 16], '#fbbf24', 3); blob(cx, 0, -12, 15, 8, '#fce7f3', 3); } cx.restore(); });
+    // the kid
+    if (!(p.inv > 0 && Math.floor(p.inv * 12) % 2)) { cx.save(); if (p.duck) { cx.translate(p.x, p.y); cx.scale(1.15, 0.6); cx.translate(-p.x, -p.y); } dino(cx, p.x, p.y, 1.1, '#22c55e', p.face, t, G.key('left') || G.key('right') ? 'run' : ''); cx.restore(); }
+    for (let k = 0; k < 3; k++) text(cx, k < p.hp ? '❤' : '🤍', 40 + k * 34, 50, 28, '#ef4444');
+    if (G.msg) text(cx, G.msg.t, 480, 150, 40, '#fff');
+  }
+});
+</script></body></html>

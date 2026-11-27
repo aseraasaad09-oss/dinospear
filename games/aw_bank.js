@@ -1,6 +1,6 @@
 // ASER WORLD web — phase 6: bank + bank card, bank heist, police and jail (numbers from Unity AserHeist.cs, AserPolice.cs, AserLife.cs, AserBankCard.cs)
 import { THREE, mat, makeChar, T, beep, input, walls } from './engine.js';
-import { egp } from './aw_eco.js?v=V56';
+import { egp } from './aw_eco.js?v=V57';
 
 // Unity AserHeist
 const WANTED_STAR = 10, GATE_LIFE = 60, CAM_OFF = 45, COOLDOWN = 600, GRACE = 3, MAX_FAILS = 3, SPOT_R = 3.2;

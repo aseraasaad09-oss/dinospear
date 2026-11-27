@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>SPEAR THROW</title></head><body>
+<script type="module">
+// 6) SPEAR THROW — the DINOSPEAR champion: aim, pick the power and throw at the balloons. Wind changes every round. 10 spears.
+import { game, T, beep, blob, rr, tri, ink, text, dino } from './arcade.js';
+const HX = 120, HY = 440;
+game({
+  id: 'spear', title: ['SPEAR THROW', 'رمية الرمح'], sky: ['#38bdf8', '#e0f2fe'], noScore: false,
+  help: ['Drag back from the dino and let go (like a slingshot) — or ↑ ↓ to aim and hold Space for power. Hit the balloons! Gold = 5 points, one spear through two balloons = combo. Watch the wind. 10 spears.', 'اسحب لورا من الداينو وسيب (زي النبلة) — أو ↑ ↓ للتنشين واضغط Space للقوة. اضرب البالونات! الدهبي = 5 نقط، ورمح يعدّي من بالونتين = كومبو. خلّي بالك من الهوا. 10 رماح.'],
+  btns: [{ k: 'up', label: ['Aim ↑', 'نشّن ↑'], col: '#334155' }, { k: 'down', label: ['Aim ↓', 'نشّن ↓'], col: '#334155' }],
+  keys: [['Space', 'a']],
+  init(G) { G.ang = -0.7; G.pow = 0; G.spears = 10; G.fly = null; G.stuck = []; G.wind = 0; G.round = () => { G.wind = (Math.random() - 0.5) * 160; G.bal = []; const n = 6 + Math.floor(Math.random() * 3); for (let k = 0; k < n; k++) G.bal.push({ x: 420 + Math.random() * 500, y: 90 + Math.random() * 300, r: 22, gold: Math.random() < 0.15, bob: Math.random() * 6, vx: G.score > 20 ? (Math.random() - 0.5) * 60 : 0 }); }; G.round(); G.charge = false; G.drag = null; G.msg = null; },
+  update(G, dt) {
+    if (!G.fly && G.spears > 0) {
+      if (G.key('up')) G.ang = Math.max(-1.4, G.ang - dt * 1.2); if (G.key('down')) G.ang = Math.min(0.1, G.ang + dt * 1.2);
+      if (G.key('a')) { G.charge = true; G.pow = Math.min(1, G.pow + dt * 0.9); } else if (G.charge) { G.charge = false; throwIt(G); }
+      // slingshot with mouse / finger
+      if (G.hit('tap')) G.drag = { x: G.mouse.x, y: G.mouse.y };
+      if (G.drag && G.key('tap')) { const dx = G.drag.x - G.mouse.x, dy = G.drag.y - G.mouse.y, d = Math.hypot(dx, dy); if (d > 10) { G.ang = Math.max(-1.4, Math.min(0.1, Math.atan2(dy, dx))); G.pow = Math.min(1, d / 220); } }
+      if (G.drag && G.hit('untap')) { if (G.pow > 0.1) throwIt(G); G.drag = null; }
+    }
+    if (G.fly) { const f = G.fly; f.vx += G.wind * dt; f.vy += 520 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.a = Math.atan2(f.vy, f.vx);
+      G.bal.forEach(b => { if (!b.pop && Math.hypot(b.x - (f.x + Math.cos(f.a) * 30), b.y - (f.y + Math.sin(f.a) * 30)) < b.r + 6) { b.pop = 1; f.hits++; const pts = (b.gold ? 5 : 1) * f.hits; G.score += pts; G.burst(b.x, b.y, b.gold ? '#fde047' : '#ef4444', 18); beep(900 + f.hits * 200, 0.08, 'square', 0.05); G.msg = { t: (f.hits > 1 ? T('COMBO ×', 'كومبو ×') + f.hits + ' ' : '') + '+' + pts, l: 0.9 }; } });
+      if (f.y > 470 || f.x > 1000 || f.x < -40) { if (f.y > 470) G.stuck.push({ x: f.x, a: f.a }); G.fly = null; if (G.bal.every(b => b.pop)) { G.score += 5; G.msg = { t: T('All popped! +5', 'كله فرقع! +5'), l: 1.2 }; G.round(); G.stuck = []; } if (G.spears <= 0) G.over(T('No spears left!', 'الرماح خلصت!')); } }
+    G.bal.forEach(b => { b.bob += dt * 2; b.x += b.vx * dt; if (b.x < 380 || b.x > 940) b.vx *= -1; });
+    if (G.msg && (G.msg.l -= dt) <= 0) G.msg = null;
+  },
+  draw(G, cx) {
+    const t = G.t;
+    cx.fillStyle = '#86efac'; cx.beginPath(); cx.moveTo(0, 540); for (let x = 0; x <= 960; x += 40) cx.lineTo(x, 470 - Math.sin(x / 140) * 14); cx.lineTo(960, 540); cx.fill(); ink(cx, 4);
+    rr(cx, 60, 450, 120, 24, 8, '#a16207', 4);
+    G.stuck.forEach(s => { cx.save(); cx.translate(s.x, 472); cx.rotate(s.a); cx.beginPath(); cx.moveTo(-50, 0); cx.lineTo(0, 0); cx.strokeStyle = '#92400e'; cx.lineWidth = 5; cx.stroke(); cx.restore(); });
+    G.bal.forEach(b => { if (b.pop) return; const y = b.y + Math.sin(b.bob) * 6; cx.beginPath(); cx.moveTo(b.x, y + b.r); cx.quadraticCurveTo(b.x + 6, y + b.r + 20, b.x, y + b.r + 36); ink(cx, 1.5); blob(cx, b.x, y, b.r, b.r * 1.2, b.gold ? '#facc15' : ['#ef4444', '#3b82f6', '#a855f7', '#22c55e'][Math.floor(b.x) % 4], 3); blob(cx, b.x - 7, y - 9, 5, 8, 'rgba(255,255,255,.6)', 0); if (b.gold) text(cx, '5', b.x, y + 8, 20, '#fff'); });
+    // aim line (dotted preview of the first part of the throw)
+    if (!G.fly && G.spears > 0) { const v = 400 + G.pow * 600; let x = HX + 20, y = HY - 60, vx = Math.cos(G.ang) * v, vy = Math.sin(G.ang) * v; cx.fillStyle = 'rgba(255,255,255,.8)'; for (let k = 0; k < 14; k++) { vx += G.wind * 0.04; vy += 520 * 0.04; x += vx * 0.04; y += vy * 0.04; cx.beginPath(); cx.arc(x, y, 3.5, 0, 6.28); cx.fill(); } }
+    dino(cx, HX, HY, 1.3, '#22c55e', 1, t, '');
+    const drawSpear = (x, y, a) => { cx.save(); cx.translate(x, y); cx.rotate(a); cx.beginPath(); cx.moveTo(-40, 0); cx.lineTo(30, 0); cx.strokeStyle = '#92400e'; cx.lineWidth = 6; cx.stroke(); ink(cx, 2); tri(cx, [28, -7], [28, 7], [46, 0], '#e2e8f0', 2.5); tri(cx, [-40, 0], [-50, -8], [-46, 0], '#ef4444', 2); tri(cx, [-40, 0], [-50, 8], [-46, 0], '#ef4444', 2); cx.restore(); };
+    if (G.fly) drawSpear(G.fly.x, G.fly.y, G.fly.a); else if (G.spears > 0) drawSpear(HX + 20 - G.pow * 14, HY - 60, G.ang);
+    // power + wind + spears left
+    rr(cx, 30, 90, 24, 200, 10, 'rgba(0,0,0,.35)', 3); if (G.pow > 0) rr(cx, 32, 90 + 198 * (1 - G.pow), 20, 198 * G.pow, 8, G.pow > 0.8 ? '#ef4444' : '#fde047', 0);
+    text(cx, T('Wind ', 'الهوا ') + (G.wind > 0 ? '→' : '←') + ' ' + Math.abs(Math.round(G.wind / 10)), 900, 46, 24, '#fff', 'right');
+    text(cx, '🗡'.repeat(Math.max(0, G.spears)), 30, 46, 20, '#fff', 'left');
+    if (G.msg) text(cx, G.msg.t, 600, 150, 42, '#fde047');
+  }
+});
+function throwIt(G) { const v = 400 + G.pow * 600; G.fly = { x: HX + 20, y: HY - 60, vx: Math.cos(G.ang) * v, vy: Math.sin(G.ang) * v, a: G.ang, hits: 0 }; G.spears--; G.pow = 0; beep(300, 0.1, 'triangle', 0.05); }
+</script></body></html>

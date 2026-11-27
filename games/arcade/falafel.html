@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>FALAFEL TOWER</title></head><body>
+<script type="module">
+// 2) FALAFEL TOWER — the biggest sandwich in Egypt: drop each piece at the right moment. Perfect drops grow the tower faster.
+import { game, T, beep, blob, rr, tri, ink, text, eye, INK } from './arcade.js';
+const KINDS = [['#a16207', 'falafel'], ['#fde68a', 'bread'], ['#dc2626', 'tomato'], ['#16a34a', 'lettuce'], ['#f8fafc', 'tahini'], ['#7c2d12', 'eggplant']];
+game({
+  id: 'falafel', title: ['FALAFEL TOWER', 'برج الطعمية'], sky: ['#fef9c3', '#fdba74'],
+  help: ['Build the biggest sandwich in Egypt! The piece swings on the rope — tap / Space to drop it on the tower. Perfect drops = bonus. 3 pieces on the floor and the customer leaves!', 'اعمل أكبر سندوتش في مصر! الحتة بتتمرجح على الحبل — دوس / Space عشان تنزلها على البرج. النزلة المظبوطة = بونص. 3 حتت يقعوا على الأرض والزبون يمشي!'],
+  btns: [{ k: 'a', label: ['Drop', 'نزّل'], col: '#ea580c' }],
+  init(G) { G.stack = [{ x: 480, w: 170, k: 1 }]; G.cam = 0; G.camT = 0; G.miss = 0; G.drop = null; G.newPiece = () => { G.cur = { k: Math.floor(Math.random() * KINDS.length), w: 120 + Math.random() * 50, a: 0 }; }; G.newPiece(); G.combo = 0; G.msg = null; G.falling = []; },
+  update(G, dt) {
+    const sp = 1.6 + G.stack.length * 0.06, top = G.stack[G.stack.length - 1], topY = 430 - (G.stack.length - 1) * 34;
+    G.cur.a += dt * sp; const rope = 150 + Math.min(120, G.stack.length * 4), px = 480 + Math.sin(G.cur.a) * (210 + Math.min(80, G.stack.length * 3));
+    G.cur.x = px; G.cur.y = G.cam + 40 + rope;
+    if (!G.drop && (G.hit('a') || G.hit('tap') || G.hit('up'))) { G.drop = { x: px, y: G.cur.y, vy: 0, k: G.cur.k, w: G.cur.w }; beep(400, 0.05, 'triangle', 0.03); }
+    if (G.drop) {
+      const d = G.drop; d.vy += 1800 * dt; d.y += d.vy * dt;
+      if (d.y >= topY - 34) {
+        const off = d.x - top.x;
+        if (Math.abs(off) < (top.w + d.w) / 2 * 0.7) {
+          const perfect = Math.abs(off) < 8; G.stack.push({ x: perfect ? top.x : d.x, w: d.w, k: d.k, sq: 1 }); G.score += perfect ? 3 + G.combo : 1; G.combo = perfect ? G.combo + 1 : 0;
+          G.burst(d.x, topY - 34, perfect ? '#fde047' : KINDS[d.k][0], perfect ? 18 : 6); beep(perfect ? 1000 + G.combo * 80 : 600, 0.08, 'triangle', 0.05);
+          G.msg = perfect ? { t: T('PERFECT! ×', 'مظبوطة! ×') + G.combo, l: 0.9 } : null; G.shake = 0.1;
+          if (Math.abs(off) > top.w * 0.25) G.msg = { t: T('Wobbly…', 'بيتهز…'), l: 0.7 };
+        } else { G.falling.push({ x: d.x, y: d.y, vx: off > 0 ? 160 : -160, vy: -100, r: 0, k: d.k, w: d.w }); G.miss++; G.combo = 0; beep(160, 0.2, 'sawtooth', 0.05); G.shake = 0.25; G.msg = { t: T('On the floor! ', 'وقعت! ') + (3 - G.miss), l: 0.9 }; if (G.miss >= 3) G.over(T('The customer left hungry 😢', 'الزبون مشي جعان 😢')); }
+        G.drop = null; G.newPiece();
+      }
+    }
+    G.falling.forEach(f => { f.vy += 1600 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.r += dt * 4; });
+    G.falling = G.falling.filter(f => f.y < G.cam + 800);
+    G.stack.forEach(s => { s.sq = s.sq ? Math.max(0, s.sq - dt * 3) : 0; });
+    G.camT = Math.min(0, -(G.stack.length - 8) * 34); G.cam += (G.camT - G.cam) * Math.min(1, dt * 3);
+    if (G.msg && (G.msg.l -= dt) <= 0) G.msg = null;
+  },
+  draw(G, cx) {
+    // the falafel shop: tiles, a sign, the cook
+    for (let y = 0; y < 540; y += 40) for (let x = 0; x < 960; x += 40) { cx.fillStyle = (x + y) % 80 ? 'rgba(255,255,255,.25)' : 'rgba(234,88,12,.08)'; cx.fillRect(x, y, 40, 40); }
+    rr(cx, 40, 30, 250, 70, 14, '#16a34a', 5); text(cx, T('FALAFEL', 'طعمية'), 165, 80, 36, '#fff');
+    cx.save(); cx.translate(860, 470); rr(cx, -40, -130, 80, 130, 24, '#f8fafc', 5); blob(cx, 0, -160, 34, 36, '#d4a373', 5); rr(cx, -36, -210, 72, 34, 12, '#fff', 4); eye(cx, -11, -164, 6, -300, 0); eye(cx, 11, -164, 6, -300, 0); cx.beginPath(); cx.arc(0, -146, 10, 0.2, 2.9); ink(cx, 4); cx.restore();
+    cx.save(); cx.translate(0, -G.cam);
+    rr(cx, 360, 450, 240, 30, 10, '#94a3b8', 5); // the plate
+    const piece = (x, y, w, k, sq) => { const c = KINDS[k][0]; cx.save(); cx.translate(x, y); cx.scale(1 + (sq || 0) * 0.15, 1 - (sq || 0) * 0.2);
+      if (KINDS[k][1] === 'falafel') { for (let i = -1; i <= 1; i++) blob(cx, i * w / 3, 0, w / 6 + 4, 16, c, 3); for (let i = 0; i < 6; i++) { cx.fillStyle = '#365314'; cx.fillRect(-w / 2 + 10 + i * w / 6, -4 + (i % 2) * 6, 4, 4); } }
+      else if (KINDS[k][1] === 'tomato') { for (let i = -1; i <= 1; i++) { blob(cx, i * w / 3, 0, w / 6 + 2, 12, c, 3); blob(cx, i * w / 3, 0, w / 10, 6, '#fca5a5', 0); } }
+      else if (KINDS[k][1] === 'lettuce') { cx.beginPath(); for (let i = 0; i <= 10; i++) cx.lineTo(-w / 2 + i * w / 10, (i % 2 ? -14 : 6)); cx.lineTo(w / 2, 10); cx.lineTo(-w / 2, 10); cx.closePath(); cx.fillStyle = c; cx.fill(); ink(cx, 3); }
+      else rr(cx, -w / 2, -14, w, 28, 14, c, 3);
+      cx.restore(); };
+    G.stack.forEach((s, i) => piece(s.x, 430 - i * 34 - 2, s.w, s.k, s.sq));
+    // crane rope + swinging piece
+    const ry = G.cam + 40; cx.beginPath(); cx.moveTo(480, ry); cx.lineTo(G.cur.x, G.cur.y - 16); ink(cx, 3); rr(cx, 440, ry - 20, 80, 20, 6, '#475569', 3);
+    if (!G.drop) piece(G.cur.x, G.cur.y, G.cur.w, G.cur.k); else piece(G.drop.x, G.drop.y, G.drop.w, G.drop.k);
+    G.falling.forEach(f => { cx.save(); cx.translate(f.x, f.y); cx.rotate(f.r); piece(0, 0, f.w, f.k); cx.restore(); });
+    cx.restore();
+    text(cx, T('Height ', 'الطول ') + G.stack.length, 900, 50, 26, '#fff', 'right');
+    for (let k = 0; k < 3; k++) text(cx, k < 3 - G.miss ? '🍔' : '✖', 40 + k * 36, 50, 26, '#fff');
+    if (G.msg) text(cx, G.msg.t, 480, 160, 42, '#fde047');
+  }
+});
+</script></body></html>

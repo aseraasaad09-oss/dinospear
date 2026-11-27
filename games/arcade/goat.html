@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>GRAVITY GOAT</title></head><body>
+<script type="module">
+// 4) GRAVITY GOAT — a goat that runs on the floor AND the ceiling. Tap to flip gravity. Gaps and spikes on both sides.
+import { game, T, beep, blob, rr, tri, ink, text, eye } from './arcade.js';
+const TOP = 90, BOT = 450, SEG = 60;
+game({
+  id: 'goat', title: ['GRAVITY GOAT', 'معزة الجاذبية'], sky: ['#312e81', '#7c3aed'],
+  help: ['The goat runs by itself. Tap / Space to flip gravity — run on the floor or on the ceiling. Don\'t fall in the holes, don\'t touch the spikes. Grab the grass for points!', 'المعزة بتجري لوحدها. دوس / Space تقلب الجاذبية — تجري على الأرض أو على السقف. ما تقعش في الحفر وما تلمسش الشوك. لمّ الحشيش عشان النقط!'],
+  btns: [{ k: 'a', label: ['Flip', 'اقلب'], col: '#a855f7' }],
+  init(G) { G.p = { y: BOT, vy: 0, g: 1, rot: 0, on: true }; G.dist = 0; G.segs = []; for (let k = 0; k < 24; k++) G.segs.push({ f: true, c: true, sf: false, sc: false, grass: 0 }); G.genAt = 0; G.speed = 300; },
+  update(G, dt) {
+    const p = G.p; G.speed = 300 + G.t * 6; G.dist += G.speed * dt; G.score = Math.floor(G.dist / 100) + (G.bonus || 0);
+    while (G.dist > (G.genAt + 1) * SEG) { G.genAt++; G.segs.shift(); const hard = Math.min(0.45, 0.1 + G.t / 120), r = Math.random(), safe = G.genAt < 12;
+      const prev = G.segs[G.segs.length - 1]; let s = { f: true, c: true, sf: false, sc: false, grass: 0 };
+      if (!safe) { if (r < hard * 0.5 && prev.c) s.f = false; else if (r < hard && prev.f) s.c = false; else if (r < hard * 1.5) s.sf = true; else if (r < hard * 2) s.sc = true; if (!s.f && !s.c) s.c = true; if (Math.random() < 0.2) s.grass = Math.random() < 0.5 ? 1 : -1; }
+      G.segs.push(s); }
+    if ((G.hit('a') || G.hit('tap') || G.hit('up')) && p.on) { p.g = -p.g; p.on = false; beep(p.g > 0 ? 400 : 700, 0.06, 'triangle', 0.04); }
+    p.vy += p.g * 2400 * dt; p.y += p.vy * dt;
+    const off = (G.dist % SEG), i = Math.floor((200 + off) / SEG), s = G.segs[Math.min(G.segs.length - 1, i)] || {};
+    p.on = false;
+    if (p.g > 0 && p.y >= BOT && s.f) { p.y = BOT; p.vy = 0; p.on = true; } if (p.g < 0 && p.y <= TOP && s.c) { p.y = TOP; p.vy = 0; p.on = true; }
+    p.rot += ((p.g > 0 ? 0 : Math.PI) - p.rot) * Math.min(1, dt * 14);
+    if (p.on && ((p.g > 0 && s.sf) || (p.g < 0 && s.sc))) { G.burst(200, p.y, '#f472b6', 18); G.over(T('Ouch, spikes!', 'آي، شوك!')); }
+    if (p.y > 600 || p.y < -60) G.over(T('The goat fell into space!', 'المعزة وقعت في الفضا!'));
+    if (s.grass && !s.gotG && ((s.grass > 0 && p.g > 0) || (s.grass < 0 && p.g < 0)) && p.on) { s.gotG = 1; G.bonus = (G.bonus || 0) + 5; G.burst(200, p.y, '#22c55e', 12); beep(1100, 0.06, 'sine', 0.05); }
+  },
+  draw(G, cx) {
+    const p = G.p, off = G.dist % SEG;
+    for (let k = 0; k < 40; k++) { cx.fillStyle = 'rgba(255,255,255,' + (0.2 + (k % 3) * 0.2) + ')'; cx.fillRect(((k * 137) - G.dist * 0.05 * (1 + k % 3)) % 960 + (((k * 137) - G.dist * 0.05 * (1 + k % 3)) % 960 < 0 ? 960 : 0), (k * 71) % 540, 2, 2); }
+    G.segs.forEach((s, k) => { const x = k * SEG - off;
+      if (s.f) { rr(cx, x, BOT, SEG + 1, 100, 0, '#4c1d95', 0); cx.fillStyle = '#a3e635'; cx.fillRect(x, BOT, SEG + 1, 10); }
+      if (s.c) { rr(cx, x, -60, SEG + 1, TOP + 60, 0, '#4c1d95', 0); cx.fillStyle = '#a3e635'; cx.fillRect(x, TOP - 10, SEG + 1, 10); }
+      if (s.sf) for (let j = 0; j < 3; j++) tri(cx, [x + j * 20, BOT], [x + j * 20 + 10, BOT - 26], [x + j * 20 + 20, BOT], '#e2e8f0', 3);
+      if (s.sc) for (let j = 0; j < 3; j++) tri(cx, [x + j * 20, TOP], [x + j * 20 + 10, TOP + 26], [x + j * 20 + 20, TOP], '#e2e8f0', 3);
+      if (s.grass && !s.gotG) { const y = s.grass > 0 ? BOT : TOP, d = s.grass > 0 ? -1 : 1; for (let j = 0; j < 4; j++) tri(cx, [x + 12 + j * 9, y], [x + 16 + j * 9, y + d * 24], [x + 20 + j * 9, y], '#22c55e', 2); }
+    });
+    cx.beginPath(); cx.moveTo(0, BOT); cx.lineTo(960, BOT); cx.moveTo(0, TOP); cx.lineTo(960, TOP); cx.strokeStyle = 'rgba(0,0,0,.35)'; cx.lineWidth = 3; cx.stroke();
+    // the goat
+    cx.save(); cx.translate(200, p.y); cx.rotate(p.rot); const run = p.on ? Math.sin(G.t * 20) * 5 : 0;
+    [-14, -4, 8, 18].forEach((lx, k) => rr(cx, lx + (k % 2 ? run : -run), -18, 7, 18, 3, '#e5e7eb', 2.5));
+    blob(cx, 2, -30, 28, 18, '#f8fafc', 4); blob(cx, -24, -36, 8, 6, '#f8fafc', 3);
+    blob(cx, 30, -48, 15, 13, '#f8fafc', 4); tri(cx, [24, -58], [16, -76], [30, -60], '#a16207', 3); tri(cx, [34, -58], [40, -78], [40, -58], '#a16207', 3);
+    eye(cx, 34, -52, 5, 200, -52); tri(cx, [30, -38], [36, -26], [40, -38], '#f8fafc', 2);
+    cx.restore();
+    text(cx, Math.floor(G.dist / 10) + ' m', 900, 50, 24, '#fff', 'right');
+  }
+});
+</script></body></html>
