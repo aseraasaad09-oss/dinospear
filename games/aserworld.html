@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#3b82f6">
-<title>ASER WORLD — WEB V04</title>
+<title>ASER WORLD — WEB V05</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V52" defer></script>
+<script src="../assets/js/rotate.js?v=V53" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 /* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
@@ -42,6 +42,8 @@
 #jumpB{background:rgba(234,179,8,.9)}
 #useB{background:rgba(34,197,94,.9);font-size:26px}
 .badge,.money{white-space:nowrap}
+#speedo{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(15,23,42,.85);border:2px solid #38bdf8;color:#e0f2fe;font:900 20px system-ui;padding:10px 14px;border-radius:16px;direction:ltr;pointer-events:none}
+#speedo[hidden]{display:none}
 #mv{position:absolute;right:max(110px,calc(env(safe-area-inset-right) + 110px));bottom:max(26px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(2,52px);gap:8px;direction:ltr}
 #mv[hidden],#mv button[hidden]{display:none}
 #mv button{width:52px;height:52px;border-radius:50%;background:rgba(124,58,237,.88);color:#fff;font-weight:900;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.35);touch-action:none}
@@ -93,6 +95,7 @@
   <div class="bars"><div class="b"><i id="hpI"></i><span id="hpT">HP</span></div><div class="b"><i id="xpI"></i><span id="xpT">XP</span></div></div>
   <span class="money" id="money">$0</span>
  </div>
+ <div id="speedo" hidden></div>
  <div id="equip"></div>
  <div id="mv" hidden><button type="button" id="mAtk">⚔️</button><button type="button" id="mZ">Z</button><button type="button" id="mX">X</button><button type="button" id="mC">C</button><button type="button" id="mV">V</button></div>
  <p id="prompt" hidden></p>
@@ -123,18 +126,19 @@
  <div class="card">
   <h1>ASER WORLD</h1>
   <p data-en="The web version of the Unity game, built step by step. This is not the full game yet — it is part of the game." data-ar="نسخة الويب من لعبة Unity، بتتبني خطوة خطوة. اللعبة دي مش اللعبة الكاملة، دي جزئية من اللعبة بس."></p>
-  <p style="opacity:.75;font-size:14px" data-en="V04: the full map, farming, mining, the workshop, 36 power fruits, 7 fighting styles, monsters, dungeon gates (E to S) and 6 far dungeons — same numbers as Unity." data-ar="V04: الخريطة كاملة والزراعة والتعدين والورشة و36 فاكهة و7 أساليب قتال ووحوش، وكمان بوابات الدانجن (من E لـ S) و6 دانجن بعيدة — بنفس أرقام Unity."></p>
+  <p style="opacity:.75;font-size:14px" data-en="V05: the full map, farming, mining, the workshop, fruits, fighting styles, monsters, gates and dungeons, plus 14 cars, a plane, 5 ships on the sea and lane races — same numbers as Unity." data-ar="V05: الخريطة والزراعة والتعدين والورشة والفاكهة والقتال والوحوش والبوابات والدانجن، وكمان 14 عربية وطيارة و5 سفن في البحر وسباقات — بنفس أرقام Unity."></p>
   <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="Back" data-ar="رجوع"></button></div>
  </div>
 </div>
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
-import { setupEco, xpFor, egp } from './aw_eco.js?v=V52';
-import { setupFight } from './aw_fight.js?v=V52';
-import { setupDungeon } from './aw_dungeon.js?v=V52';
+import { setupEco, xpFor, egp } from './aw_eco.js?v=V53';
+import { setupFight } from './aw_fight.js?v=V53';
+import { setupDungeon } from './aw_dungeon.js?v=V53';
+import { setupRide } from './aw_ride.js?v=V53';
 const $ = id => document.getElementById(id);
-await preload(['person']);
+await preload(['person', 'car', 'bike', 'boat']);
 
 // ================= WORLD LAYOUT — copied from Unity AserSkyWorld.cs ComputeSky() =================
 // Unity: ring radius R = 2600, every ring island the size of the middle one (S), angles 22.5° + i·45°.
@@ -197,6 +201,7 @@ function flush() {
     b.list.forEach((p, i) => { o.position.set(p[0], p[1], p[2]); o.scale.set(p[3], p[4], p[5]); o.rotation.set(0, p[6], 0); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
     im.castShadow = im.receiveShadow = true; scene.add(im);
   }
+  for (const k in inst) delete inst[k];   // flush() can run again for buildings added later
 }
 const solid = (x, z, w, d) => walls.push({ x0: x - w / 2, z0: z - d / 2, x1: x + w / 2, z1: z + d / 2, tall: false });
 const block = (x, z, w, d, h, color, y) => { put('b', BOX, color, x, (y || 0) + h / 2, z, w, h, d); solid(x, z, w, d); };
@@ -328,6 +333,7 @@ function drawMap(cv, span, cx, cz, big) {
   const g = cv.getContext('2d'), W = cv.width, sc = W / span; g.clearRect(0, 0, W, W);
   const X = x => W / 2 + (x - cx) * sc, Z = z => W / 2 + (z - cz) * sc;
   g.strokeStyle = '#a16207'; g.lineWidth = Math.max(2, 8 * sc);
+  g.fillStyle = '#1e6fd9'; g.fillRect(X(-600), Z(-1400), 1200 * sc, 800 * sc);   // the sea (aw_ride.js)
   for (const b of bridges) { g.beginPath(); g.moveTo(X(b.ax), Z(b.az)); g.lineTo(X(b.bx), Z(b.bz)); g.stroke(); }
   for (const s of ISL) {
     g.fillStyle = '#' + new THREE.Color(s.top).getHexString(); const h = s.size / 2 * sc; g.fillRect(X(s.x) - h, Z(s.z) - h, h * 2, h * 2);
@@ -348,7 +354,7 @@ function phone(open) {
     const ICON = { [BMain]: '🏘️', [BLake]: '🎣', [BIce]: '❄️', [BEstate]: '🏙️', [BLava]: '🌋', [BDead]: '🌲', [BZombie]: '🧟', [BCave]: '⛏️', [BFun]: '🕹️', [BRace]: '🏁' };
     for (const s of ISL) app(ICON[s.biome] || '📍', s.name, AR[s.name], () => { const g = s.biome === BMain ? { x: 0, z: 30 } : s.biome === BRace ? PLACES.raceReturn : (s.gates[0] || s); const dx = s.x - g.x, dz = s.z - g.z, d = Math.hypot(dx, dz) || 1; pos.set(g.x + dx / d * (s.biome === BRace ? 8 : 12), 0, g.z + dz / d * (s.biome === BRace ? 8 : 12)); phone(false); toast(nameOf(s)); });
     app('📍', 'WHERE AM I', 'أنا فين', () => { const s = islandAt(pos); toast(s ? nameOf(s) : T('On a bridge', 'على كوبري')); });
-  } else if (tab === 1) { app('🚗', 'CAR + GARAGE', 'العربية + الجراج'); app('✈️', 'PLANE + MY PLANE', 'الطيارة + طيارتي'); app('⛵', 'BOATS', 'السفن'); }
+  } else if (tab === 1) { app('🚗', 'CALL CAR', 'هات العربية', () => { phone(false); ride.callCar(); }); app('🏪', 'CAR + GARAGE', 'العربية + الجراج', () => goShop({ x: -42, z: 28 })); app('✈️', 'CALL PLANE', 'هات الطيارة', () => { phone(false); ride.callPlane(); }); app('⛵', 'GO TO SEA', 'روح البحر', () => { phone(false); ride.goSea(); toast('⚓ ASER HARBOR'); }); app('🏁', 'RACE', 'السباق', () => goShop({ x: -42, z: -30 })); }
   else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('🍉', 'FRUIT', 'الفاكهة', () => goShop(SHOP.fruit)); app('🥋', 'FIGHTING STYLES', 'أساليب القتال', () => { phone(false); fight.styleShop(); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك'); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
   else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة', () => { phone(false); dng.open(); }); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
   else if (tab === 4) { app('👥', 'FRIENDS', 'الأصحاب'); app('💬', 'CHAT', 'الشات'); }
@@ -370,7 +376,12 @@ const fight = setupFight({ scene, me, pos, player, camera, toast: m => toast(m),
   hurtMe: d => { if (state !== 'play') return; me.hp -= d; beep(120, 0.1, 'square', 0.05); if (me.hp <= 0) { spawn(); onGround = true; me.hp = maxHp(); toast(T('You were defeated! Back to ASER TOWN', 'خسرت! رجعت ASER TOWN')); save(); } } });
 // ================= PHASE 4: dungeon gates E–S + 6 far dungeons (aw_dungeon.js) =================
 const dng = setupDungeon({ scene, me, pos, fight, toast: m => toast(m), save, gainXp, panel, floors: EXTRA_FLOORS, label, goTown: () => { spawn(); onGround = true; } });
-eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: dng.prompt });
+// ================= PHASE 5: cars · plane · ships + sea · lane races (aw_ride.js) =================
+const ride = setupRide({ scene, me, pos, player, camera, toast: m => toast(m), save, gainXp, panel, label, block, hasFloor, extraFloors: EXTRA_FLOORS,
+  move: (dx, dz) => moveCircle(pos, dx, dz, 1.1), setVy: v => { vy = v; onGround = false; },
+  places: { dealer: { x: -42, z: 28 }, race: { x: -42, z: -30 }, sea: { x0: -600, z0: -1400, x1: 600, z1: -600 }, harbor: { x: 0, z: -640 }, raceOrigin: { x: 2500, z: -200 } } });
+flush();   // the two new buildings
+eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: () => ride.prompt() || dng.prompt() });
 // phone buttons for moves (Z X C V) + attack, shown when you hold the fruit (2) or a style (3) / sword (1)
 function moveButtons() { const h = me.held; $('mv').hidden = !(h === 1 || h === 2 || h === 3); ['mZ', 'mX', 'mC', 'mV'].forEach((id, i) => { $(id).hidden = !(h === 2 || (h === 3 && i < 2)); }); }
 
@@ -394,26 +405,37 @@ function frame() {
   if (state === 'play') { eco.update(dt); fight.update(dt); dng.update(dt); moveButtons(); }
   if (state === 'play' && !$('panel').hidden && hit('Escape')) $('panel').hidden = true;
   if (state === 'play' && $('phone').hidden && $('panel').hidden) {
-    eco.keys(hit); if (hit('KeyE')) eco.use(); if (hit('KeyB')) eco.bag(); fight.keys(hit, me.held);
-    const inp = readInput(); const sp = (inp.run ? 16 : 8) * dt, mx = inp.x * sp, mz = inp.z * sp;
+    if (hit('KeyE')) eco.use(); if (hit('KeyB')) eco.bag();
+    const inp = readInput();
     if (hit('KeyP')) phone(true); if (hit('KeyM')) $('bigmap').hidden = !$('bigmap').hidden;
+    $('speedo').hidden = !ride.active(); if (ride.active()) $('speedo').textContent = ride.speedKmh() + ' km/h';
+    if (ride.control(dt, inp, hit)) {   // driving / flying / sailing / racing (aw_ride.js)
+      vy = 0; onGround = true;
+    } else {
+    eco.keys(hit); fight.keys(hit, me.held);
+    const swim = ride.inSea(pos);
+    const sp = (inp.run ? 16 : 8) * dt * (swim ? 0.45 : 1), mx = inp.x * sp, mz = inp.z * sp;
     if (onGround) { const old = { x: pos.x, z: pos.z }; moveCircle(pos, mx, mz, 0.45); }
     else { pos.x += mx * 0.6; pos.z += mz * 0.6; }
     if ((mx || mz)) player.rotation.y = Math.atan2(mx, mz);
-    if (hit('Space') && onGround) { vy = 9; onGround = false; beep(520, 0.08, 'sine', 0.04); }
-    const floorHere = hasFloor(pos);
+    if (hit('Space') && onGround && !swim) { vy = 9; onGround = false; beep(520, 0.08, 'sine', 0.04); }
+    const floorHere = hasFloor(pos) || ride.inSea(pos);
     if (!onGround || !floorHere) { vy -= (fight.float() ? 6 : 24) * dt; pos.y += vy * dt; if (floorHere && pos.y <= 0 && vy <= 0) { pos.y = 0; vy = 0; onGround = true; } else onGround = false; }
     if (pos.y < -60) { spawn(); onGround = true; me.hp = Math.max(1, me.hp - 10); toast(T('You fell! Back to ASER TOWN (−10 HP)', 'وقعت! رجعت ASER TOWN (−10 HP)')); save(); }
     player.userData.anim && player.userData.anim(dt, Math.hypot(inp.x, inp.z) * (inp.run ? 1.6 : 1));
+    }
     const s = islandAt(pos);
-    if (s !== lastIsl) { lastIsl = s; $('areaName').textContent = s ? nameOf(s) : onBridge(pos) ? T('BRIDGE', 'كوبري') : T('DUNGEON', 'الدانجن'); if (s && !me.seen.includes(s.name)) { me.seen.push(s.name); gainXp(25); toast(T('New place: ', 'مكان جديد: ') + nameOf(s) + ' +25 XP'); } }
+    const zone = s ? s.name : onBridge(pos) ? 'BRIDGE' : (pos.z < -590 && pos.z > -1410 && Math.abs(pos.x) < 610) ? 'SEA' : ride.mode() === 'race' ? 'RACE' : 'DUNGEON';
+    if (zone !== lastIsl) { lastIsl = zone; $('areaName').textContent = s ? nameOf(s) : zone === 'BRIDGE' ? T('BRIDGE', 'كوبري') : zone === 'SEA' ? T('THE SEA', 'البحر') : zone === 'RACE' ? '🏁 RACE' : T('DUNGEON', 'الدانجن'); if (s && !me.seen.includes(s.name)) { me.seen.push(s.name); gainXp(25); toast(T('New place: ', 'مكان جديد: ') + nameOf(s) + ' +25 XP'); } }
     // portals: arcade island ↔ race track (Unity AserIslands2)
     const rp = PLACES.racePortal, rr = PLACES.raceReturn;
     if (Math.hypot(pos.x - rp.x, pos.z - rp.z) < 3.5) { pos.set(rr.x, 0, rr.z + 10); toast(nameOf(race)); }
     else if (Math.hypot(pos.x - rr.x, pos.z - rr.z) < 3.5) { pos.set(rp.x, 0, rp.z + 10); toast(nameOf(fun)); }
     me.hp = Math.min(maxHp(), me.hp + dt * 2);
-    follow(camera, pos, dt, 3.4, 5.6, player);
-    if (pos.y < 0) camera.position.y += pos.y * 0.7;
+    follow(camera, pos, dt, 3.4, 5.6, ride.active() ? null : player);
+    if (ride.active()) player.visible = false;
+    if (pos.y < 0) camera.position.y += pos.y * 0.7; else if (pos.y > 0) camera.position.y = Math.max(camera.position.y, pos.y + 3);
+    if (ride.active()) { const d = ride.camDist(), s = Math.sin(view.yaw), c = Math.cos(view.yaw); camera.position.set(pos.x + s * d, pos.y + 2 + d * 0.35, pos.z + c * d); camera.lookAt(pos.x, pos.y + 1.5, pos.z); }
     const yaw = ((-view.yaw % 6.283) + 6.283) % 6.283; $('compass').textContent = DIRS[Math.round(yaw / 0.785) % 8];
     if ((hudT += dt) > 0.15) { hudT = 0; hud(); drawMap($('mini'), 420, pos.x, pos.z, false); if (!$('bigmap').hidden) drawMap($('bigC'), 2050, -475, 0, true); }
   } else if (state === 'menu') { const a = now / 9000; camera.position.set(Math.sin(a) * 160, 90, Math.cos(a) * 160); camera.lookAt(0, 0, 0); }
@@ -426,6 +448,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V52" defer></script>
+<script src="../assets/js/game_admin.js?v=V53" defer></script>
 </body>
 </html>

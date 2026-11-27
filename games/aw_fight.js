@@ -1,6 +1,6 @@
 // ASER WORLD web — phase 3: power fruits, fighting styles, monsters (numbers from Unity AserFruits.cs, AserFruitsPlus.cs, AserStyles.cs, FarmData2.cs, Zombie.cs, AserSkyWorld.cs)
 import { THREE, mat, makeChar, T, beep } from './engine.js';
-import { egp, ITEMS, SWORDS } from './aw_eco.js?v=V52';
+import { egp, ITEMS, SWORDS } from './aw_eco.js?v=V53';
 
 // ---------- fruits (no SECRET/admin fruits here: they are never sold or rolled) ----------
 const RAR = [['COMMON', 'عادي', '#bbbbbb'], ['UNCOMMON', 'مش منتشر', '#6bff6b'], ['RARE', 'نادر', '#4fa8ff'], ['MYTHIC', 'خرافي', '#c060ff'], ['LEGENDARY', 'أسطوري', '#ffc830']];

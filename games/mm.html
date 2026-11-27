@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b1020">
 <title>KILLER KILLER WARS — DINOSPEAR V01</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V52" defer></script>
+<script src="../assets/js/rotate.js?v=V53" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 #role{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.88);text-align:center;padding:20px}
@@ -338,6 +338,6 @@ function frame(now) {
 window.DS_GAME = { name: 'KILLER KILLER WARS', cmds: [['who', 'Who is the murderer?', 'مين القاتل؟'], ['gun', 'Give me the gun', 'إديني المسدس'], ['end', 'End the round (innocents win)', 'خلّص الجولة (الأبرياء كسبوا)']], run: c => { if (!me || state !== 'play') return; if (c === 'who') { const m = people.find(p => p.role === 'murderer'); return (L() === 'en' ? 'Murderer: ' : 'القاتل: ') + m.name; } if (c === 'gun' && me.role !== 'murderer') { me.hasGun = true; me.gun.visible = true; } if (c === 'end') { finish('inn'); if (net) net.send('end', { w: 'inn' }); } } };
 requestAnimationFrame(frame);
 </script>
-<script src="../assets/js/game_admin.js?v=V52" defer></script>
+<script src="../assets/js/game_admin.js?v=V53" defer></script>
 </body>
 </html>
