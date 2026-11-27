@@ -123,11 +123,13 @@ export function setupEco(ctx) {
   function drawBar() {
     const ss = seedSlots(); bar.innerHTML = '';
     const sw = me.forged && me.forged.dmg > SWORDS[me.sword].dmg ? { n: me.forged.name, ar: me.forged.name } : SWORDS[me.sword];
-    const cells = [['⚔️', nm(sw)], ['🍉', T('FRUIT', 'فاكهة'), 1], ['🥋', T('STYLE', 'أسلوب'), 1], ['⛏️', nm(PICKS[me.pick])], ['🌀', T('PORTAL', 'بوابة'), 1]];
+    const fr = ext.fruit && ext.fruit();
+    const cells = [['⚔️', nm(sw)], ['🍉', fr || T('NO FRUIT', 'مفيش فاكهة'), fr ? 0 : 1], ['🥋', ext.style ? ext.style() : T('STYLE', 'أسلوب')], ['⛏️', nm(PICKS[me.pick])], ['🌀', T('PORTAL', 'بوابة'), 1]];
     ss.forEach(i => cells.push(['🌱', nm(SEEDS[i]) + ' ×' + me.seeds[i]]));
     cells.forEach((c, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = (me.held === i + 1 ? 'on ' : '') + (c[2] ? 'soon' : ''); b.innerHTML = '<s>' + (i + 1) + '</s><i>' + c[0] + '</i><em>' + c[1] + '</em>'; b.onclick = () => hold(i + 1); bar.appendChild(b); });
   }
-  function hold(n) { const ss = seedSlots(); if (n >= 6 && !ss[n - 6] && ss[n - 6] !== 0) return; if (n === 2 || n === 3 || n === 5) { toast(T('Coming in a next version', 'جاي في نسخة جاية')); return; } me.held = n; drawBar(); }
+  const ext = {};
+  function hold(n) { const ss = seedSlots(); if (n >= 6 && !ss[n - 6] && ss[n - 6] !== 0) return; if (n === 5) { toast(T('Coming in a next version', 'جاي في نسخة جاية')); return; } if (n === 2 && !(ext.fruit && ext.fruit())) { toast(T('Eat a fruit first (FRUIT shop)', 'كُل فاكهة الأول (محل الفاكهة)')); return; } me.held = n; drawBar(); }
   const heldSeed = () => (me.held >= 6 ? seedSlots()[me.held - 6] : undefined);
   drawBar();
 
@@ -191,6 +193,7 @@ export function setupEco(ctx) {
     if (near(places.seedShop, 10)) return [T('E: SEED SHOP', 'E: محل البذور'), seedShop];
     if (near(places.sell, 10)) return [T('E: SELL SHOP', 'E: محل البيع'), sellShop];
     if (near(places.forge, 10)) return [T('E: WORKSHOP', 'E: الورشة'), forge];
+    if (ext.fruitShop && places.fruit && near(places.fruit, 10)) return [T('E: FRUIT SHOP', 'E: محل الفاكهة'), ext.fruitShop];
     const ripe = me.plants.find(p => progress(p) >= 1 && near(p, 1.8));
     if (ripe) return [T('E: HARVEST ', 'E: احصد ') + nm(SEEDS[ripe.s]), () => harvest(ripe)];
     const hs = heldSeed();
@@ -232,6 +235,7 @@ export function setupEco(ctx) {
   // ----- per-frame -----
   let pT = 0, last = null;
   return {
+    link(o) { Object.assign(ext, o); drawBar(); }, near,
     bag, hold, drawBar, seedShop, sellShop, forge,
     keys(hit) { for (let n = 1; n <= 9; n++) if (hit('Digit' + n)) hold(n); },
     use() { const p = prompt(); if (p && p[1]) p[1](); },
