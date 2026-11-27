@@ -1,7 +1,7 @@
 // ASER WORLD web — phase 4: dungeon gates E–S + 6 far dungeons (numbers from Unity AserEvents.cs AserGates, AserDungeons.cs, FarmData2.cs)
 import { THREE, mat, T, beep } from './engine.js';
-import { egp, ITEMS } from './aw_eco.js?v=V54';
-import { MONSTERS } from './aw_fight.js?v=V54';
+import { egp, ITEMS } from './aw_eco.js?v=V55';
+import { MONSTERS } from './aw_fight.js?v=V55';
 
 // ---------- gates ----------
 const RANKS = ['E', 'D', 'C', 'B', 'A', 'S'];

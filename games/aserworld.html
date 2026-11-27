@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#3b82f6">
-<title>ASER WORLD — WEB V06</title>
+<title>ASER WORLD — WEB V07</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V54" defer></script>
+<script src="../assets/js/rotate.js?v=V55" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 /* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
@@ -129,18 +129,19 @@
  <div class="card">
   <h1>ASER WORLD</h1>
   <p data-en="The web version of the Unity game, built step by step. This is not the full game yet — it is part of the game." data-ar="نسخة الويب من لعبة Unity، بتتبني خطوة خطوة. اللعبة دي مش اللعبة الكاملة، دي جزئية من اللعبة بس."></p>
-  <p style="opacity:.75;font-size:14px" data-en="V06: the full map, farming, mining, the workshop, fruits, fighting styles, monsters, gates and dungeons, 14 cars, a plane, ships, races, plus the bank, the bank heist and the police — same numbers as Unity." data-ar="V06: الخريطة والزراعة والتعدين والورشة والفاكهة والقتال والوحوش والبوابات والدانجن، والعربيات والطيارة والسفن والسباقات، وكمان البنك وسرقة البنك والبوليس — بنفس أرقام Unity."></p>
+  <p style="opacity:.75;font-size:14px" data-en="V07: the full map, farming, mining, the workshop, fruits, fighting styles, monsters, gates and dungeons, 14 cars, a plane, ships, races, the bank, the heist and the police, plus 150 houses in ASER CITY and your own land — same numbers as Unity." data-ar="V07: الخريطة والزراعة والتعدين والورشة والفاكهة والقتال والوحوش والبوابات والدانجن، والعربيات والطيارة والسفن والسباقات، والبنك والسرقة والبوليس، وكمان 150 بيت في ASER CITY وأرضك الخاصة — بنفس أرقام Unity."></p>
   <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="Back" data-ar="رجوع"></button></div>
  </div>
 </div>
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
-import { setupEco, xpFor, egp } from './aw_eco.js?v=V54';
-import { setupFight } from './aw_fight.js?v=V54';
-import { setupDungeon } from './aw_dungeon.js?v=V54';
-import { setupRide } from './aw_ride.js?v=V54';
-import { setupBank } from './aw_bank.js?v=V54';
+import { setupEco, xpFor, egp } from './aw_eco.js?v=V55';
+import { setupFight } from './aw_fight.js?v=V55';
+import { setupDungeon } from './aw_dungeon.js?v=V55';
+import { setupRide } from './aw_ride.js?v=V55';
+import { setupBank } from './aw_bank.js?v=V55';
+import { setupHome } from './aw_home.js?v=V55';
 const $ = id => document.getElementById(id);
 await preload(['person', 'car', 'bike', 'boat']);
 
@@ -280,9 +281,7 @@ for (const s of ring) {
   switch (s.biome) {
     case BLake: { put('c', CYL, 0x1e7fd6, s.x, 0.02, s.z, PLACES.lake.r * 2, 0.1, PLACES.lake.r * 2, 0, { roughness: 0.15, metalness: 0.2 }); label(T('FISHING', 'صيد'), '#7dd3fc', 2.5, s.x, 6, s.z); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; deco(s.x + Math.sin(a) * (PLACES.lake.r + 3), s.z + Math.cos(a) * (PLACES.lake.r + 3), 3, 6, 0.4, 0x8b5a2b, 0.2); } for (let i = 0; i < 60; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < PLACES.lake.r + 8) continue; tree(p.x, p.z); } break; }
     case BIce: { for (let i = 0; i < 70; i++) { const p = inIsl(s); tree(p.x, p.z, 0xe0f2fe, 0x6b4423); } for (let i = 0; i < 6; i++) { const p = inIsl(s, 60); put('o', BALL, 0xf8fafc, p.x, 0, p.z, 7, 6, 7); solid(p.x, p.z, 6, 6); } for (let i = 0; i < 14; i++) { const p = inIsl(s); put('k', CONE, 0x67e8f9, p.x, 1.6, p.z, 1.4, 3.2, 1.4, 0, { emissive: 0x0891b2, emissiveIntensity: 0.6 }); } label(T('ESKIMO VILLAGE', 'قرية الإسكيمو'), '#e0f2fe', 2.2, s.x, 8, s.z); break; }
-    case BEstate: { // 150 houses in a grid + jail
-      const cols = 15, rows = 10, pitch = 11, x0 = s.x - (cols - 1) * pitch / 2, z0 = s.z - (rows - 1) * pitch / 2;
-      for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) { const x = x0 + c * pitch, z = z0 + r * pitch; if (Math.hypot(x - PLACES.police.x, z - PLACES.police.z) < 14) continue; block(x, z, 7, 7, 4, [0xfef3c7, 0xe0e7ff, 0xfce7f3, 0xdcfce7, 0xf1f5f9][(c + r) % 5]); put('k', CONE, [0x991b1b, 0x1e3a8a, 0x166534][(c * 7 + r) % 3], x, 5.8, z, 8, 3.6, 8, Math.PI / 4); }
+    case BEstate: { // 150 houses are built by aw_home.js (buy · rent · grow · enter) + police + jail here
       block(PLACES.police.x, PLACES.police.z, 14, 10, 6, 0x1d3557); label('🚓 POLICE', '#ffffff', 2.4, PLACES.police.x, 9, PLACES.police.z);
       block(PLACES.police.x + 40 * K + 9, PLACES.police.z + 3 * K, 8, 8, 5, 0x52525b); label(T('JAIL', 'السجن'), '#e5e7eb', 2, PLACES.police.x + 40 * K + 9, 8, PLACES.police.z); break; }
     case BLava: { for (let i = 0; i < 9; i++) { const p = inIsl(s, 50); put('c', CYL, 0xff5a00, p.x, 0.03, p.z, 14, 0.1, 14, 0, { emissive: 0xff3300, emissiveIntensity: 1.2 }); } put('k', CONE, 0x2b211d, s.x, 18, s.z, 60, 36, 60); put('c', CYL, 0xff4500, s.x, 36.2, s.z, 10, 0.5, 10, 0, { emissive: 0xff2200, emissiveIntensity: 1.5 }); solid(s.x, s.z, 40, 40); for (let i = 0; i < 40; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < 34) continue; put('o', BALL, 0x3f3f46, p.x, 0.6, p.z, 2.4, 1.6, 2.2); } for (let i = 0; i < 10; i++) { const p = inIsl(s); if (Math.hypot(p.x - s.x, p.z - s.z) < 34) continue; put('k', CONE, 0xf97316, p.x, 1.6, p.z, 1.4, 3.2, 1.4, 0, { emissive: 0xea580c, emissiveIntensity: 0.8 }); } label(T('CAMP', 'الكامب'), '#fdba74', 2, s.x + 50, 6, s.z + 50); block(s.x + 50, s.z + 54, 6, 6, 3, 0x7c2d12); break; }
@@ -359,7 +358,7 @@ function phone(open) {
     for (const s of ISL) app(ICON[s.biome] || '📍', s.name, AR[s.name], () => { const g = s.biome === BMain ? { x: 0, z: 30 } : s.biome === BRace ? PLACES.raceReturn : (s.gates[0] || s); const dx = s.x - g.x, dz = s.z - g.z, d = Math.hypot(dx, dz) || 1; pos.set(g.x + dx / d * (s.biome === BRace ? 8 : 12), 0, g.z + dz / d * (s.biome === BRace ? 8 : 12)); phone(false); toast(nameOf(s)); });
     app('📍', 'WHERE AM I', 'أنا فين', () => { const s = islandAt(pos); toast(s ? nameOf(s) : T('On a bridge', 'على كوبري')); });
   } else if (tab === 1) { app('🚗', 'CALL CAR', 'هات العربية', () => { phone(false); ride.callCar(); }); app('🏪', 'CAR + GARAGE', 'العربية + الجراج', () => goShop({ x: -42, z: 28 })); app('✈️', 'CALL PLANE', 'هات الطيارة', () => { phone(false); ride.callPlane(); }); app('⛵', 'GO TO SEA', 'روح البحر', () => { phone(false); ride.goSea(); toast('⚓ ASER HARBOR'); }); app('🏁', 'RACE', 'السباق', () => goShop({ x: -42, z: -30 })); }
-  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('🍉', 'FRUIT', 'الفاكهة', () => goShop(SHOP.fruit)); app('🥋', 'FIGHTING STYLES', 'أساليب القتال', () => { phone(false); fight.styleShop(); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك', () => { phone(false); bank.bankPanel(false); }); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
+  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('🍉', 'FRUIT', 'الفاكهة', () => goShop(SHOP.fruit)); app('🥋', 'FIGHTING STYLES', 'أساليب القتال', () => { phone(false); fight.styleShop(); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك', () => { phone(false); bank.bankPanel(false); }); app('🏠', 'MY HOUSES', 'بيوتي', () => { phone(false); home.myHouses(); }); app('🚩', 'MY LAND', 'أرضي', () => { phone(false); home.landPanel(); }); }
   else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة', () => { phone(false); dng.open(); }); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
   else if (tab === 4) { app('👥', 'FRIENDS', 'الأصحاب'); app('💬', 'CHAT', 'الشات'); }
   else { app('🎒', 'BACKPACK', 'الشنطة', () => { phone(false); eco.bag(); }); app('🌐', 'LANGUAGE', 'اللغة', () => { setLang(L() === 'ar' ? 'en' : 'ar'); rebuildLabelsNote(); phone(true); }); app('📊', 'CHARTS', 'الترتيب'); app('🎁', 'CODES + REDEEM', 'الأكواد'); app('🛟', 'HELP + SUPPORT', 'المساعدة', () => toast(T('Support is on Discord only', 'الدعم على Discord بس'))); }
@@ -389,7 +388,10 @@ flush();   // the two new buildings
 const JAIL_AT = { x: PLACES.police.x + 40 * K + 9, z: PLACES.police.z + 3 * K + 6 };
 const bank = setupBank({ scene, me, pos, toast: m => toast(m), save, panel, extraFloors: EXTRA_FLOORS, ground: () => { vy = 0; onGround = true; }, goTo: (x, z) => pos.set(x, 0, z),
   places: { bank: { x: 22, z: -18 }, jail: JAIL_AT, vault: { x: -2000, z: -400 } } });
-eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: () => bank.prompt() || ride.prompt() || dng.prompt() });
+// ================= PHASE 7: ASER CITY 150 houses + your own land (aw_home.js) =================
+const home = setupHome({ scene, me, pos, toast: m => toast(m), save, panel, label, extraFloors: EXTRA_FLOORS, ground: () => { vy = 0; onGround = true; }, goTo: (x, z) => { pos.set(x, 0, z); vy = 0; onGround = true; },
+  city: { x: city.x, z: city.z }, avoid: [PLACES.police, { x: JAIL_AT.x, z: JAIL_AT.z - 6 }], wild: { x: 1800, z: 0, size: 900 }, room: { x: -2000, z: 400 } });
+eco.link({ fruit: fight.fruitName, style: fight.styleName, fruitShop: fight.fruitShop, prompt: () => bank.prompt() || home.prompt() || ride.prompt() || dng.prompt() });
 // phone buttons for moves (Z X C V) + attack, shown when you hold the fruit (2) or a style (3) / sword (1)
 function moveButtons() { const h = me.held; $('mv').hidden = !(h === 1 || h === 2 || h === 3); ['mZ', 'mX', 'mC', 'mV'].forEach((id, i) => { $(id).hidden = !(h === 2 || (h === 3 && i < 2)); }); }
 
@@ -410,7 +412,7 @@ $('mBack').onclick = () => { location.href = '../index.html'; };
 const clock = new THREE.Clock(); let lastIsl = null, hudT = 0;
 function frame() {
   const dt = Math.min(0.05, clock.getDelta()), now = performance.now();
-  if (state === 'play') { eco.update(dt); fight.update(dt); dng.update(dt); bank.update(dt); moveButtons(); const st = bank.status(); $('heist').hidden = !st; if (st) $('heist').textContent = st; }
+  if (state === 'play') { eco.update(dt); fight.update(dt); dng.update(dt); bank.update(dt); home.update(dt); moveButtons(); const st = bank.status(); $('heist').hidden = !st; if (st) $('heist').textContent = st; }
   if (state === 'play' && !$('panel').hidden && hit('Escape')) $('panel').hidden = true;
   if (state === 'play' && $('phone').hidden && $('panel').hidden) {
     if (hit('KeyE')) eco.use(); if (hit('KeyB')) eco.bag();
@@ -456,6 +458,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V54" defer></script>
+<script src="../assets/js/game_admin.js?v=V55" defer></script>
 </body>
 </html>

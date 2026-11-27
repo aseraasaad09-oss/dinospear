@@ -1,12 +1,12 @@
 {
- "v": "V54",
+ "v": "V55",
  "date": "2026-11-27",
  "ar": [
-  "ASER WORLD ويب V06 🏦 — البنك زي Unity: تحط وتسحب، والفلوس اللي في البنك ما بتضيعش لما تموت (لو الوحوش موتتك بتخسر 5% من اللي معاك بس)، وكارت البنك مكتوب عليه GAME CARD • NOT REAL MONEY",
-  "سرقة البنك: الراجل الملثّم ورا البنك ← بوابة بنفسجي ← 3 أوض فيها كاميرات بنور أحمر، ولوحة تطفي الكاميرات، وأبواب بأكواد، و6 خزن، والخزنة العملاقة (20 رقم في 25 ثانية). ولما تطلع البوليس بيجري وراك بعربيات: لو مسكوك = سجن 60 ثانية، ولو هربت = الفلوس ليك"
+  "ASER WORLD ويب V07 🏠 — 150 بيت في ASER CITY زي Unity: تشتري (لحد 3 بيوت)، إيجار كل 10 دقايق، بيتك بيكبر كل نص ساعة (بيت ← قصر ← قلعة ملكية) وعمره ما بيصغر، تدخله وجواه عفش، وتبيعه بـ 60%",
+  "أرضك الخاصة في الأراضي البرية: تكتب الطول × العرض، والسعر بيكبر مع المساحة، لحد 3 أراضي، وتبيعها بالنص"
  ],
  "en": [
-  "ASER WORLD web V06 🏦 — the bank like Unity: put in and take out; money in the bank is safe when you die (monsters only take 5% of your wallet), and the bank card says GAME CARD • NOT REAL MONEY",
-  "Bank heist: the masked man behind the bank → a purple gate → 3 rooms with red-light cameras, a panel to turn them off, code doors, 6 safes and the giant vault (20 numbers in 25 seconds). Then the police chase you with cars: caught = 60 s in jail, escaped = the money is yours"
+  "ASER WORLD web V07 🏠 — 150 houses in ASER CITY like Unity: buy up to 3, rent every 10 minutes, your house grows every 30 minutes (house → palace → royal castle) and never shrinks, go inside to furniture, sell for 60%",
+  "Your own land in the wild lands: type length × width, the price grows with the size, up to 3 lands, sell for half"
  ]
 }

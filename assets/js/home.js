@@ -308,7 +308,7 @@
     setTimeout(function () { t && t.remove(); }, 12000);
   }, 600000);
   // V10: in-app updates — the app checks by itself, shows "new update" with what changed, one tap updates
-  var APP_V = 'V54';
+  var APP_V = 'V55';
   var UPD = { box: null, shown: '' };
   function wipeAndReload() {
     var p = [];
