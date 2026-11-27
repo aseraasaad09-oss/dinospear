@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#3b82f6">
-<title>ASER WORLD — WEB V01</title>
+<title>ASER WORLD — WEB V02</title>
 <link rel="stylesheet" href="ui.css">
-<script src="../assets/js/rotate.js?v=V49" defer></script>
+<script src="../assets/js/rotate.js?v=V50" defer></script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <style>
 /* ASER WORLD web V01 — same HUD layout as Unity: HP/XP bottom-centre, level + money beside them, PHONE/MENU/MAP/PVP top-right, compass + area name */
@@ -40,6 +40,33 @@
 .apps button[disabled]{opacity:.4}
 #pClose{margin:12px auto 0;display:block}
 #jumpB{background:rgba(234,179,8,.9)}
+#useB{background:rgba(34,197,94,.9);font-size:26px}
+.badge,.money{white-space:nowrap}
+@media (pointer:coarse) and (max-height:520px){html body #stats{bottom:calc(max(8px,env(safe-area-inset-bottom)))}html body #stats .bars{width:min(30vw,200px)}html body #equip{bottom:calc(max(8px,env(safe-area-inset-bottom)) + 40px);max-width:calc(100vw - 330px)}html body #equip button{width:44px;height:44px;font-size:8px}html body #equip i{font-size:16px}html body #prompt{bottom:calc(max(8px,env(safe-area-inset-bottom)) + 92px)}html body #mini{width:110px;height:110px}html body .act{width:58px;height:58px}html body .act.alt{width:50px;height:50px}html body .acts{gap:8px}html body #joy{width:112px;height:112px}}
+#panel{z-index:50}
+/* equip bar (Unity: 1 SWORD · 2 FRUIT · 3 STYLE · 4 PICKAXE · 5 PORTAL GUN · 6-9 seeds) */
+#equip{position:absolute;left:50%;transform:translateX(-50%);bottom:88px;display:flex;gap:4px;direction:ltr;max-width:96vw;overflow-x:auto}
+#equip button{position:relative;width:62px;height:58px;border-radius:12px;background:rgba(15,23,42,.82);border:2px solid rgba(255,255,255,.15);color:#fff;font-size:9px;font-weight:800;line-height:1.1;padding:2px;flex:none}
+#equip button.on{border-color:#ffd040;background:rgba(120,90,10,.85)}
+#equip button.soon{opacity:.45}
+#equip s{position:absolute;top:1px;left:4px;text-decoration:none;opacity:.7}
+#equip i{display:block;font-style:normal;font-size:20px}
+#equip em{display:block;font-style:normal;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:152px;background:rgba(15,23,42,.88);border:1px solid #ffd040;color:#ffd040;font-weight:900;padding:6px 14px;border-radius:999px;font-size:14px;pointer-events:none;margin:0}
+#prompt[hidden]{display:none}
+#panel{position:fixed;z-index:17;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,94vw);max-height:84vh;display:flex;flex-direction:column;background:#0f172a;border:2px solid #334155;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#panel[hidden]{display:none}
+#panel header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #334155;font-weight:900;font-size:18px}
+#panel header button{background:#334155;color:#fff;border-radius:10px;padding:6px 12px;font-weight:900}
+#pBody{overflow:auto;padding:8px 10px;touch-action:pan-y}
+.prow{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(255,255,255,.07);font-size:14px;line-height:1.4}
+.prow>div{flex:1}
+.prow small{opacity:.8}
+.prow button{background:#16a34a;color:#fff;font-weight:900;border-radius:10px;padding:8px 12px;flex:none}
+.prow button[disabled]{background:#334155;opacity:.6}
+#panel .tabs button{padding:6px 9px;border-radius:10px;background:#1e293b;color:#fff;font-weight:800;font-size:12px}
+#panel .tabs button.on{background:#2563eb}
+@media (pointer:coarse){#equip{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 214px)}#equip button{width:54px;height:52px}#prompt{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 274px)}}
 @media (pointer:fine){#stats{bottom:44px}}
 @media (pointer:coarse){#stats{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 150px)}}
 </style>
@@ -61,14 +88,19 @@
   <div class="bars"><div class="b"><i id="hpI"></i><span id="hpT">HP</span></div><div class="b"><i id="xpI"></i><span id="xpT">XP</span></div></div>
   <span class="money" id="money">$0</span>
  </div>
+ <div id="equip"></div>
+ <p id="prompt" hidden></p>
  <div class="toast" id="toast"></div>
  <div id="joy"><div id="knob"></div></div>
  <div class="acts">
-  <button class="act" id="jumpB" type="button" data-en="Jump" data-ar="نط"></button>
+  <button class="act" id="useB" type="button" aria-label="Use">✋</button>
+  <button class="act alt" id="jumpB" type="button" data-en="Jump" data-ar="نط"></button>
   <button class="act alt" id="runB" type="button" data-en="Run" data-ar="جري"></button>
  </div>
- <div class="keys" data-en="Move: WASD · Run: Shift · Jump: Space · Phone: P · Map: M · Camera: V / drag" data-ar="الحركة: WASD · الجري: Shift · النط: Space · التليفون: P · الخريطة: M · الكاميرا: V أو اسحب"></div>
+ <div class="keys" data-en="Move: WASD · Run: Shift · Jump: Space · Use: E · Hold: 1–9 · Bag: B · Phone: P · Map: M · Camera: V / drag" data-ar="الحركة: WASD · الجري: Shift · النط: Space · استخدم: E · امسك: 1–9 · الشنطة: B · التليفون: P · الخريطة: M · الكاميرا: V أو اسحب"></div>
 </div>
+
+<div id="panel" hidden><header><span id="pTitle2"></span><button type="button" id="pX">✕</button></header><div id="pBody"></div></div>
 
 <div id="bigmap" hidden><canvas id="bigC" width="900" height="900"></canvas></div>
 
@@ -85,13 +117,14 @@
  <div class="card">
   <h1>ASER WORLD</h1>
   <p data-en="The web version of the Unity game, built step by step. This is not the full game yet — it is part of the game." data-ar="نسخة الويب من لعبة Unity، بتتبني خطوة خطوة. اللعبة دي مش اللعبة الكاملة، دي جزئية من اللعبة بس."></p>
-  <p style="opacity:.75;font-size:14px" data-en="V01: the full map — ASER TOWN in the middle, 8 islands around it with bridges, and the race track far away." data-ar="V01: الخريطة كاملة — ASER TOWN في النص، و8 جزر حواليها بكباري، وحلبة السباق بعيد."></p>
+  <p style="opacity:.75;font-size:14px" data-en="V02: the full map (ASER TOWN + 8 islands + race track), plus farming (27 seeds), mining (8 pickaxes) and the workshop — same numbers as Unity." data-ar="V02: الخريطة كاملة (ASER TOWN + 8 جزر + حلبة السباق)، وكمان الزراعة (27 بذرة) والتعدين (8 بيكاكس) والورشة — بنفس أرقام Unity."></p>
   <div class="row"><button class="big" id="mPlay" type="button" data-en="Play" data-ar="العب"></button><button class="big sec" id="mBack" type="button" data-en="Back" data-ar="رجوع"></button></div>
  </div>
 </div>
 
 <script type="module">
 import { THREE, makeWorld, mat, walls, makeChar, moveCircle, readInput, hit, endFrame, setupJoystick, bindButton, beep, follow, T, setLang, L, store, view, preload } from './engine.js';
+import { setupEco, xpFor, egp } from './aw_eco.js?v=V50';
 const $ = id => document.getElementById(id);
 await preload(['person']);
 
@@ -169,7 +202,8 @@ function label(text, color, size, x, y, z) {
 }
 let seed = 77; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 const inIsl = (s, m) => ({ x: s.x + (rnd() - 0.5) * (s.size - (m || 20)), z: s.z + (rnd() - 0.5) * (s.size - (m || 20)) });
-function tree(x, z, leaf, trunk, s) { s = s || 1; put('c', CYL, trunk || 0x6b4423, x, 1.6 * s, z, 0.5 * s, 3.2 * s, 0.5 * s); put('k', CONE, leaf || 0x2f7d32, x, 4.4 * s, z, 3.2 * s, 4.4 * s, 3.2 * s); solid(x, z, 0.8 * s, 0.8 * s); }
+const treesPos = [];
+function tree(x, z, leaf, trunk, s) { s = s || 1; treesPos.push({ x, z }); put('c', CYL, trunk || 0x6b4423, x, 1.6 * s, z, 0.5 * s, 3.2 * s, 0.5 * s); put('k', CONE, leaf || 0x2f7d32, x, 4.4 * s, z, 3.2 * s, 4.4 * s, 3.2 * s); solid(x, z, 0.8 * s, 0.8 * s); }
 function deadTree(x, z) { put('c', CYL, 0x3a2f28, x, 2.5, z, 0.45, 5, 0.45); put('b', BOX, 0x3a2f28, x + 0.8, 3.6, z, 1.8, 0.25, 0.25, rnd() * 3); solid(x, z, 0.8, 0.8); }
 
 // islands + walls with gate gaps (Unity: lobby-wall copy around every island)
@@ -208,6 +242,7 @@ for (const l of links) {
 }
 
 // ---------- ASER TOWN (middle) ----------
+const GARDEN = { x0: 27, z0: 30, x1: 47, z1: 46 };
 {
   const s = main; put('c', CYL, 0xd1d5db, 0, 0.5, 0, 10, 1, 10); put('c', CYL, 0x60a5fa, 0, 1.05, 0, 8.6, 0.2, 8.6); put('c', CYL, 0xd1d5db, 0, 2, 0, 0.8, 3, 0.8); put('c', CYL, 0x93c5fd, 0, 3.6, 0, 2.4, 0.3, 2.4); solid(0, 0, 9, 9);
   label('ASER TOWN', '#ffd24a', 3, 0, 9, 0);
@@ -219,9 +254,8 @@ for (const l of links) {
   for (const [en, ar, col, x, z] of shops) { block(x, z, 12, 9, 6, 0xf3e8d2); deco(x, z, 13, 10, 1, col, 6); label(T(en, ar), '#ffffff', 2.2, x, 9, z); }
   // houses + trees + farm plots
   for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2, r = 70 + (i % 2) * 12, x = Math.sin(a) * r, z = Math.cos(a) * r; if (Math.abs(x) < 9 || Math.abs(z) < 9) continue; block(x, z, 8, 8, 4.5, [0xfde68a, 0xfecaca, 0xbfdbfe, 0xbbf7d0][i % 4]); put('k', CONE, 0xb91c1c, x, 6.5, z, 9, 4, 9, Math.PI / 4); }
-  for (let gx = 0; gx < 4; gx++) for (let gz = 0; gz < 3; gz++) deco(52 + gx * 6, 32 + gz * 6, 5, 5, 0.25, 0x6b4423, 0);
-  label(T('FARM', 'المزرعة'), '#bbf7d0', 2.2, 61, 6, 38);
-  seed = 11; for (let i = 0; i < 90; i++) { const p = inIsl(s, 24); if (Math.hypot(p.x, p.z) < 55 || Math.abs(p.x) < 8 || Math.abs(p.z) < 8) continue; tree(p.x, p.z); }
+  label(T('MY GARDEN', 'جنينتي'), '#bbf7d0', 2.2, (GARDEN.x0 + GARDEN.x1) / 2, 5, GARDEN.z0 - 1);
+  seed = 11; for (let i = 0; i < 90; i++) { const p = inIsl(s, 24); if (Math.hypot(p.x, p.z) < 55 || Math.abs(p.x) < 8 || Math.abs(p.z) < 8) continue; if (p.x > GARDEN.x0 - 3 && p.x < GARDEN.x1 + 3 && p.z > GARDEN.z0 - 3 && p.z < GARDEN.z1 + 3) continue; tree(p.x, p.z); }
 }
 // ---------- the 8 islands — each with its Unity theme ----------
 for (const s of ring) {
@@ -264,9 +298,10 @@ const ISL = islands.filter(s => !s.hidden && !s.eventOnly);
 const islandAt = p => ISL.find(s => Math.abs(p.x - s.x) <= s.size / 2 && Math.abs(p.z - s.z) <= s.size / 2);
 function onBridge(p) { for (const b of bridges) { const dx = b.bx - b.ax, dz = b.bz - b.az, t = Math.max(0, Math.min(1, ((p.x - b.ax) * dx + (p.z - b.az) * dz) / (b.len * b.len))); if (Math.hypot(p.x - (b.ax + dx * t), p.z - (b.az + dz * t)) < 4.2) return true; } return false; }
 const hasFloor = p => !!islandAt(p) || onBridge(p);
-function maxHp() { return 100 + Math.min(me.lvl, 100) * 10 + Math.max(0, me.lvl - 100) * 2; }   // HP grows slower after level 100 (Unity)
-const needXp = l => Math.round(60 * Math.pow(l, 1.35));
-function gainXp(n) { me.xp += n; while (me.xp >= needXp(me.lvl) && me.lvl < 3400) { me.xp -= needXp(me.lvl); me.lvl++; me.hp = maxHp(); toast(T('LEVEL UP! ', 'مستوى جديد! ') + me.lvl); beep(880, 0.2, 'triangle', 0.06); } save(); }
+function maxHp() { return 100 + Math.min(me.lvl, 100) * 5 + Math.max(0, me.lvl - 100); }   // Unity FarmData.MaxHp — slower after level 100
+// Unity FarmData.XpForLevel: total XP to reach a level = 30 · level^1.7 (max level 3400)
+if (!me.xpV) { me.xpV = 1; me.xp = xpFor(me.lvl); }
+function gainXp(n) { me.xp += n; while (me.lvl < 3400 && me.xp >= xpFor(me.lvl + 1)) { me.lvl++; me.hp = maxHp(); toast(T('LEVEL UP! ', 'مستوى جديد! ') + me.lvl); beep(880, 0.2, 'triangle', 0.06); } save(); }
 const save = () => store.set('aw_web', me);
 
 // ================= HUD =================
@@ -274,8 +309,9 @@ let tT = 0; function toast(m) { const e = $('toast'); e.textContent = m; e.class
 function hud() {
   const mh = maxHp(); me.hp = Math.min(me.hp, mh);
   $('hpI').style.width = (me.hp / mh * 100) + '%'; $('hpT').textContent = 'HP ' + Math.round(me.hp) + ' / ' + mh;
-  $('xpI').style.width = (me.xp / needXp(me.lvl) * 100) + '%'; $('xpT').textContent = 'XP ' + me.xp + ' / ' + needXp(me.lvl);
-  $('lvl').textContent = 'LV ' + me.lvl; $('money').textContent = '$' + me.money.toLocaleString('en');
+  const a = xpFor(me.lvl), b = xpFor(me.lvl + 1);
+  $('xpI').style.width = Math.min(100, (me.xp - a) / (b - a) * 100) + '%'; $('xpT').textContent = 'XP ' + (me.xp - a) + ' / ' + (b - a);
+  $('lvl').textContent = 'LV ' + me.lvl; $('money').textContent = egp(me.money);
 }
 const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 function drawMap(cv, span, cx, cz, big) {
@@ -303,15 +339,22 @@ function phone(open) {
     for (const s of ISL) app(ICON[s.biome] || '📍', s.name, AR[s.name], () => { const g = s.biome === BMain ? { x: 0, z: 30 } : s.biome === BRace ? PLACES.raceReturn : (s.gates[0] || s); const dx = s.x - g.x, dz = s.z - g.z, d = Math.hypot(dx, dz) || 1; pos.set(g.x + dx / d * (s.biome === BRace ? 8 : 12), 0, g.z + dz / d * (s.biome === BRace ? 8 : 12)); phone(false); toast(nameOf(s)); });
     app('📍', 'WHERE AM I', 'أنا فين', () => { const s = islandAt(pos); toast(s ? nameOf(s) : T('On a bridge', 'على كوبري')); });
   } else if (tab === 1) { app('🚗', 'CAR + GARAGE', 'العربية + الجراج'); app('✈️', 'PLANE + MY PLANE', 'الطيارة + طيارتي'); app('⛵', 'BOATS', 'السفن'); }
-  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور'); app('💎', 'RARE SHOP', 'المحل النادر'); app('🍉', 'FRUIT', 'الفاكهة'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك'); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
+  else if (tab === 2) { app('🌱', 'SEEDS', 'البذور', () => goShop(SHOP.seedShop)); app('💰', 'SELL', 'البيع', () => goShop(SHOP.sell)); app('⚒️', 'WORKSHOP', 'الورشة', () => goShop(SHOP.forge)); app('🌻', 'MY GARDEN', 'جنينتي', () => { pos.set((GARDEN.x0 + GARDEN.x1) / 2, 0, GARDEN.z0 - 3); phone(false); }); app('⛏️', 'MINES', 'المناجم', () => { pos.set(cave.x, 0, cave.z + 22); phone(false); }); app('💎', 'RARE SHOP', 'المحل النادر'); app('🍉', 'FRUIT', 'الفاكهة'); app('🧍', 'AVATAR', 'الأفاتار'); app('🏦', 'BANK', 'البنك'); app('🏠', 'HOUSES + HOME', 'البيوت + البيت'); }
   else if (tab === 3) { app('🌀', 'DUNGEONS + GATE', 'الدانجن + البوابة'); app('🏁', 'RACES', 'السباقات'); app('🕹️', 'ARCADE', 'الأركيد'); }
   else if (tab === 4) { app('👥', 'FRIENDS', 'الأصحاب'); app('💬', 'CHAT', 'الشات'); }
-  else { app('🌐', 'LANGUAGE', 'اللغة', () => { setLang(L() === 'ar' ? 'en' : 'ar'); rebuildLabelsNote(); phone(true); }); app('📊', 'CHARTS', 'الترتيب'); app('🎁', 'CODES + REDEEM', 'الأكواد'); app('🛟', 'HELP + SUPPORT', 'المساعدة', () => toast(T('Support is on Discord only', 'الدعم على Discord بس'))); }
+  else { app('🎒', 'BACKPACK', 'الشنطة', () => { phone(false); eco.bag(); }); app('🌐', 'LANGUAGE', 'اللغة', () => { setLang(L() === 'ar' ? 'en' : 'ar'); rebuildLabelsNote(); phone(true); }); app('📊', 'CHARTS', 'الترتيب'); app('🎁', 'CODES + REDEEM', 'الأكواد'); app('🛟', 'HELP + SUPPORT', 'المساعدة', () => toast(T('Support is on Discord only', 'الدعم على Discord بس'))); }
 }
 function rebuildLabelsNote() { toast(T('Reload to change the 3D signs language', 'اعمل ريفريش عشان لغة اليفط تتغير')); }
 
+// ================= PHASE 2: farming · mining · workshop (aw_eco.js) =================
+function panel(title, fill) { $('pTitle2').textContent = title; const b = $('pBody'), y = b.scrollTop; b.innerHTML = ''; fill(b); $('panel').hidden = false; b.scrollTop = y; }
+$('pX').onclick = () => { $('panel').hidden = true; };
+const SHOP = { seedShop: { x: 22, z: 18 }, sell: { x: -22, z: 18 }, forge: { x: -22, z: -18 } };
+const eco = setupEco({ scene, me, pos, toast: m => toast(m), save, gainXp, trees: treesPos, panel, places: { ...SHOP, garden: GARDEN, cave: { x: cave.x, z: cave.z } } });
+const goShop = p => { pos.set(p.x, 0, p.z + 9); phone(false); };
+
 // ================= INPUT / UI =================
-setupJoystick(); bindButton('jumpB', 'Space'); bindButton('runB', 'Run');
+setupJoystick(); bindButton('jumpB', 'Space'); bindButton('runB', 'Run'); bindButton('useB', 'KeyE');
 $('bPhone').onclick = () => phone($('phone').hidden); $('pClose').onclick = () => phone(false);
 $('bMap').onclick = () => { $('bigmap').hidden = !$('bigmap').hidden; }; $('bigmap').onclick = () => { $('bigmap').hidden = true; };
 $('bMenu').onclick = () => { state = 'menu'; $('menu').hidden = false; $('hud').hidden = true; phone(false); };
@@ -326,7 +369,10 @@ $('mBack').onclick = () => { location.href = '../index.html'; };
 const clock = new THREE.Clock(); let lastIsl = null, hudT = 0;
 function frame() {
   const dt = Math.min(0.05, clock.getDelta()), now = performance.now();
-  if (state === 'play' && $('phone').hidden) {
+  if (state === 'play') eco.update(dt);
+  if (state === 'play' && !$('panel').hidden && hit('Escape')) $('panel').hidden = true;
+  if (state === 'play' && $('phone').hidden && $('panel').hidden) {
+    eco.keys(hit); if (hit('KeyE')) eco.use(); if (hit('KeyB')) eco.bag();
     const inp = readInput(); const sp = (inp.run ? 16 : 8) * dt, mx = inp.x * sp, mz = inp.z * sp;
     if (hit('KeyP')) phone(true); if (hit('KeyM')) $('bigmap').hidden = !$('bigmap').hidden;
     if (onGround) { const old = { x: pos.x, z: pos.z }; moveCircle(pos, mx, mz, 0.45); }
@@ -358,6 +404,6 @@ requestAnimationFrame(frame);
 </script>
 <script src="../assets/vendor/supabase-2.45.4.js"></script>
 <script src="../key.js"></script>
-<script src="../assets/js/game_admin.js?v=V49" defer></script>
+<script src="../assets/js/game_admin.js?v=V50" defer></script>
 </body>
 </html>
